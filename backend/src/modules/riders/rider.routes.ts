@@ -1,0 +1,16 @@
+import { Router } from "express";
+import * as riderController from "./rider.controller";
+import { authenticate } from "../../middlewares/auth.middleware";
+import { authorize } from "../../middlewares/role.middleware";
+
+const router = Router();
+
+router.get("/", authenticate, authorize("ADMIN"), riderController.getAllRiders);
+router.put("/location", authenticate, authorize("RIDER"), riderController.updateLocation);
+router.put("/availability", authenticate, authorize("RIDER"), riderController.toggleAvailability);
+router.get("/active-delivery", authenticate, authorize("RIDER"), riderController.getActiveDelivery);
+router.put("/:id/accept", authenticate, authorize("RIDER"), riderController.acceptOrder);
+router.put("/:id/deliver", authenticate, authorize("RIDER"), riderController.deliverOrder);
+router.get("/history", authenticate, authorize("RIDER"), riderController.getDeliveryHistory);
+
+export default router;
