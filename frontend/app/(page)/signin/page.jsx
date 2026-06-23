@@ -40,20 +40,20 @@ export default function SigninPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-lg max-w-md w-full p-6 border border-gray-100">
-        <div className="text-center mb-6">
-          <h1 className="text-xl font-bold text-gray-900">Bikroy-Mart-BD</h1>
-          <p className="text-gray-500 mt-1 text-sm">{t.signInToContinue}</p>
+    <div className="min-h-screen bg-[#F4F7FB] flex items-center justify-center px-4 py-8">
+      <div className="bg-white rounded-lg shadow-[rgba(0,0,0,0.1)_0px_2px_4px_0px] w-full max-w-sm p-5 sm:p-6 border border-[#E5E7EB]">
+        <div className="text-center mb-4 sm:mb-5">
+          <h1 className="text-base sm:text-lg font-bold text-[#00215B]">Bikroy<span className="text-[#EC008C]">-Mart</span>-BD</h1>
+          <p className="text-[#667085] mt-0.5 text-[11px] sm:text-xs">{t.signInToContinue}</p>
         </div>
 
         {errors.general && (
-          <div className="alert-error mb-4">{errors.general}</div>
+          <div className="alert-error mb-3">{errors.general}</div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-2.5 sm:space-y-3">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">{t.emailAddress}</label>
+            <label className="block text-[11px] sm:text-xs font-semibold text-[#364152] mb-1">{t.emailAddress}</label>
             <input
               type="email" placeholder="Enter your email" required
               value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -61,21 +61,21 @@ export default function SigninPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">{t.password}</label>
+            <label className="block text-[11px] sm:text-xs font-semibold text-[#364152] mb-1">{t.password}</label>
             <input
               type="password" placeholder="Enter your password" required
               value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })}
               className="input-field"
             />
           </div>
-          <button type="submit" disabled={loading} className="btn-primary w-full">
+          <button type="submit" disabled={loading} className="btn-primary w-full mt-1">
             {loading ? t.loading : t.signIn}
           </button>
         </form>
 
-        <p className="text-center text-sm text-gray-500 mt-4">
+        <p className="text-center text-[11px] sm:text-xs text-[#667085] mt-3 sm:mt-4">
           {t.dontHaveAccount}{" "}
-          <Link href="/signup" className="text-[#0067A0] font-semibold hover:underline">{t.signUp}</Link>
+          <Link href="/signup" className="text-[#EC008C] font-semibold hover:underline">{t.signUp}</Link>
         </p>
       </div>
     </div>

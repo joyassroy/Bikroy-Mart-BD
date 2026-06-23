@@ -1,62 +1,179 @@
 "use client";
-import { BarChart3, TrendingUp, Users, Package, DollarSign } from "lucide-react";
+import { useState, useEffect } from "react";
+import api from "@/lib/axios";
+import { BarChart3, TrendingUp, Users, Package, DollarSign, ShoppingCart, Loader2, ArrowUp, ArrowDown } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, Legend } from "recharts";
+
+const STATUS_COLORS = {
+  PENDING: "#F59E0B",
+  CONFIRMED: "#3B82F6",
+  PROCESSING: "#8B5CF6",
+  SHIPPED: "#6366F1",
+  OUT_FOR_DELIVERY: "#EC008C",
+  DELIVERED: "#10B981",
+  CANCELLED: "#EF4444",
+  RETURNED: "#6B7280",
+};
 
 export default function AnalyticsPage() {
+  const [stats, setStats] = useState(null);
+  const [salesTrend, setSalesTrend] = useState([]);
+  const [ordersByStatus, setOrdersByStatus] = useState([]);
+  const [topCategories, setTopCategories] = useState([]);
+  const [revenueByDistrict, setRevenueByDistrict] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => { fetchAllData(); }, []);
+
+  const fetchAllData = async () => {
+    try {
+      const [statsRes, salesRes, statusRes, catsRes, distRes] = await Promise.all([
+        api.get("/analytics/stats"),
+        api.get("/analytics/sales-trend?days=30"),
+        api.get("/analytics/orders-by-status"),
+        api.get("/analytics/top-categories"),
+        api.get("/analytics/revenue-by-district"),
+      ]);
+      setStats(statsRes.data.data || {});
+      setSalesTrend(salesRes.data.data || []);
+      setOrdersByStatus(statusRes.data.data || []);
+      setTopCategories(catsRes.data.data || []);
+      setRevenueByDistrict(distRes.data.data || []);
+    } catch (err) {
+      console.error(err);
+    } finally { setLoading(false); }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="animate-spin text-pink-500" size={32} />
+      </div>
+    );
+  }
+
+  const summaryCards = [
+    { label: "Total Revenue", value: `৳${(stats?.totalRevenue || 0).toLocaleString()}`, icon: DollarSign, color: "text-green-500", bg: "bg-green-50" },
+    { label: "Total Orders", value: stats?.totalOrders?.toLocaleString() || "0", icon: ShoppingCart, color: "text-blue-500", bg: "bg-blue-50" },
+    { label: "Total Users", value: stats?.totalUsers?.toLocaleString() || "0", icon: Users, color: "text-purple-500", bg: "bg-purple-50" },
+    { label: "Total Products", value: stats?.totalProducts?.toLocaleString() || "0", icon: Package, color: "text-amber-500", bg: "bg-amber-50" },
+  ];
+
+  const secondaryCards = [
+    { label: "Pending Orders", value: stats?.pendingOrders || 0, color: "text-yellow-600" },
+    { label: "Delivered", value: stats?.deliveredOrders || 0, color: "text-green-600" },
+    { label: "Cancelled", value: stats?.cancelledOrders || 0, color: "text-red-600" },
+    { label: "Categories", value: stats?.totalCategories || 0, color: "text-blue-600" },
+  ];
+
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-800 mb-6">Analytics</h1>
 
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {summaryCards.map((card, i) => (
+          <div key={i} className="bg-white rounded-xl p-5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-gray-500 mb-1">{card.label}</p>
+                <p className="text-xl font-bold text-gray-800">{card.value}</p>
+              </div>
+              <div className={`${card.bg} p-3 rounded-full`}>
+                <card.icon size={20} className={card.color} />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        {secondaryCards.map((card, i) => (
+          <div key={i} className="bg-white rounded-lg p-3 shadow-sm text-center">
+            <p className={`text-lg font-bold ${card.color}`}>{card.value}</p>
+            <p className="text-[10px] text-gray-500">{card.label}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className="bg-white rounded-xl p-6 shadow-sm">
+          <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <TrendingUp size={20} className="text-pink-500" /> Sales Trend (30 Days)
+          </h3>
+          {salesTrend.length > 0 ? (
+            <ResponsiveContainer width="100%" height={280}>
+              <LineChart data={salesTrend}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={(v) => v.slice(5)} />
+                <YAxis tick={{ fontSize: 10 }} />
+                <Tooltip formatter={(value) => [`৳${value.toLocaleString()}`, "Revenue"]} />
+                <Line type="monotone" dataKey="revenue" stroke="#EC008C" strokeWidth={2} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-64 flex items-center justify-center text-gray-400 text-sm">No sales data yet</div>
+          )}
+        </div>
+
+        <div className="bg-white rounded-xl p-6 shadow-sm">
+          <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <BarChart3 size={20} className="text-blue-500" /> Orders by Status
+          </h3>
+          {ordersByStatus.length > 0 ? (
+            <ResponsiveContainer width="100%" height={280}>
+              <PieChart>
+                <Pie data={ordersByStatus} dataKey="count" nameKey="status" cx="50%" cy="50%" outerRadius={90} label={({ status, count }) => `${status.replace("_", " ")}: ${count}`}>
+                  {ordersByStatus.map((entry, index) => (
+                    <Cell key={index} fill={STATUS_COLORS[entry.status] || "#999"} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-64 flex items-center justify-center text-gray-400 text-sm">No orders yet</div>
+          )}
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl p-6 shadow-sm">
           <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <TrendingUp size={20} className="text-primary-500" /> Sales Trend
+            <Package size={20} className="text-purple-500" /> Top Selling Categories
           </h3>
-          <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400">
-            <div className="text-center">
-              <BarChart3 size={48} className="mx-auto mb-2 text-primary-300" />
-              <p>Line chart - Sales over time</p>
-              <p className="text-sm">Connect backend for live data</p>
-            </div>
-          </div>
+          {topCategories.length > 0 ? (
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={topCategories} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis type="number" tick={{ fontSize: 10 }} />
+                <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 10 }} />
+                <Tooltip />
+                <Bar dataKey="productCount" fill="#8B5CF6" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-64 flex items-center justify-center text-gray-400 text-sm">No category data</div>
+          )}
         </div>
 
         <div className="bg-white rounded-xl p-6 shadow-sm">
           <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
             <DollarSign size={20} className="text-green-500" /> Revenue by District
           </h3>
-          <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400">
-            <div className="text-center">
-              <BarChart3 size={48} className="mx-auto mb-2 text-green-300" />
-              <p>Pie chart - Revenue breakdown</p>
-              <p className="text-sm">Connect backend for live data</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl p-6 shadow-sm">
-          <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <Package size={20} className="text-purple-500" /> Top Selling Categories
-          </h3>
-          <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400">
-            <div className="text-center">
-              <BarChart3 size={48} className="mx-auto mb-2 text-purple-300" />
-              <p>Bar graph - Category performance</p>
-              <p className="text-sm">Connect backend for live data</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl p-6 shadow-sm">
-          <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <Users size={20} className="text-amber-500" /> Order Status Overview
-          </h3>
-          <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400">
-            <div className="text-center">
-              <BarChart3 size={48} className="mx-auto mb-2 text-amber-300" />
-              <p>Donut chart - Order distribution</p>
-              <p className="text-sm">Connect backend for live data</p>
-            </div>
-          </div>
+          {revenueByDistrict.length > 0 ? (
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={revenueByDistrict}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis dataKey="district" tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} />
+                <Tooltip formatter={(value) => [`৳${value.toLocaleString()}`, "Revenue"]} />
+                <Bar dataKey="revenue" fill="#10B981" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-64 flex items-center justify-center text-gray-400 text-sm">No district data</div>
+          )}
         </div>
       </div>
     </div>

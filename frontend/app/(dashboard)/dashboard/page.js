@@ -1,110 +1,160 @@
 "use client";
-import { ShoppingCart, Package, Users, DollarSign, TrendingUp, Truck } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ShoppingCart, Package, Users, DollarSign, TrendingUp, Truck, Loader2 } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
-
-const recentOrders = [
-  { id: "BM-001", customer: "Rahim Uddin", total: 1250, status: "DELIVERED", date: "2026-06-18" },
-  { id: "BM-002", customer: "Karim Ahmed", total: 890, status: "OUT_FOR_DELIVERY", date: "2026-06-18" },
-  { id: "BM-003", customer: "Fatima Begum", total: 2100, status: "PROCESSING", date: "2026-06-17" },
-  { id: "BM-004", customer: "Sakib Hassan", total: 450, status: "PENDING", date: "2026-06-17" },
-  { id: "BM-005", customer: "Nadia Khan", total: 1780, status: "CONFIRMED", date: "2026-06-17" },
-];
+import api from "@/lib/axios";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 const statusColors = {
-  PENDING: "bg-yellow-50 text-yellow-700",
-  CONFIRMED: "bg-blue-50 text-blue-700",
-  PROCESSING: "bg-indigo-50 text-indigo-700",
-  SHIPPED: "bg-purple-50 text-purple-700",
-  OUT_FOR_DELIVERY: "bg-orange-50 text-orange-700",
+  PENDING: "bg-[#FFF8E1] text-[#D4A017]",
+  CONFIRMED: "bg-[#E8F4F8] text-[#00AFCC]",
+  PROCESSING: "bg-[#E8EDF5] text-[#2E4B8A]",
+  SHIPPED: "bg-[#F3E8FF] text-[#7C3AED]",
+  OUT_FOR_DELIVERY: "bg-[#FFF0F0] text-[#FF6B6B]",
   DELIVERED: "bg-green-50 text-green-700",
+  CANCELLED: "bg-red-50 text-red-500",
 };
+
+const STATUS_PIE_COLORS = ["#F59E0B", "#3B82F6", "#8B5CF6", "#6366F1", "#EC008C", "#10B981", "#EF4444"];
 
 export default function DashboardPage() {
   const { t } = useLanguage();
+  const [stats, setStats] = useState(null);
+  const [recentOrders, setRecentOrders] = useState([]);
+  const [salesTrend, setSalesTrend] = useState([]);
+  const [ordersByStatus, setOrdersByStatus] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const stats = [
-    { label: t.totalOrders, value: "1,234", icon: ShoppingCart, change: "+12%", color: "text-[#0067A0] bg-blue-50" },
-    { label: t.totalProducts, value: "567", icon: Package, change: "+5%", color: "text-green-600 bg-green-50" },
-    { label: t.totalUsers, value: "8,901", icon: Users, change: "+18%", color: "text-purple-600 bg-purple-50" },
-    { label: t.revenue, value: "৳5,67,890", icon: DollarSign, change: "+23%", color: "text-amber-600 bg-amber-50" },
+  useEffect(() => { fetchAll(); }, []);
+
+  const fetchAll = async () => {
+    try {
+      const [statsRes, ordersRes, salesRes, statusRes] = await Promise.all([
+        api.get("/analytics/stats"),
+        api.get("/analytics/recent-orders?limit=8"),
+        api.get("/analytics/sales-trend?days=14"),
+        api.get("/analytics/orders-by-status"),
+      ]);
+      setStats(statsRes.data.data || {});
+      setRecentOrders(ordersRes.data.data || []);
+      setSalesTrend(salesRes.data.data || []);
+      setOrdersByStatus(statusRes.data.data || []);
+    } catch (err) {
+      console.error(err);
+    } finally { setLoading(false); }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="animate-spin text-pink-500" size={32} />
+      </div>
+    );
+  }
+
+  const statCards = [
+    { label: t.totalOrders, value: stats?.totalOrders?.toLocaleString() || "0", icon: ShoppingCart, color: "text-[#EC008C] bg-[#FCE8F3]" },
+    { label: t.totalProducts, value: stats?.totalProducts?.toLocaleString() || "0", icon: Package, color: "text-[#00AFCC] bg-[#E8F4F8]" },
+    { label: t.totalUsers, value: stats?.totalUsers?.toLocaleString() || "0", icon: Users, color: "text-[#00215B] bg-[#E8EDF5]" },
+    { label: t.revenue, value: `৳${(stats?.totalRevenue || 0).toLocaleString()}`, icon: DollarSign, color: "text-[#D4A017] bg-[#FFF8E1]" },
   ];
 
   return (
     <div>
-      <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">{t.dashboard} {t.overview}</h1>
+      <h1 className="text-base sm:text-lg md:text-xl font-semibold text-[#00215B] mb-3">{t.dashboard} {t.overview}</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-        {stats.map((stat) => (
-          <div key={stat.label} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-4">
+        {statCards.map((stat) => (
+          <div key={stat.label} className="bg-white rounded-lg p-2.5 sm:p-3 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">{stat.label}</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{stat.value}</p>
-                <p className="text-xs text-green-600 mt-1 font-medium">{stat.change} this month</p>
+                <p className="text-[10px] sm:text-[11px] text-[#667085]">{stat.label}</p>
+                <p className="text-base sm:text-lg md:text-xl font-bold text-[#000000] mt-0.5">{stat.value}</p>
               </div>
-              <div className={`${stat.color} p-3 rounded-xl`}>
-                <stat.icon size={24} />
+              <div className={`${stat.color} p-2 sm:p-2.5 rounded-lg flex-shrink-0`}>
+                <stat.icon size={18} className="sm:w-5 sm:h-5" />
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <h3 className="font-semibold text-gray-900 text-sm mb-3">{t.analytics}</h3>
-          <div className="h-48 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400">
-            <div className="text-center">
-              <TrendingUp size={36} className="mx-auto mb-2 text-gray-300" />
-              <p className="text-sm">Sales chart will appear here</p>
-              <p className="text-sm mt-1">Connect to backend for live data</p>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-4">
+        <div className="bg-white rounded-lg p-3 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">
+          <h3 className="font-semibold text-[#000000] text-xs mb-2 flex items-center gap-1.5">
+            <TrendingUp size={14} className="text-pink-500" /> {t.analytics} (14 Days)
+          </h3>
+          {salesTrend.length > 0 ? (
+            <ResponsiveContainer width="100%" height={160}>
+              <LineChart data={salesTrend}>
+                <XAxis dataKey="date" tick={{ fontSize: 9 }} tickFormatter={(v) => v.slice(5)} />
+                <YAxis tick={{ fontSize: 9 }} />
+                <Tooltip formatter={(value) => [`৳${value.toLocaleString()}`, "Revenue"]} />
+                <Line type="monotone" dataKey="revenue" stroke="#EC008C" strokeWidth={2} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-32 sm:h-40 bg-[#F4F7FB] rounded-md flex items-center justify-center text-[#E5E7EB]">
+              <p className="text-[10px] sm:text-xs">No sales data yet</p>
             </div>
-          </div>
+          )}
         </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <h3 className="font-semibold text-gray-900 text-sm mb-3">{t.orders}</h3>
-          <div className="h-48 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400">
-            <div className="text-center">
-              <Truck size={36} className="mx-auto mb-2 text-gray-300" />
-              <p className="text-sm">Order status chart will appear here</p>
-              <p className="text-sm mt-1">Connect to backend for live data</p>
+        <div className="bg-white rounded-lg p-3 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">
+          <h3 className="font-semibold text-[#000000] text-xs mb-2 flex items-center gap-1.5">
+            <Truck size={14} className="text-blue-500" /> {t.orders}
+          </h3>
+          {ordersByStatus.length > 0 ? (
+            <ResponsiveContainer width="100%" height={160}>
+              <PieChart>
+                <Pie data={ordersByStatus} dataKey="count" nameKey="status" cx="50%" cy="50%" outerRadius={60} label={({ status, count }) => `${status.replace("_", " ")}: ${count}`}>
+                  {ordersByStatus.map((entry, index) => (
+                    <Cell key={index} fill={STATUS_PIE_COLORS[index % STATUS_PIE_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-32 sm:h-40 bg-[#F4F7FB] rounded-md flex items-center justify-center text-[#E5E7EB]">
+              <p className="text-[10px] sm:text-xs">No order data yet</p>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-        <div className="p-4 border-b border-gray-100">
-          <h3 className="font-semibold text-gray-900 text-sm">{t.recentOrders}</h3>
+      <div className="bg-white rounded-lg shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB] overflow-x-auto">
+        <div className="p-3 border-b border-[#E5E7EB]">
+          <h3 className="font-semibold text-[#000000] text-xs">{t.recentOrders}</h3>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="text-left text-sm text-gray-500 border-b border-gray-100">
-                <th className="px-4 py-3 font-medium">{t.orderId}</th>
-                <th className="px-4 py-3 font-medium">{t.myAccount}</th>
-                <th className="px-4 py-3 font-medium">{t.total}</th>
-                <th className="px-4 py-3 font-medium">{t.orderStatus}</th>
-                <th className="px-4 py-3 font-medium">{t.orders}</th>
+        <table className="w-full min-w-[400px]">
+          <thead>
+            <tr className="text-left text-[10px] sm:text-[11px] text-[#667085] border-b border-[#E5E7EB]">
+              <th className="px-3 py-2 font-medium">Order #</th>
+              <th className="px-3 py-2 font-medium">{t.myAccount}</th>
+              <th className="px-3 py-2 font-medium">{t.total}</th>
+              <th className="px-3 py-2 font-medium">{t.orderStatus}</th>
+              <th className="px-3 py-2 font-medium">Payment</th>
+            </tr>
+          </thead>
+          <tbody>
+            {recentOrders.map((order) => (
+              <tr key={order.id} className="border-b border-[#F4F7FB] hover:bg-[#F4F7FB] transition">
+                <td className="px-3 py-2 font-medium text-[#EC008C] text-[11px] sm:text-xs">{order.orderNumber || order.id.slice(0, 8)}</td>
+                <td className="px-3 py-2 text-[11px] sm:text-xs text-[#000000]">{order.customerName}</td>
+                <td className="px-3 py-2 text-[11px] sm:text-xs font-medium text-[#000000]">৳{order.total?.toLocaleString()}</td>
+                <td className="px-3 py-2">
+                  <span className={`px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] font-semibold ${statusColors[order.orderStatus] || ""}`}>
+                    {order.orderStatus?.replace("_", " ")}
+                  </span>
+                </td>
+                <td className="px-3 py-2 text-[10px] sm:text-[11px] text-[#667085]">{order.paymentMethod}</td>
               </tr>
-            </thead>
-            <tbody>
-              {recentOrders.map((order) => (
-                <tr key={order.id} className="border-b border-gray-50 hover:bg-gray-50 transition">
-                  <td className="px-4 py-3 font-medium text-[#0067A0] text-sm">{order.id}</td>
-                  <td className="px-4 py-3 text-sm text-gray-900">{order.customer}</td>
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">৳{order.total}</td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-1 rounded-lg text-xs font-semibold ${statusColors[order.status] || ""}`}>
-                      {order.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-500">{order.date}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+            {recentOrders.length === 0 && (
+              <tr><td colSpan={5} className="px-3 py-6 text-center text-xs text-gray-400">No orders yet</td></tr>
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );

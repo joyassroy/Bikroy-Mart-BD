@@ -41,53 +41,53 @@ export default function TrackOrderPage() {
   const getStatusIndex = (status) => statusSteps.findIndex((s) => s.key === status);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#F4F7FB]">
       <Header />
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
-        <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">{t.trackOrder}</h1>
+      <main className="max-w-[1200px] mx-auto px-3 sm:px-4 md:px-6 lg:px-10 py-3 sm:py-4">
+        <h1 className="text-base sm:text-lg md:text-xl font-semibold text-[#00215B] mb-2 sm:mb-3">{t.trackOrder}</h1>
 
-        <form onSubmit={handleSearch} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mb-4">
-          <div className="flex gap-3">
+        <form onSubmit={handleSearch} className="bg-white rounded-lg p-3 sm:p-4 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB] mb-3">
+          <div className="flex gap-2">
             <input type="text" placeholder={`${t.orderId} (e.g., BM-XXXX-XXXX)`} value={orderNumber} onChange={(e) => setOrderNumber(e.target.value)} className="input-field flex-1" />
-            <button type="submit" disabled={loading} className="btn-primary">
-              <Search size={18} />
-              {loading ? t.loading : t.trackButton}
+            <button type="submit" disabled={loading} className="btn-primary flex-shrink-0">
+              <Search size={14} />
+              <span className="hidden sm:inline">{loading ? t.loading : t.trackButton}</span>
             </button>
           </div>
-          {error && <div className="alert-error mt-4">{error}</div>}
+          {error && <div className="alert-error mt-2.5">{error}</div>}
         </form>
 
         {order && (
-          <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-            <div className="flex justify-between items-start mb-4">
+          <div className="bg-white rounded-lg p-3 sm:p-4 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">
+            <div className="flex justify-between items-start mb-3">
               <div>
-                <h2 className="font-semibold text-gray-900 text-base">Order #{order.orderNumber}</h2>
-                <p className="text-sm text-gray-500 mt-1">Placed on {new Date(order.createdAt).toLocaleDateString("bn-BD")}</p>
+                <h2 className="font-semibold text-[#000000] text-xs sm:text-sm">Order #{order.orderNumber}</h2>
+                <p className="text-[10px] sm:text-[11px] text-[#667085] mt-0.5">Placed on {new Date(order.createdAt).toLocaleDateString("bn-BD")}</p>
               </div>
-              <span className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${
+              <span className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md text-[9px] sm:text-[10px] font-semibold ${
                 order.orderStatus === "DELIVERED" ? "bg-green-50 text-green-700" :
-                order.orderStatus === "CANCELLED" ? "bg-red-50 text-red-700" :
-                "bg-blue-50 text-blue-700"
+                order.orderStatus === "CANCELLED" ? "bg-[#FFF0F0] text-[#FF6B6B]" :
+                "bg-[#E8F4F8] text-[#00AFCC]"
               }`}>
                 {order.orderStatus}
               </span>
             </div>
 
-            <div className="space-y-3 mb-4">
+            <div className="space-y-2 sm:space-y-2.5 mb-3">
               {statusSteps.map((step, index) => {
                 const currentIndex = getStatusIndex(order.orderStatus);
                 const isCompleted = index <= currentIndex;
                 const isCurrent = index === currentIndex;
                 return (
-                  <div key={step.key} className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      isCompleted ? "bg-[#0067A0] text-white" : "bg-gray-100 text-gray-400"
-                    } ${isCurrent ? "ring-4 ring-blue-100" : ""}`}>
-                      <step.icon size={18} />
+                  <div key={step.key} className="flex items-center gap-2 sm:gap-2.5">
+                    <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      isCompleted ? "bg-[#EC008C] text-white" : "bg-[#F4F7FB] text-[#E5E7EB]"
+                    } ${isCurrent ? "ring-2 sm:ring-3 ring-[#FCE8F3]" : ""}`}>
+                      <step.icon size={12} className="sm:w-4 sm:h-4" />
                     </div>
                     <div>
-                      <p className={`font-medium text-sm ${isCompleted ? "text-gray-900" : "text-gray-400"}`}>{step.label}</p>
-                      {isCurrent && <p className="text-sm text-[#0067A0] font-medium">{t.currentStatus}</p>}
+                      <p className={`font-medium text-[11px] sm:text-xs ${isCompleted ? "text-[#000000]" : "text-[#E5E7EB]"}`}>{step.label}</p>
+                      {isCurrent && <p className="text-[10px] sm:text-[11px] text-[#EC008C] font-semibold">{t.currentStatus}</p>}
                     </div>
                   </div>
                 );
@@ -95,12 +95,12 @@ export default function TrackOrderPage() {
             </div>
 
             {order.rider && (
-              <div className="p-3 bg-blue-50 rounded-xl mb-4">
-                <h3 className="font-medium text-gray-900 mb-1 text-sm">{t.riderDashboard}</h3>
-                <p className="text-sm text-gray-600">Name: {order.rider.user?.name}</p>
-                <p className="text-sm text-gray-600">Phone: {order.rider.user?.phone}</p>
+              <div className="p-2.5 bg-[#E8F4F8] rounded-lg mb-3">
+                <h3 className="font-medium text-[#000000] mb-0.5 text-[11px] sm:text-xs">{t.riderDashboard}</h3>
+                <p className="text-[10px] sm:text-[11px] text-[#5A6C91]">Name: {order.rider.user?.name}</p>
+                <p className="text-[10px] sm:text-[11px] text-[#5A6C91]">Phone: {order.rider.user?.phone}</p>
                 {order.rider.currentLat && (
-                  <a href={`https://www.openstreetmap.org/?mlat=${order.rider.currentLat}&mlon=${order.rider.currentLng}#map=15/${order.rider.currentLat}/${order.rider.currentLng}`} target="_blank" rel="noopener noreferrer" className="text-[#0067A0] text-base hover:underline mt-2 inline-block font-medium">
+                  <a href={`https://www.openstreetmap.org/?mlat=${order.rider.currentLat}&mlon=${order.rider.currentLng}#map=15/${order.rider.currentLat}/${order.rider.currentLng}`} target="_blank" rel="noopener noreferrer" className="text-[#00AFCC] text-[10px] sm:text-[11px] hover:underline mt-1.5 inline-block font-semibold">
                     {t.viewOnMap}
                   </a>
                 )}
@@ -108,19 +108,19 @@ export default function TrackOrderPage() {
             )}
 
             {order.items && (
-              <div className="border-t border-gray-200 pt-3">
-                <h3 className="font-medium text-gray-900 mb-2 text-sm">{t.items}</h3>
-                <div className="space-y-2">
+              <div className="border-t border-[#E5E7EB] pt-2.5">
+                <h3 className="font-medium text-[#000000] mb-1.5 text-[11px] sm:text-xs">{t.items}</h3>
+                <div className="space-y-1 sm:space-y-1.5">
                   {order.items.map((item) => (
-                    <div key={item.id} className="flex justify-between text-sm">
-                      <span className="text-gray-500">{item.product?.name} x {item.quantity}</span>
-                      <span className="font-medium text-gray-900">৳{item.totalPrice}</span>
+                    <div key={item.id} className="flex justify-between text-[11px] sm:text-xs">
+                      <span className="text-[#667085] truncate mr-2">{item.product?.name} x {item.quantity}</span>
+                      <span className="font-medium text-[#000000] whitespace-nowrap">৳{item.totalPrice}</span>
                     </div>
                   ))}
                 </div>
-                <div className="flex justify-between font-bold text-lg mt-3 pt-3 border-t border-gray-200">
-                  <span className="text-gray-900">{t.total}</span>
-                  <span className="text-[#0067A0]">৳{order.total}</span>
+                <div className="flex justify-between font-bold text-xs sm:text-sm mt-2 pt-2 border-t border-[#E5E7EB]">
+                  <span className="text-[#000000]">{t.total}</span>
+                  <span className="text-[#000000]">৳{order.total}</span>
                 </div>
               </div>
             )}

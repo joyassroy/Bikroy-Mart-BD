@@ -12,61 +12,59 @@ export default function ManagerDashboard() {
   const { t } = useLanguage();
 
   const stats = [
-    { label: t.totalProducts, value: "45", icon: Package, color: "text-[#0067A0] bg-blue-50" },
-    { label: t.localOrders, value: "123", icon: ShoppingCart, color: "text-green-600 bg-green-50" },
-    { label: t.pendingDeliveries, value: "12", icon: Clock, color: "text-amber-600 bg-amber-50" },
-    { label: t.completedToday, value: "98", icon: CheckCircle, color: "text-purple-600 bg-purple-50" },
+    { label: t.totalProducts, value: "45", icon: Package, color: "text-[#00AFCC] bg-[#E8F4F8]" },
+    { label: t.localOrders, value: "123", icon: ShoppingCart, color: "text-[#EC008C] bg-[#FCE8F3]" },
+    { label: t.pendingDeliveries, value: "12", icon: Clock, color: "text-[#D4A017] bg-[#FFF8E1]" },
+    { label: t.completedToday, value: "98", icon: CheckCircle, color: "text-[#00215B] bg-[#E8EDF5]" },
   ];
 
   return (
     <div>
-      <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">{t.managerDashboard}</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+      <h1 className="text-base sm:text-lg md:text-xl font-semibold text-[#00215B] mb-3">{t.managerDashboard}</h1>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-4">
         {stats.map((stat) => (
-          <div key={stat.label} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+          <div key={stat.label} className="bg-white rounded-lg p-2.5 sm:p-3 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">{stat.label}</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{stat.value}</p>
+                <p className="text-[10px] sm:text-[11px] text-[#667085]">{stat.label}</p>
+                <p className="text-base sm:text-lg md:text-xl font-bold text-[#000000] mt-0.5">{stat.value}</p>
               </div>
-              <div className={`${stat.color} p-3 rounded-xl`}>
-                <stat.icon size={24} />
+              <div className={`${stat.color} p-2 sm:p-2.5 rounded-lg flex-shrink-0`}>
+                <stat.icon size={18} className="sm:w-5 sm:h-5" />
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-        <div className="p-4 border-b border-gray-100">
-          <h3 className="font-semibold text-gray-900 text-sm">{t.pendingDeliveries}</h3>
+      <div className="bg-white rounded-lg shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB] overflow-x-auto">
+        <div className="p-3 border-b border-[#E5E7EB]">
+          <h3 className="font-semibold text-[#000000] text-xs">{t.pendingDeliveries}</h3>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="text-left text-sm text-gray-500 border-b border-gray-100">
-                <th className="px-4 py-3 font-medium">{t.orderId}</th>
-                <th className="px-4 py-3 font-medium">{t.myAccount}</th>
-                <th className="px-4 py-3 font-medium">{t.items}</th>
-                <th className="px-4 py-3 font-medium">{t.total}</th>
-                <th className="px-4 py-3 font-medium">{t.orderStatus}</th>
+        <table className="w-full min-w-[380px]">
+          <thead>
+            <tr className="text-left text-[10px] sm:text-[11px] text-[#667085] border-b border-[#E5E7EB]">
+              <th className="px-3 py-2 font-medium">{t.orderId}</th>
+              <th className="px-3 py-2 font-medium">{t.myAccount}</th>
+              <th className="px-3 py-2 font-medium">{t.items}</th>
+              <th className="px-3 py-2 font-medium">{t.total}</th>
+              <th className="px-3 py-2 font-medium">{t.orderStatus}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {pendingOrders.map((order) => (
+              <tr key={order.id} className="border-b border-[#F4F7FB] hover:bg-[#F4F7FB] transition">
+                <td className="px-3 py-2 font-medium text-[#EC008C] text-[11px] sm:text-xs">{order.id}</td>
+                <td className="px-3 py-2 text-[11px] sm:text-xs text-[#000000]">{order.customer}</td>
+                <td className="px-3 py-2 text-[11px] sm:text-xs text-[#000000]">{order.items}</td>
+                <td className="px-3 py-2 text-[11px] sm:text-xs font-medium text-[#000000]">৳{order.total}</td>
+                <td className="px-3 py-2">
+                  <button className="btn-primary text-[10px] sm:text-[11px] px-2 sm:px-2.5 py-1">{t.assignRider}</button>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {pendingOrders.map((order) => (
-                <tr key={order.id} className="border-b border-gray-50 hover:bg-gray-50 transition">
-                  <td className="px-4 py-3 font-medium text-[#0067A0] text-sm">{order.id}</td>
-                  <td className="px-4 py-3 text-sm text-gray-900">{order.customer}</td>
-                  <td className="px-4 py-3 text-sm text-gray-900">{order.items}</td>
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">৳{order.total}</td>
-                  <td className="px-4 py-3">
-                    <button className="btn-primary text-xs px-3 py-1.5">{t.assignRider}</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

@@ -1,38 +1,63 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ProductCard from "@/components/product/ProductCard";
 import { useLanguage } from "@/i18n/LanguageContext";
+import api from "@/lib/axios";
 
 export default function ProductTabs() {
-  const [activeTab, setActiveTab] = useState("trending");
+  const [activeTab, setActiveTab] = useState("featured");
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const { t } = useLanguage();
 
   const tabs = [
-    { label: t.flashDeals, value: "trending" },
-    { label: t.viewAllDeals, value: "deals" },
-    { label: t.newest, value: "new" },
+    { label: t.featured, value: "featured" },
+    { label: t.newest, value: "newest" },
+    { label: t.priceLowHigh, value: "price-low" },
+    { label: t.priceHighLow, value: "price-high" },
   ];
 
-  const sampleProducts = [
-    { id: "1", name: "Brooke Bond Taaza Tea 400gm", price: 250, images: ["🍵"], deliveryTime: "1-2 hours" },
-    { id: "2", name: "ACI Pure Salt 1kg", price: 42, images: ["🧂"], deliveryTime: "1-2 hours" },
-    { id: "3", name: "Pran Muri 250gm", price: 40, images: ["🍘"], deliveryTime: "1-2 hours" },
-    { id: "4", name: "Wheel Laundry Soap 125gm", price: 30, dealPrice: 29, images: ["🧼"], deliveryTime: "1-2 hours", badge: "OFF" },
-    { id: "5", name: "Vim Dish Wash Bar 300gm", price: 40, images: ["🫧"], deliveryTime: "1-2 hours" },
-    { id: "6", name: "Dano Daily Pusti Milk 500gm", price: 400, dealPrice: 380, images: ["🥛"], deliveryTime: "1-2 hours", badge: "5% OFF" },
-  ];
+  useEffect(() => {
+    fetchProducts();
+  }, [activeTab]);
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      let url = "/products?limit=12";
+      if (activeTab === "featured") {
+        url = "/products/featured";
+      } else {
+        url += `&sort=${activeTab}`;
+      }
+      const res = await api.get(url);
+      setProducts(res.data.data || []);
+    } catch (err) {
+      console.error(err);
+      setProducts([
+        { id: "1", name: "Brooke Bond Taaza Tea 400gm", price: 250, images: ["🍵"], deliveryTime: "1-2 hours" },
+        { id: "2", name: "ACI Pure Salt 1kg", price: 42, images: ["🧂"], deliveryTime: "1-2 hours" },
+        { id: "3", name: "Pran Muri 250gm", price: 40, images: ["🍘"], deliveryTime: "1-2 hours" },
+        { id: "4", name: "Wheel Laundry Soap 125gm", price: 30, dealPrice: 29, images: ["🧼"], deliveryTime: "1-2 hours", badge: "OFF" },
+        { id: "5", name: "Vim Dish Wash Bar 300gm", price: 40, images: ["🫧"], deliveryTime: "1-2 hours" },
+        { id: "6", name: "Dano Daily Pusti Milk 500gm", price: 400, dealPrice: 380, images: ["🥛"], deliveryTime: "1-2 hours", badge: "5% OFF" },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-      <div className="flex items-center gap-4 mb-4 border-b border-gray-200">
+    <section className="max-w-[1200px] mx-auto mt-2 md:mt-4 pb-20 lg:pb-10">
+      <div className="flex items-center gap-3 sm:gap-4 mb-2 md:mb-3 border-b border-[#E5E7EB] overflow-x-auto px-2 sm:px-0">
         {tabs.map((tab) => (
           <button
             key={tab.value}
             onClick={() => setActiveTab(tab.value)}
-            className={`pb-4 px-2 text-base font-semibold border-b-3 transition ${
+            className={`pb-2 sm:pb-2.5 px-1 text-[11px] sm:text-xs font-semibold border-b-2 transition whitespace-nowrap flex-shrink-0 ${
               activeTab === tab.value
-                ? "border-[#0067A0] text-[#0067A0]"
-                : "border-transparent text-gray-500 hover:text-gray-700"
+                ? "border-[#EC008C] text-[#EC008C]"
+                : "border-transparent text-[#667085] hover:text-[#364152]"
             }`}
           >
             {tab.label}
@@ -40,11 +65,19 @@ export default function ProductTabs() {
         ))}
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
-        {sampleProducts.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
+      {loading ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-2.5 md:gap-3 px-2 sm:px-0">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="bg-[#E5E7EB] rounded-lg h-40 sm:h-48 animate-pulse"></div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-2.5 md:gap-3 px-2 sm:px-0">
+          {products.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      )}
     </section>
   );
 }

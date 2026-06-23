@@ -6,57 +6,62 @@ export default function Footer() {
   const { t } = useLanguage();
 
   return (
-    <footer className="bg-gray-900 text-gray-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div>
-            <h3 className="text-lg font-bold text-white mb-3">
-              Bikroy<span className="text-blue-400">-Mart</span>-BD
+    <footer className="bg-[#00215B] text-white mt-8 md:mt-0 pb-16 lg:pb-0">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-5 sm:pb-8">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:gap-5 gap-6">
+          {/* Brand */}
+          <div className="w-full lg:max-w-[280px]">
+            <h3 className="text-base sm:text-lg font-bold text-white mb-2 sm:mb-3">
+              Bikroy<span className="text-[#EC008C]">-Mart</span>-BD
             </h3>
-            <p className="text-sm text-gray-400 mb-3 leading-5">
+            <p className="text-[11px] sm:text-xs text-white/70 mb-3 leading-4 sm:leading-5">
               {t.aboutUsDesc}
             </p>
             <div className="flex gap-2">
-              <a href="#" className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-blue-500 transition text-sm font-semibold" aria-label="Facebook">f</a>
-              <a href="#" className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-blue-500 transition text-sm font-semibold" aria-label="LinkedIn">in</a>
-              <a href="#" className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-blue-500 transition text-sm font-semibold" aria-label="YouTube">yt</a>
+              <a href="#" className="w-7 h-7 sm:w-8 sm:h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#EC008C] transition text-[10px] sm:text-xs font-semibold" aria-label="Facebook">f</a>
+              <a href="#" className="w-7 h-7 sm:w-8 sm:h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#EC008C] transition text-[10px] sm:text-xs font-semibold" aria-label="LinkedIn">in</a>
+              <a href="#" className="w-7 h-7 sm:w-8 sm:h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#EC008C] transition text-[10px] sm:text-xs font-semibold" aria-label="YouTube">yt</a>
             </div>
           </div>
 
-          <div>
-            <h4 className="text-white font-semibold mb-3">{t.quickLinks}</h4>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/shop" className="hover:text-blue-400 transition">{t.shop}</Link></li>
-              <li><Link href="/about" className="hover:text-blue-400 transition">{t.aboutUs}</Link></li>
-              <li><Link href="/contact" className="hover:text-blue-400 transition">{t.contact}</Link></li>
-              <li><Link href="/store-locator" className="hover:text-blue-400 transition">{t.storeLocator}</Link></li>
+          {/* Quick Links */}
+          <div className="lg:max-w-[150px]">
+            <h4 className="text-white font-semibold mb-2 sm:mb-3 text-xs">{t.quickLinks}</h4>
+            <ul className="space-y-1.5 sm:space-y-2 text-[11px] sm:text-xs">
+              <li><Link href="/shop" className="hover:text-[#EC008C] transition">{t.shop}</Link></li>
+              <li><Link href="/about" className="hover:text-[#EC008C] transition">{t.aboutUs}</Link></li>
+              <li><Link href="/contact" className="hover:text-[#EC008C] transition">{t.contact}</Link></li>
+              <li><Link href="/store-locator" className="hover:text-[#EC008C] transition">{t.storeLocator}</Link></li>
             </ul>
           </div>
 
-          <div>
-            <h4 className="text-white font-semibold mb-3">{t.customerSupport}</h4>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/track-order" className="hover:text-blue-400 transition">{t.trackOrder}</Link></li>
-              <li><Link href="/privacy-policy" className="hover:text-blue-400 transition">{t.privacyPolicy}</Link></li>
-              <li><Link href="/terms" className="hover:text-blue-400 transition">{t.termsOfService}</Link></li>
-              <li><Link href="/return-policy" className="hover:text-blue-400 transition">{t.refundPolicy}</Link></li>
+          {/* Customer Support */}
+          <div className="lg:max-w-[150px]">
+            <h4 className="text-white font-semibold mb-2 sm:mb-3 text-xs">{t.customerSupport}</h4>
+            <ul className="space-y-1.5 sm:space-y-2 text-[11px] sm:text-xs">
+              <li><Link href="/track-order" className="hover:text-[#EC008C] transition">{t.trackOrder}</Link></li>
+              <li><Link href="/privacy-policy" className="hover:text-[#EC008C] transition">{t.privacyPolicy}</Link></li>
+              <li><Link href="/terms" className="hover:text-[#EC008C] transition">{t.termsOfService}</Link></li>
+              <li><Link href="/return-policy" className="hover:text-[#EC008C] transition">{t.refundPolicy}</Link></li>
             </ul>
           </div>
 
-          <div>
-            <h4 className="text-white font-semibold mb-3">{t.contactInfo}</h4>
-            <ul className="space-y-2 text-sm">
-              <li className="flex items-center gap-2">📞 16469 (8am-10pm)</li>
-              <li className="flex items-center gap-2">📧 info@bikroymart.com</li>
-              <li className="flex items-center gap-2">📍 Dhaka, Bangladesh</li>
+          {/* Contact */}
+          <div className="lg:max-w-[260px]">
+            <h4 className="text-white font-semibold mb-2 sm:mb-3 text-xs">{t.contactInfo}</h4>
+            <ul className="space-y-1.5 sm:space-y-2 text-[11px] sm:text-xs">
+              <li className="flex items-center gap-1.5">📞 16469 (8am-10pm)</li>
+              <li className="flex items-center gap-1.5">📧 info@bikroymart.com</li>
+              <li className="flex items-center gap-1.5">📍 Dhaka, Bangladesh</li>
             </ul>
           </div>
         </div>
       </div>
 
-      <div className="border-t border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 text-center text-sm text-gray-400">
-          © 2026 Bikroy-Mart-BD. {t.allRightsReserved}
+      <div className="border-t border-white/10">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-2.5 sm:py-3 flex flex-col sm:items-center lg:flex-row gap-1 text-center sm:text-center text-[11px] sm:text-xs text-white/60">
+          <span>© 2026 Bikroy-Mart-BD.</span>
+          <span>{t.allRightsReserved}</span>
         </div>
       </div>
     </footer>

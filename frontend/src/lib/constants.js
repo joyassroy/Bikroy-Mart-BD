@@ -29,11 +29,17 @@ export const PAYMENT_METHODS = [
 ];
 
 export const COLORS = {
-  primary: { 50: "#e6f2fa", 100: "#b3d9ed", 200: "#80c0e0", 300: "#4da7d3", 400: "#2693c9", 500: "#0067A0", 600: "#005090", 700: "#004070", 800: "#003050", 900: "#002030" },
-  accent: { 500: "#F59E0B", 600: "#D97706" },
-  charcoal: "#323A3E",
-  slate: "#516069",
-  error: "#C30000",
-  errorBg: "#FFEAEA",
-  surface: "#F1F4F6",
+  primary: { 50: "#E8EDF5", 100: "#C5D1E8", 200: "#8FA3D1", 300: "#5975BA", 400: "#2E4B8A", 500: "#00215B", 600: "#001A4A", 700: "#00143A", 800: "#000E2A", 900: "#00081A" },
+  cta: { 50: "#FCE8F3", 100: "#F9B0DB", 200: "#F06EB5", 300: "#E85AA0", 400: "#EC008C", 500: "#D60071", 600: "#B8005C", 700: "#9A004D", 800: "#7C003E", 900: "#5E002F" },
+  cyan: { 50: "#E8F4F8", 100: "#B3E3ED", 200: "#80D3E0", 300: "#4DC3D3", 400: "#26B3C9", 500: "#00AFCC", 600: "#009AB5", 700: "#00859E", 800: "#007087", 900: "#005B70" },
+  navy: "#00215B",
+  magenta: "#EC008C",
+  charcoal: "#364152",
+  slate: "#5A6C91",
+  muted: "#667085",
+  border: "#E5E7EB",
+  surface: "#F4F7FB",
+  surfaceLight: "#F9FAFB",
+  error: "#FF6B6B",
+  errorBg: "#FFF0F0",
 };

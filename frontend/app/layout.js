@@ -1,13 +1,13 @@
 import { Providers } from "@/helper/providers";
 import { LanguageProvider } from "@/i18n/LanguageContext";
-import { Inter } from "next/font/google";
+import { Nunito_Sans } from "next/font/google";
 import "./globals.css";
 import ToasterClient from "./ToasterClient";
 
-const inter = Inter({
+const nunito = Nunito_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
-  weight: ["400", "500", "600", "700"],
+  variable: "--font-nunito",
+  weight: ["400", "600", "700"],
   display: "swap",
 });
 
@@ -18,6 +18,7 @@ export const metadata = {
   },
   description: "Bikroy-Mart-BD - Your trusted online grocery store. Fresh products, 60-minute delivery, and the best prices in Bangladesh.",
   keywords: ["grocery", "online shopping", "bangladesh", "Bikroy-Mart", "fresh products", "delivery"],
+  viewport: "width=device-width, initial-scale=1, maximum-scale=5",
   openGraph: {
     title: "Bikroy-Mart-BD - Best Online Grocery Shopping in Bangladesh",
     description: "Fresh groceries delivered to your doorstep in 60 minutes.",
@@ -30,7 +31,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" data-scroll-behavior="smooth">
-      <body className={`${inter.variable} antialiased`}>
+      <body className={`${nunito.variable} antialiased`}>
         <Providers>
           <LanguageProvider>
             {children}

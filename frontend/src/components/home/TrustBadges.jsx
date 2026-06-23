@@ -6,23 +6,23 @@ export default function TrustBadges() {
   const { t } = useLanguage();
 
   const badges = [
-    { icon: Clock, title: t.fastDelivery, desc: t.fastDeliveryDesc, color: "text-[#0067A0] bg-blue-50" },
-    { icon: Shield, title: t.qualityAssurance, desc: t.qualityAssuranceDesc, color: "text-green-600 bg-green-50" },
-    { icon: Headphones, title: t.customerSupport, desc: t.customerSupportDesc, color: "text-purple-600 bg-purple-50" },
-    { icon: CreditCard, title: t.securePayment, desc: t.securePaymentDesc, color: "text-amber-600 bg-amber-50" },
+    { icon: Clock, title: t.fastDelivery, desc: t.fastDeliveryDesc, color: "text-[#00AFCC] bg-[#E8F4F8]" },
+    { icon: Shield, title: t.qualityAssurance, desc: t.qualityAssuranceDesc, color: "text-[#EC008C] bg-[#FCE8F3]" },
+    { icon: Headphones, title: t.customerSupport, desc: t.customerSupportDesc, color: "text-[#00215B] bg-[#E8EDF5]" },
+    { icon: CreditCard, title: t.securePayment, desc: t.securePaymentDesc, color: "text-[#EC008C] bg-[#FCE8F3]" },
   ];
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+    <section className="max-w-[1200px] mx-auto mt-2 md:mt-4 hidden md:block">
+      <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-[#F1F1F1] bg-white border border-[#E5E7EB] rounded-lg overflow-hidden">
         {badges.map((badge, i) => (
-          <div key={i} className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl p-3 shadow-sm hover:shadow-md transition">
-            <div className={`${badge.color} p-2 rounded-full flex-shrink-0`}>
-              <badge.icon size={24} />
+          <div key={i} className="flex items-center gap-2.5 p-3 lg:p-4">
+            <div className={`${badge.color} p-1.5 md:p-2 rounded-full flex-shrink-0`}>
+              <badge.icon size={18} className="md:w-5 md:h-5" />
             </div>
-            <div>
-              <h3 className="font-semibold text-gray-900 text-base">{badge.title}</h3>
-              <p className="text-sm text-gray-500">{badge.desc}</p>
+            <div className="min-w-0">
+              <h3 className="font-semibold text-[#181717] text-[11px] md:text-xs leading-tight">{badge.title}</h3>
+              <p className="text-[10px] md:text-[11px] text-[#667085] leading-tight mt-0.5">{badge.desc}</p>
             </div>
           </div>
         ))}

@@ -3,70 +3,127 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
+import api from "@/lib/axios";
 
 export default function HeroBanner() {
   const [current, setCurrent] = useState(0);
+  const [banners, setBanners] = useState([]);
+  const [loading, setLoading] = useState(true);
   const { t } = useLanguage();
 
-  const banners = [
-    { id: 1, title: t.home === "হোম" ? "Bikroy-Mart-BD-তে স্বাগতম" : "Welcome to Bikroy-Mart-BD", subtitle: t.home === "হোম" ? "৬০ মিনিটে তাজা মাল ডেলিভারি" : "Fresh groceries delivered in 60 minutes", bg: "from-[#0067A0] to-[#003050]" },
-    { id: 2, title: t.home === "হোম" ? "দৈনিক তাজা শাকসবজি" : "Daily Fresh Vegetables", subtitle: t.home === "হোম" ? "খামার থেকে সরাসরি আপনার রান্নাঘরে" : "Farm to table, straight to your kitchen", bg: "from-[#005090] to-[##004070]" },
-    { id: 3, title: t.home === "হোম" ? "মেগা সেভিংস সপ্তাহ" : "Mega Savings Week", subtitle: t.home === "হোম" ? "দৈনিক প্রয়োজনীয় জিনিসে ৫০% পর্যন্ত ছাড়" : "Up to 50% off on daily essentials", bg: "from-[#323A3E] to-[#111827]" },
-  ];
-
   useEffect(() => {
-    const timer = setInterval(() => setCurrent((prev) => (prev + 1) % banners.length), 5000);
-    return () => clearInterval(timer);
+    fetchBanners();
   }, []);
 
+  useEffect(() => {
+    if (banners.length === 0) return;
+    const timer = setInterval(() => setCurrent((prev) => (prev + 1) % banners.length), 5000);
+    return () => clearInterval(timer);
+  }, [banners.length]);
+
+  const fetchBanners = async () => {
+    try {
+      const res = await api.get("/banners?position=hero");
+      const data = res.data.data || [];
+      if (data.length > 0) {
+        setBanners(data);
+      } else {
+        setBanners([
+          { id: "1", title: t.home === "হোম" ? "Bikroy-Mart-BD-তে স্বাগতম" : "Welcome to Bikroy-Mart-BD", subtitle: t.home === "হোম" ? "৬০ মিনিটে তাজা মাল ডেলিভারি" : "Fresh groceries delivered in 60 minutes", bgColor: "from-[#00215B] to-[#001A4A]" },
+          { id: "2", title: t.home === "হোম" ? "দৈনিক তাজা শাকসবজি" : "Daily Fresh Vegetables", subtitle: t.home === "হোম" ? "খামার থেকে সরাসরি আপনার রান্নাঘরে" : "Farm to table, straight to your kitchen", bgColor: "from-[#EC008C] to-[#D60071]" },
+          { id: "3", title: t.home === "হোম" ? "মেগা সেভিংস সপ্তাহ" : "Mega Savings Week", subtitle: t.home === "হোম" ? "দৈনিক প্রয়োজনীয় জিনিসে ৫০% পর্যন্ত ছাড়" : "Up to 50% off on daily essentials", bgColor: "from-[#00AFCC] to-[#009AB5]" },
+        ]);
+      }
+    } catch (err) {
+      console.error(err);
+      setBanners([
+        { id: "1", title: t.home === "হোম" ? "Bikroy-Mart-BD-তে স্বাগতম" : "Welcome to Bikroy-Mart-BD", subtitle: t.home === "হোম" ? "৬০ মিনিটে তাজা মাল ডেলিভারি" : "Fresh groceries delivered in 60 minutes", bgColor: "from-[#00215B] to-[#001A4A]" },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <section className="overflow-hidden">
+        <div className="max-w-[1200px] mx-auto md:mt-4 md:gap-5">
+          <div className="w-full bg-[#E5E7EB] animate-pulse rounded-lg" style={{ aspectRatio: "3/1" }}></div>
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <section className="relative bg-gray-100 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 md:py-4">
-        <div className="relative rounded-2xl overflow-hidden">
-          {banners.map((banner, index) => (
-            <div
-              key={banner.id}
-              className={`absolute inset-0 bg-gradient-to-r ${banner.bg} transition-opacity duration-500 ${
-                index === current ? "opacity-100 z-10" : "opacity-0 z-0"
-              }`}
-            >
-              <div className="flex items-center justify-center h-[200px] md:h-[320px] text-white text-center px-6">
-                <div>
-                  <h1 className="text-2xl md:text-4xl font-bold mb-2">{banner.title}</h1>
-                  <p className="text-base md:text-xl opacity-90 mb-4">{banner.subtitle}</p>
-                  <Link href="/shop" className="inline-block bg-white text-[#0067A0] px-6 py-2.5 rounded-lg font-semibold hover:bg-gray-100 transition text-base">
-                    {t.shopNow}
-                  </Link>
-                </div>
-              </div>
-            </div>
-          ))}
+    <section className="overflow-hidden">
+      <div className="max-w-[1200px] mx-auto md:mt-4 md:gap-5">
+        <div className="relative w-full overflow-hidden" style={{ aspectRatio: "3/1" }}>
+          {banners.map((banner, index) => {
+            const bgClass = banner.bgColor || "from-[#00215B] to-[#001A4A]";
+            return (
+              <Link
+                key={banner.id}
+                href={banner.link || "/shop"}
+                className={`absolute inset-0 transition-opacity duration-500 ${
+                  index === current ? "opacity-100 z-10" : "opacity-0 z-0"
+                }`}
+              >
+                {banner.image ? (
+                  <img
+                    src={banner.image}
+                    alt={banner.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className={`w-full h-full bg-gradient-to-r ${bgClass}`}>
+                    <div className="flex items-center justify-center h-full text-white text-center px-5 md:px-10">
+                      <div>
+                        <h1 className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-1.5 md:mb-2 leading-tight">{banner.title}</h1>
+                        {banner.subtitle && (
+                          <p className="text-[11px] sm:text-sm md:text-base opacity-90 mb-3 md:mb-4">{banner.subtitle}</p>
+                        )}
+                        <span className="inline-block bg-[#EC008C] text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-md font-semibold hover:bg-[#D60071] transition text-[11px] sm:text-xs shadow-[rgba(0,0,0,0.1)_0px_2px_4px_0px]">
+                          {t.shopNow}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </Link>
+            );
+          })}
 
-          <button
-            onClick={() => setCurrent((prev) => (prev - 1 + banners.length) % banners.length)}
-            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 w-12 h-12 rounded-full flex items-center justify-center shadow-lg z-20 transition"
-            aria-label="Previous"
-          >
-            <ChevronLeft size={24} />
-          </button>
-          <button
-            onClick={() => setCurrent((prev) => (prev + 1) % banners.length)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 w-12 h-12 rounded-full flex items-center justify-center shadow-lg z-20 transition"
-            aria-label="Next"
-          >
-            <ChevronRight size={24} />
-          </button>
-
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-20">
-            {banners.map((_, index) => (
+          {banners.length > 1 && (
+            <>
               <button
-                key={index}
-                onClick={() => setCurrent(index)}
-                className={`w-3 h-3 rounded-full transition ${index === current ? "bg-white" : "bg-white/50"}`}
-                aria-label={`Slide ${index + 1}`}
-              />
-            ))}
-          </div>
+                onClick={() => setCurrent((prev) => (prev - 1 + banners.length) % banners.length)}
+                className="hidden sm:flex absolute left-2 md:left-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-[#000000] w-8 h-8 md:w-9 md:h-9 rounded-full items-center justify-center shadow-[rgba(0,0,0,0.1)_0px_2px_4px_0px] z-20 transition"
+                aria-label="Previous"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <button
+                onClick={() => setCurrent((prev) => (prev + 1) % banners.length)}
+                className="hidden sm:flex absolute right-2 md:right-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-[#000000] w-8 h-8 md:w-9 md:h-9 rounded-full items-center justify-center shadow-[rgba(0,0,0,0.1)_0px_2px_4px_0px] z-20 transition"
+                aria-label="Next"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </>
+          )}
+
+          {banners.length > 1 && (
+            <div className="absolute bottom-2.5 md:bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
+              {banners.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrent(index)}
+                  className={`h-1.5 rounded-full transition-all ${index === current ? "bg-[#EC008C] w-3.5" : "bg-white/60 w-1.5"}`}
+                  aria-label={`Slide ${index + 1}`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </section>

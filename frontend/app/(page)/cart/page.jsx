@@ -17,67 +17,67 @@ export default function CartPage() {
   const total = subtotal + deliveryCharge;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#F4F7FB]">
       <Header />
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
-        <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">{t.shoppingCart}</h1>
+      <main className="max-w-[1200px] mx-auto px-3 sm:px-4 md:px-6 lg:px-10 py-3 sm:py-4">
+        <h1 className="text-base sm:text-lg md:text-xl font-semibold text-[#00215B] mb-2 sm:mb-3">{t.shoppingCart}</h1>
 
         {cartItems.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-2xl border border-gray-200 shadow-sm">
-            <ShoppingBag size={48} className="mx-auto text-gray-300 mb-3" />
-            <p className="text-base text-gray-500 mb-4">{t.cartEmpty}</p>
+          <div className="text-center py-12 sm:py-16 bg-white rounded-lg border border-[#E5E7EB] shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px]">
+            <ShoppingBag size={36} className="mx-auto text-[#E5E7EB] mb-2" />
+            <p className="text-xs sm:text-sm text-[#667085] mb-3">{t.cartEmpty}</p>
             <Link href="/shop" className="btn-primary">{t.continueShopping}</Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="lg:col-span-2 space-y-3">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
+            <div className="lg:col-span-2 space-y-2">
               {cartItems.map((item) => (
-                <div key={item.productId} className="bg-white rounded-xl p-3 flex items-center gap-4 shadow-sm border border-gray-100">
-                  <span className="text-3xl">{item.image || "📦"}</span>
+                <div key={item.productId} className="bg-white rounded-lg p-2.5 sm:p-3 flex items-center gap-2.5 sm:gap-3 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">
+                  <span className="text-2xl sm:text-3xl flex-shrink-0">{item.image || "📦"}</span>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-gray-900 text-sm truncate">{item.name}</h3>
-                    <p className="text-[#0067A0] font-bold text-base mt-1">৳{item.price}</p>
+                    <h3 className="font-medium text-[#000000] text-[11px] sm:text-xs truncate">{item.name}</h3>
+                    <p className="text-[#000000] font-bold text-xs sm:text-sm mt-0.5">৳{item.price}</p>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
                     <button
                       onClick={() => dispatch(updateQuantity({ productId: item.productId, quantity: Math.max(1, item.quantity - 1) }))}
-                      className="w-10 h-10 border border-gray-300 rounded-lg flex items-center justify-center hover:bg-gray-50 transition"
+                      className="w-7 h-7 sm:w-8 sm:h-8 border border-[#E5E7EB] rounded-md flex items-center justify-center hover:bg-[#F4F7FB] transition"
                     >
-                      <Minus size={16} />
+                      <Minus size={12} />
                     </button>
-                    <span className="w-8 text-center font-semibold text-base">{item.quantity}</span>
+                    <span className="w-5 sm:w-6 text-center font-semibold text-[11px] sm:text-xs">{item.quantity}</span>
                     <button
                       onClick={() => dispatch(updateQuantity({ productId: item.productId, quantity: item.quantity + 1 }))}
-                      className="w-10 h-10 border border-gray-300 rounded-lg flex items-center justify-center hover:bg-gray-50 transition"
+                      className="w-7 h-7 sm:w-8 sm:h-8 border border-[#E5E7EB] rounded-md flex items-center justify-center hover:bg-[#F4F7FB] transition"
                     >
-                      <Plus size={16} />
+                      <Plus size={12} />
                     </button>
                   </div>
                   <button
                     onClick={() => dispatch(removeFromCart(item.productId))}
-                    className="text-red-400 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 transition"
+                    className="text-[#FF6B6B] hover:text-[#FF6B6B] p-1 sm:p-1.5 rounded-md hover:bg-[#FFF0F0] transition flex-shrink-0"
                   >
-                    <Trash2 size={20} />
+                    <Trash2 size={14} />
                   </button>
                 </div>
               ))}
-              <button onClick={() => dispatch(clearCart())} className="text-sm text-red-500 hover:text-red-600 font-medium">
+              <button onClick={() => dispatch(clearCart())} className="text-[10px] sm:text-[11px] text-[#FF6B6B] hover:text-[#FF6B6B] font-semibold">
                 {t.emptyCart}
               </button>
             </div>
 
-            <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 h-fit">
-              <h2 className="font-semibold text-gray-900 text-base mb-3">{t.orderSummary}</h2>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-gray-500">{t.subtotal}</span><span>৳{subtotal}</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">{t.shipping}</span><span>{deliveryCharge === 0 ? t.free : `৳${deliveryCharge}`}</span></div>
-                <hr className="border-gray-200" />
-                <div className="flex justify-between font-bold text-xl"><span>{t.total}</span><span className="text-[#0067A0]">৳{total}</span></div>
+            <div className="bg-white rounded-lg p-3 sm:p-4 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB] h-fit lg:sticky lg:top-20">
+              <h2 className="font-semibold text-[#000000] text-xs sm:text-sm mb-2 sm:mb-3">{t.orderSummary}</h2>
+              <div className="space-y-1.5 text-[11px] sm:text-xs">
+                <div className="flex justify-between"><span className="text-[#667085]">{t.subtotal}</span><span>৳{subtotal}</span></div>
+                <div className="flex justify-between"><span className="text-[#667085]">{t.shipping}</span><span>{deliveryCharge === 0 ? t.free : `৳${deliveryCharge}`}</span></div>
+                <hr className="border-[#E5E7EB]" />
+                <div className="flex justify-between font-bold text-sm sm:text-base"><span>{t.total}</span><span className="text-[#000000]">৳{total}</span></div>
               </div>
               {subtotal < 1500 && (
-                <p className="text-sm text-green-600 mt-3">Add ৳{1500 - subtotal} more for free delivery</p>
+                <p className="text-[10px] sm:text-[11px] text-[#00AFCC] mt-2 font-semibold">Add ৳{1500 - subtotal} more for free delivery</p>
               )}
-              <Link href="/checkout" className="btn-primary w-full text-center mt-4 block">
+              <Link href="/checkout" className="btn-primary w-full text-center mt-3 block">
                 {t.proceedToCheckout}
               </Link>
             </div>

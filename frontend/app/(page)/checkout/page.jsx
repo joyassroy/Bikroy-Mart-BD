@@ -59,26 +59,26 @@ export default function CheckoutPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#F4F7FB]">
       <Header />
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-4">
-        <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">{t.checkoutTitle}</h1>
+      <main className="max-w-[1200px] mx-auto px-3 sm:px-4 md:px-6 lg:px-10 py-3 sm:py-4">
+        <h1 className="text-base sm:text-lg md:text-xl font-semibold text-[#00215B] mb-2 sm:mb-3">{t.checkoutTitle}</h1>
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-span-2 space-y-4">
-            <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-              <h2 className="font-semibold text-gray-900 text-base mb-3">{t.deliveryInformation}</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
+          <div className="lg:col-span-2 space-y-2.5 sm:space-y-3">
+            <div className="bg-white rounded-lg p-3 sm:p-4 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">
+              <h2 className="font-semibold text-[#000000] text-xs sm:text-sm mb-2 sm:mb-3">{t.deliveryInformation}</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">{t.fullName}</label>
+                  <label className="block text-[10px] sm:text-[11px] font-semibold text-[#364152] mb-1">{t.fullName}</label>
                   <input type="text" placeholder={t.fullName} required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input-field" />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">{t.phoneNumber}</label>
+                  <label className="block text-[10px] sm:text-[11px] font-semibold text-[#364152] mb-1">{t.phoneNumber}</label>
                   <input type="tel" placeholder={t.phoneNumber} required value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="input-field" />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">{t.selectArea}</label>
+                  <label className="block text-[10px] sm:text-[11px] font-semibold text-[#364152] mb-1">{t.selectArea}</label>
                   <select value={form.district} onChange={(e) => setForm({ ...form, district: e.target.value })} className="input-field">
                     <option>Dhaka</option>
                     <option>Gazipur</option>
@@ -88,62 +88,62 @@ export default function CheckoutPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">{t.houseStreet}</label>
+                  <label className="block text-[10px] sm:text-[11px] font-semibold text-[#364152] mb-1">{t.houseStreet}</label>
                   <input type="text" placeholder={t.houseStreet} value={form.upazila} onChange={(e) => setForm({ ...form, upazila: e.target.value })} className="input-field" />
                 </div>
               </div>
-              <div className="mt-3">
-                <label className="block text-sm font-semibold text-gray-700 mb-1">{t.apartment}</label>
-                <textarea placeholder={t.apartment} required rows={3} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="input-field" />
+              <div className="mt-2 sm:mt-2.5">
+                <label className="block text-[10px] sm:text-[11px] font-semibold text-[#364152] mb-1">{t.apartment}</label>
+                <textarea placeholder={t.apartment} required rows={3} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="input-field !h-auto min-h-[70px]" />
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-              <button type="button" onClick={() => setShowCustomReq(!showCustomReq)} className="flex items-center gap-2 text-[#0067A0] hover:text-[#005090] font-semibold text-sm transition">
-                <MessageSquare size={20} />
+            <div className="bg-white rounded-lg p-3 sm:p-4 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">
+              <button type="button" onClick={() => setShowCustomReq(!showCustomReq)} className="flex items-center gap-1.5 text-[#EC008C] hover:text-[#D60071] font-semibold text-[11px] sm:text-xs transition">
+                <MessageSquare size={14} />
                 {showCustomReq ? "Hide" : "Add"} {t.orderNote}
               </button>
               {showCustomReq && (
-                <div className="mt-4">
-                  <textarea placeholder={t.orderNotePlaceholder} rows={3} value={customRequirement} onChange={(e) => setCustomRequirement(e.target.value)} className="input-field" />
+                <div className="mt-2.5">
+                  <textarea placeholder={t.orderNotePlaceholder} rows={3} value={customRequirement} onChange={(e) => setCustomRequirement(e.target.value)} className="input-field !h-auto min-h-[70px]" />
                 </div>
               )}
             </div>
 
-            <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-              <h2 className="font-semibold text-gray-900 text-base mb-3">{t.paymentMethod}</h2>
-              <div className="space-y-2">
+            <div className="bg-white rounded-lg p-3 sm:p-4 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">
+              <h2 className="font-semibold text-[#000000] text-xs sm:text-sm mb-2 sm:mb-3">{t.paymentMethod}</h2>
+              <div className="space-y-1.5 sm:space-y-2">
                 {[
                   { value: "COD", label: t.codNote, icon: "💵" },
                   { value: "SSLCOMMERZ", label: t.onlinePayment, icon: "💳" },
                 ].map((method) => (
-                  <label key={method.value} className="flex items-center gap-3 p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition">
-                    <input type="radio" name="payment" value={method.value} checked={form.paymentMethod === method.value} onChange={(e) => setForm({ ...form, paymentMethod: e.target.value })} className="w-4 h-4 accent-[#0067A0]" />
-                    <span className="text-lg">{method.icon}</span>
-                    <span className="text-sm text-gray-800">{method.label}</span>
+                  <label key={method.value} className="flex items-center gap-2 sm:gap-2.5 p-2 sm:p-2.5 border border-[#E5E7EB] rounded-md cursor-pointer hover:bg-[#F4F7FB] transition">
+                    <input type="radio" name="payment" value={method.value} checked={form.paymentMethod === method.value} onChange={(e) => setForm({ ...form, paymentMethod: e.target.value })} className="w-3 h-3 accent-[#EC008C]" />
+                    <span className="text-sm">{method.icon}</span>
+                    <span className="text-[11px] sm:text-xs text-[#364152]">{method.label}</span>
                   </label>
                 ))}
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 h-fit">
-            <h2 className="font-semibold text-gray-900 text-base mb-3">{t.orderSummary}</h2>
-            <div className="space-y-2 mb-3 max-h-48 overflow-auto">
+          <div className="bg-white rounded-lg p-3 sm:p-4 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB] h-fit lg:sticky lg:top-20">
+            <h2 className="font-semibold text-[#000000] text-xs sm:text-sm mb-2 sm:mb-3">{t.orderSummary}</h2>
+            <div className="space-y-1 sm:space-y-1.5 mb-2 sm:mb-3 max-h-32 sm:max-h-40 overflow-auto">
               {cartItems.map((item) => (
-                <div key={item.productId} className="flex justify-between text-sm">
-                  <span className="text-gray-500 truncate mr-2">{item.name} x {item.quantity}</span>
-                  <span className="font-medium text-gray-900 whitespace-nowrap">৳{item.price * item.quantity}</span>
+                <div key={item.productId} className="flex justify-between text-[11px] sm:text-xs">
+                  <span className="text-[#667085] truncate mr-2">{item.name} x {item.quantity}</span>
+                  <span className="font-medium text-[#000000] whitespace-nowrap">৳{item.price * item.quantity}</span>
                 </div>
               ))}
             </div>
-            <div className="space-y-2 text-sm border-t border-gray-200 pt-3">
-              <div className="flex justify-between"><span className="text-gray-500">{t.subtotal}</span><span>৳{subtotal}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">{t.deliveryFee}</span><span>{deliveryCharge === 0 ? t.free : `৳${deliveryCharge}`}</span></div>
-              <hr className="border-gray-200" />
-              <div className="flex justify-between font-bold text-lg"><span>{t.total}</span><span className="text-[#0067A0]">৳{total}</span></div>
+            <div className="space-y-1 sm:space-y-1.5 text-[11px] sm:text-xs border-t border-[#E5E7EB] pt-2">
+              <div className="flex justify-between"><span className="text-[#667085]">{t.subtotal}</span><span>৳{subtotal}</span></div>
+              <div className="flex justify-between"><span className="text-[#667085]">{t.deliveryFee}</span><span>{deliveryCharge === 0 ? t.free : `৳${deliveryCharge}`}</span></div>
+              <hr className="border-[#E5E7EB]" />
+              <div className="flex justify-between font-bold text-sm sm:text-base"><span>{t.total}</span><span className="text-[#000000]">৳{total}</span></div>
             </div>
-            <button type="submit" disabled={loading || cartItems.length === 0} className="btn-primary w-full mt-4">
+            <button type="submit" disabled={loading || cartItems.length === 0} className="btn-primary w-full mt-3">
               {loading ? t.loading : t.placeOrderBtn}
             </button>
           </div>

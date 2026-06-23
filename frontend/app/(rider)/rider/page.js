@@ -14,62 +14,62 @@ export default function RiderDashboard() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl md:text-2xl font-bold text-gray-900">{t.activeDeliveries}</h1>
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-          <span className="text-sm text-green-600 font-medium">{t.online}</span>
+      <div className="flex items-center justify-between mb-3">
+        <h1 className="text-base sm:text-lg md:text-xl font-semibold text-[#00215B]">{t.activeDeliveries}</h1>
+        <div className="flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+          <span className="text-[10px] sm:text-[11px] text-green-600 font-semibold">{t.online}</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 mb-4">
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
-          <Package className="mx-auto text-[#0067A0] mb-2" size={24} />
-          <p className="text-2xl font-bold text-gray-900">5</p>
-          <p className="text-sm text-gray-500 mt-1">{t.todayDeliveries}</p>
+      <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4">
+        <div className="bg-white rounded-lg p-2.5 sm:p-3 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB] text-center">
+          <Package className="mx-auto text-[#EC008C] mb-1" size={18} />
+          <p className="text-base sm:text-lg font-bold text-[#000000]">5</p>
+          <p className="text-[10px] sm:text-[11px] text-[#667085] mt-0.5">{t.todayDeliveries}</p>
         </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
-          <Truck className="mx-auto text-orange-500 mb-2" size={24} />
-          <p className="text-2xl font-bold text-gray-900">2</p>
-          <p className="text-sm text-gray-500 mt-1">{t.pendingDeliveries}</p>
+        <div className="bg-white rounded-lg p-2.5 sm:p-3 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB] text-center">
+          <Truck className="mx-auto text-[#D4A017] mb-1" size={18} />
+          <p className="text-base sm:text-lg font-bold text-[#000000]">2</p>
+          <p className="text-[10px] sm:text-[11px] text-[#667085] mt-0.5">{t.pendingDeliveries}</p>
         </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
-          <CheckCircle className="mx-auto text-green-500 mb-2" size={24} />
-          <p className="text-2xl font-bold text-gray-900">3</p>
-          <p className="text-sm text-gray-500 mt-1">{t.completedToday}</p>
+        <div className="bg-white rounded-lg p-2.5 sm:p-3 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB] text-center">
+          <CheckCircle className="mx-auto text-green-500 mb-1" size={18} />
+          <p className="text-base sm:text-lg font-bold text-[#000000]">3</p>
+          <p className="text-[10px] sm:text-[11px] text-[#667085] mt-0.5">{t.completedToday}</p>
         </div>
       </div>
 
       {activeDelivery && (
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 mb-4">
-          <h2 className="font-semibold text-gray-900 text-sm mb-3">{t.activeDeliveries}</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="bg-white rounded-lg p-3 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB] mb-4">
+          <h2 className="font-semibold text-[#000000] text-xs mb-2">{t.activeDeliveries}</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
             <div>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <div className="flex items-center gap-2">
-                  <Package size={16} className="text-[#0067A0]" />
-                  <span className="font-medium text-gray-900 text-sm">{activeDelivery.id}</span>
+                  <Package size={12} className="text-[#EC008C] flex-shrink-0" />
+                  <span className="font-medium text-[#000000] text-[11px] sm:text-xs">{activeDelivery.id}</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <MapPin size={12} className="text-[#FF6B6B] flex-shrink-0 mt-0.5" />
+                  <span className="text-[10px] sm:text-[11px] text-[#000000]">{activeDelivery.address}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <MapPin size={16} className="text-red-500" />
-                  <span className="text-sm text-gray-900">{activeDelivery.address}</span>
+                  <Phone size={12} className="text-green-500 flex-shrink-0" />
+                  <span className="text-[10px] sm:text-[11px] text-[#000000]">{activeDelivery.phone}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Phone size={16} className="text-green-500" />
-                  <span className="text-sm text-gray-900">{activeDelivery.phone}</span>
-                </div>
-                <p className="text-sm text-gray-500">{t.items}: {activeDelivery.items} | {t.total}: ৳{activeDelivery.total}</p>
+                <p className="text-[10px] sm:text-[11px] text-[#667085]">{t.items}: {activeDelivery.items} | {t.total}: ৳{activeDelivery.total}</p>
               </div>
-              <div className="mt-4 flex gap-2">
-                <button className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition">{t.markDelivered}</button>
-                <button onClick={() => setActiveDelivery(null)} className="btn-secondary text-sm px-4 py-2">{t.cancel}</button>
+              <div className="mt-3 flex gap-2">
+                <button className="bg-green-600 text-white px-3 py-1.5 rounded-md text-[11px] sm:text-xs font-medium hover:bg-green-700 transition">{t.markDelivered}</button>
+                <button onClick={() => setActiveDelivery(null)} className="btn-secondary text-[11px] sm:text-xs px-3 py-1.5">{t.cancel}</button>
               </div>
             </div>
-            <div className="bg-gray-100 rounded-lg h-56 flex items-center justify-center text-gray-400">
+            <div className="bg-[#F4F7FB] rounded-md h-40 sm:h-48 flex items-center justify-center text-[#E5E7EB]">
               <div className="text-center">
-                <MapPin size={36} className="mx-auto mb-2" />
-                <p className="text-sm">Map will load with Leaflet</p>
-                <a href={`https://www.openstreetmap.org/?mlat=${activeDelivery.lat}&mlon=${activeDelivery.lng}#map=15/${activeDelivery.lat}/${activeDelivery.lng}`} target="_blank" rel="noopener noreferrer" className="text-[#0067A0] text-sm hover:underline font-medium mt-1 inline-block">
+                <MapPin size={24} className="mx-auto mb-1" />
+                <p className="text-[10px] sm:text-xs">Map will load with Leaflet</p>
+                <a href={`https://www.openstreetmap.org/?mlat=${activeDelivery.lat}&mlon=${activeDelivery.lng}#map=15/${activeDelivery.lat}/${activeDelivery.lng}`} target="_blank" rel="noopener noreferrer" className="text-[#00AFCC] text-[10px] sm:text-[11px] hover:underline font-semibold mt-1 inline-block">
                   {t.viewOnMap}
                 </a>
               </div>
@@ -78,19 +78,19 @@ export default function RiderDashboard() {
         </div>
       )}
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-        <div className="p-4 border-b border-gray-100">
-          <h3 className="font-semibold text-gray-900 text-sm">{t.pendingDeliveries}</h3>
+      <div className="bg-white rounded-lg shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">
+        <div className="p-3 border-b border-[#E5E7EB]">
+          <h3 className="font-semibold text-[#000000] text-xs">{t.pendingDeliveries}</h3>
         </div>
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-[#F4F7FB]">
           {sampleDeliveries.map((delivery) => (
-            <div key={delivery.id} className="p-4 flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900 text-sm">{delivery.id} - {delivery.customer}</p>
-                <p className="text-sm text-gray-500 mt-1">{delivery.address}</p>
-                <p className="text-sm text-gray-500">{t.items}: {delivery.items} | ৳{delivery.total}</p>
+            <div key={delivery.id} className="p-3 flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="font-medium text-[#000000] text-[11px] sm:text-xs">{delivery.id} - {delivery.customer}</p>
+                <p className="text-[10px] sm:text-[11px] text-[#667085] mt-0.5 truncate">{delivery.address}</p>
+                <p className="text-[10px] sm:text-[11px] text-[#667085]">{t.items}: {delivery.items} | ৳{delivery.total}</p>
               </div>
-              <button onClick={() => setActiveDelivery(delivery)} className="btn-primary">{t.startDelivery}</button>
+              <button onClick={() => setActiveDelivery(delivery)} className="btn-primary text-[10px] sm:text-[11px] flex-shrink-0">{t.startDelivery}</button>
             </div>
           ))}
         </div>
