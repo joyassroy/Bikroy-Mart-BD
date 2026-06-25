@@ -1,5 +1,6 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import ProductCard from "@/components/product/ProductCard";
@@ -7,7 +8,8 @@ import api from "@/lib/axios";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { SlidersHorizontal, X, ChevronDown, Grid3X3, List, Search } from "lucide-react";
 
-export default function ShopPage() {
+function ShopContent() {
+  const searchParams = useSearchParams();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,6 +27,10 @@ export default function ShopPage() {
 
   useEffect(() => {
     fetchCategories();
+    const urlCategory = searchParams.get("category");
+    if (urlCategory) {
+      setSelectedCategory(urlCategory);
+    }
   }, []);
 
   useEffect(() => {
@@ -430,5 +436,13 @@ export default function ShopPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function ShopPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>}>
+      <ShopContent />
+    </Suspense>
   );
 }

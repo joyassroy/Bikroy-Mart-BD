@@ -25,6 +25,10 @@ import wishlistRoutes from "./modules/wishlist/wishlist.routes";
 import flashDealRoutes from "./modules/flash-deals/flashDeal.routes";
 import settingsRoutes from "./modules/settings/settings.routes";
 import analyticsRoutes from "./modules/analytics/analytics.routes";
+import blogsRoutes from "./modules/content/blogs/blogs.routes";
+import subscribersRoutes from "./modules/content/subscribers/subscribers.routes";
+import mediaRoutes from "./modules/content/media/media.routes";
+import sponsorsRoutes from "./modules/sponsors/sponsors.routes";
 
 const app = express();
 const httpServer = createServer(app);
@@ -62,6 +66,10 @@ app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/flash-deals", flashDealRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/blogs", blogsRoutes);
+app.use("/api/subscribers", subscribersRoutes);
+app.use("/api/media", mediaRoutes);
+app.use("/api/sponsors", sponsorsRoutes);
 
 // Error handler
 app.use(errorHandler);

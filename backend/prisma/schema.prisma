@@ -266,3 +266,41 @@ model FlashDeal {
   isActive   Boolean  @default(true)
   createdAt  DateTime @default(now())
 }
+
+model Blog {
+  id          String   @id @default(uuid())
+  title       String
+  slug        String   @unique
+  content     String
+  image       String?
+  author      String?
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model EmailSubscriber {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  status       String   @default("SUBSCRIBED") // SUBSCRIBED, UNSUBSCRIBED
+  subscribedAt DateTime @default(now())
+}
+
+model MediaLibrary {
+  id        String   @id @default(uuid())
+  filename  String
+  url       String
+  fileType  String
+  size      Int?
+  createdAt DateTime @default(now())
+}
+
+model Sponsor {
+  id        String   @id @default(uuid())
+  name      String
+  logo      String   // URL to logo image
+  website   String?  // Optional link when clicked
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}

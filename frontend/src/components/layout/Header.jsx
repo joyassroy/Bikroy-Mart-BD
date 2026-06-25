@@ -157,7 +157,7 @@ export default function Header() {
                 {megaMenuOpen && (
                   <div className="absolute top-full left-0 bg-white border border-[#E5E7EB] rounded-b-md shadow-[rgba(0,0,0,0.1)_0px_2px_4px_0px] w-56 z-50">
                     {categories.map((cat) => (
-                      <Link key={cat.slug} href={`/category/${cat.slug}`} className="flex items-center gap-2 px-3 py-2 hover:bg-[#F4F7FB] text-[11px] text-[#364152] hover:text-[#EC008C] transition">
+                      <Link key={cat.slug} href={`/shop?category=${cat.slug}`} className="flex items-center gap-2 px-3 py-2 hover:bg-[#F4F7FB] text-[11px] text-[#364152] hover:text-[#EC008C] transition">
                         <span className="text-base">{cat.icon}</span>{getCategoryName(cat.name)}
                       </Link>
                     ))}
@@ -165,7 +165,7 @@ export default function Header() {
                 )}
               </div>
               {categories.slice(0, 6).map((cat) => (
-                <Link key={cat.slug} href={`/category/${cat.slug}`} className="px-2.5 py-2 text-[11px] text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3] transition font-semibold">
+                <Link key={cat.slug} href={`/shop?category=${cat.slug}`} className="px-2.5 py-2 text-[11px] text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3] transition font-semibold">
                   {getCategoryName(cat.name)}
                 </Link>
               ))}
@@ -225,7 +225,7 @@ export default function Header() {
               <p className="text-[10px] font-semibold text-[#667085] uppercase tracking-wider mb-2">{t.allCategories}</p>
               <div className="space-y-0.5">
                 {categories.map((cat) => (
-                  <Link key={cat.slug} href={`/category/${cat.slug}`} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-2 py-2.5 hover:bg-[#F4F7FB] rounded-md transition">
+                  <Link key={cat.slug} href={`/shop?category=${cat.slug}`} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-2 py-2.5 hover:bg-[#F4F7FB] rounded-md transition">
                     <span className="text-lg">{cat.icon}</span>
                     <span className="text-xs font-medium text-[#364152]">{getCategoryName(cat.name)}</span>
                   </Link>

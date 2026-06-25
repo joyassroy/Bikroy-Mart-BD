@@ -18,9 +18,20 @@ export const getBanners = async (req: Request, res: Response) => {
 
 export const createBanner = async (req: Request, res: Response) => {
   try {
-    const { title, subtitle, image, mobileImage, link, position, bgColor, sortOrder } = req.body;
+    const { title, subtitle, link, position, bgColor, sortOrder } = req.body;
+    let image = req.body.image || "";
+    let mobileImage = req.body.mobileImage || "";
+
+    if (req.files && Array.isArray(req.files)) {
+      const imgFile = req.files.find((f: any) => f.fieldname === 'image');
+      if (imgFile) image = `/uploads/${imgFile.filename}`;
+      
+      const mImgFile = req.files.find((f: any) => f.fieldname === 'mobileImage');
+      if (mImgFile) mobileImage = `/uploads/${mImgFile.filename}`;
+    }
+
     const banner = await prisma.banner.create({
-      data: { title, subtitle, image, mobileImage, link, position, bgColor, sortOrder: sortOrder || 0 },
+      data: { title, subtitle, image, mobileImage, link, position, bgColor, sortOrder: sortOrder ? parseInt(sortOrder) : 0 },
     });
     return sendSuccess(res, "Banner created", banner, 201);
   } catch (error: any) {
@@ -30,7 +41,22 @@ export const createBanner = async (req: Request, res: Response) => {
 
 export const updateBanner = async (req: Request, res: Response) => {
   try {
-    const banner = await prisma.banner.update({ where: { id: String(req.params.id) }, data: req.body });
+    const dataToUpdate: any = { ...req.body };
+    if (dataToUpdate.sortOrder) dataToUpdate.sortOrder = parseInt(dataToUpdate.sortOrder);
+    if (dataToUpdate.isActive !== undefined) dataToUpdate.isActive = dataToUpdate.isActive === 'true' || dataToUpdate.isActive === true;
+
+    if (req.files && Array.isArray(req.files)) {
+      const imgFile = req.files.find((f: any) => f.fieldname === 'image');
+      if (imgFile) dataToUpdate.image = `/uploads/${imgFile.filename}`;
+      
+      const mImgFile = req.files.find((f: any) => f.fieldname === 'mobileImage');
+      if (mImgFile) dataToUpdate.mobileImage = `/uploads/${mImgFile.filename}`;
+    }
+
+    const banner = await prisma.banner.update({ 
+      where: { id: String(req.params.id) }, 
+      data: dataToUpdate 
+    });
     return sendSuccess(res, "Banner updated", banner);
   } catch (error: any) {
     return sendError(res, error.message, 400);

@@ -167,6 +167,59 @@ export const verifyOtp = async (
   otpStore.delete(email);
 };
 
+interface GoogleSignInInput {
+  name: string;
+  email: string;
+  image?: string;
+  googleId: string;
+}
+
+export const googleSignIn = async (input: GoogleSignInInput) => {
+  let user = await prisma.user.findUnique({
+    where: { email: input.email },
+  });
+
+  if (user) {
+    if (user.isBlocked) {
+      throw new Error("Your account has been blocked");
+    }
+    if (!user.avatar && input.image) {
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { avatar: input.image },
+      });
+    }
+  } else {
+    const randomPassword = Math.random().toString(36).slice(-16);
+    const hashedPassword = await hashPassword(randomPassword);
+    user = await prisma.user.create({
+      data: {
+        name: input.name,
+        email: input.email,
+        avatar: input.image,
+        password: hashedPassword,
+      },
+    });
+  }
+
+  const tokenPayload = {
+    userId: user.id,
+    email: user.email,
+    role: user.role,
+  };
+
+  const accessToken = generateAccessToken(tokenPayload);
+  const refreshToken = generateRefreshToken(tokenPayload);
+
+  const { password: _, ...userWithoutPassword } = user;
+
+  return {
+    user: userWithoutPassword,
+    accessToken,
+    refreshToken,
+  };
+};
+
 export const refreshToken = async (token: string) => {
   const decoded = verifyRefreshToken(token);
 

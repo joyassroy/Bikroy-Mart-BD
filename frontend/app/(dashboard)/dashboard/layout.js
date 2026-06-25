@@ -6,19 +6,52 @@ import { useState } from "react";
 
 const menu = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Products", href: "/dashboard/products", icon: Package },
+  { 
+    label: "Products", icon: Package, 
+    subItems: [
+      { label: "All Products", href: "/dashboard/products/all" },
+      { label: "Add Product", href: "/dashboard/products/add" },
+      { label: "Categories", href: "/dashboard/products/categories" },
+      { label: "Subcategories", href: "/dashboard/products/subcategories" },
+      { label: "Inventory", href: "/dashboard/products/inventory" }
+    ]
+  },
   { label: "Orders", href: "/dashboard/orders", icon: ShoppingCart },
   { label: "Customers", href: "/dashboard/customers", icon: Users },
   { label: "Riders", href: "/dashboard/riders", icon: Truck },
   { label: "Managers", href: "/dashboard/managers", icon: MapPin },
   { label: "Banners", href: "/dashboard/banners", icon: Tag },
+  { 
+    label: "Content", icon: Users,
+    subItems: [
+      { label: "Blogs", href: "/dashboard/content/blogs" },
+      { label: "Email List", href: "/dashboard/content/email-list" },
+      { label: "Media Library", href: "/dashboard/content/media-library" },
+      { label: "Sponsors", href: "/dashboard/content/sponsors" }
+    ]
+  },
   { label: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
-  { label: "Settings", href: "/dashboard/settings", icon: Settings },
+  { 
+    label: "Settings", icon: Settings, 
+    subItems: [
+      { label: "General Settings", href: "/dashboard/settings/general" },
+      { label: "User Update", href: "/dashboard/settings/user-update" }
+    ]
+  },
 ];
 
 export default function DashboardLayout({ children }) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [openSubmenu, setOpenSubmenu] = useState("Products");
+
+  const handleMenuClick = (item) => {
+    if (item.subItems) {
+      setOpenSubmenu(openSubmenu === item.label ? "" : item.label);
+    } else {
+      setSidebarOpen(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen bg-[#F4F7FB]">
@@ -40,19 +73,53 @@ export default function DashboardLayout({ children }) {
         </div>
         <nav className="p-2 space-y-0.5 overflow-y-auto" role="navigation" aria-label="Admin navigation">
           {menu.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setSidebarOpen(false)}
-              className={`flex items-center gap-2 px-2.5 py-2 rounded-md text-[11px] font-medium transition ${
-                pathname === item.href
-                  ? "bg-[#EC008C] text-white"
-                  : "text-white/60 hover:bg-white/10 hover:text-white"
-              }`}
-            >
-              <item.icon size={15} />
-              {item.label}
-            </Link>
+            <div key={item.label}>
+              {item.subItems ? (
+                <div>
+                  <button
+                    onClick={() => handleMenuClick(item)}
+                    className="w-full flex items-center justify-between gap-2 px-2.5 py-2 rounded-md text-[11px] font-medium transition text-white/60 hover:bg-white/10 hover:text-white"
+                  >
+                    <div className="flex items-center gap-2">
+                      <item.icon size={15} />
+                      {item.label}
+                    </div>
+                    <span className="text-xs">{openSubmenu === item.label ? "▼" : "▶"}</span>
+                  </button>
+                  {openSubmenu === item.label && (
+                    <div className="pl-8 space-y-0.5 mt-0.5">
+                      {item.subItems.map((sub) => (
+                        <Link
+                          key={sub.href}
+                          href={sub.href}
+                          onClick={() => setSidebarOpen(false)}
+                          className={`block px-2.5 py-1.5 rounded-md text-[10px] font-medium transition ${
+                            pathname === sub.href
+                              ? "bg-[#EC008C] text-white"
+                              : "text-white/60 hover:text-white"
+                          }`}
+                        >
+                          {sub.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Link
+                  href={item.href}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex items-center gap-2 px-2.5 py-2 rounded-md text-[11px] font-medium transition ${
+                    pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href))
+                      ? "bg-[#EC008C] text-white"
+                      : "text-white/60 hover:bg-white/10 hover:text-white"
+                  }`}
+                >
+                  <item.icon size={15} />
+                  {item.label}
+                </Link>
+              )}
+            </div>
           ))}
         </nav>
       </aside>

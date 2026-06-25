@@ -9,7 +9,7 @@
 # --- LOGIN AS ADMIN ---
 TOKEN=$(curl -s -X POST http://localhost:5004/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@bikroymart.com","password":"admin123"}' | jq -r '.data.token')
+  -d '{"email":"admin@bikroymart.com","password":"admin123"}' | jq -r '.data.accessToken')
 
 echo "Token: $TOKEN"
 

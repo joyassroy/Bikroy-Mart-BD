@@ -6,6 +6,7 @@ import CategoryGrid from "@/components/home/CategoryGrid";
 import TrustBadges from "@/components/home/TrustBadges";
 import FlashDeals from "@/components/home/FlashDeals";
 import ProductTabs from "@/components/home/ProductTabs";
+import SponsorsMarquee from "@/components/home/SponsorsMarquee";
 
 export default function Home() {
   return (
@@ -18,6 +19,7 @@ export default function Home() {
         <TrustBadges />
         <FlashDeals />
         <ProductTabs />
+        <SponsorsMarquee />
       </main>
       <Footer />
     </div>

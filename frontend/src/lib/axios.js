@@ -9,6 +9,10 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
+  if (config.data instanceof FormData) {
+    delete config.headers["Content-Type"];
+    delete config.headers.common["Content-Type"];
+  }
   if (typeof window !== "undefined") {
     const token = localStorage.getItem("bm-token");
     if (token) config.headers.Authorization = `Bearer ${token}`;

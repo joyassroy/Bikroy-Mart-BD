@@ -29,8 +29,13 @@ export default function BannersPage() {
     finally { setLoading(false); }
   };
 
+  const [imageFile, setImageFile] = useState(null);
+  const [mobileImageFile, setMobileImageFile] = useState(null);
+
   const resetForm = () => {
     setForm({ title: "", subtitle: "", image: "", mobileImage: "", link: "", position: "hero", bgColor: "", sortOrder: 0 });
+    setImageFile(null);
+    setMobileImageFile(null);
     setEditingId(null);
   };
 
@@ -46,17 +51,25 @@ export default function BannersPage() {
       bgColor: banner.bgColor || "",
       sortOrder: banner.sortOrder || 0,
     });
+    setImageFile(null);
+    setMobileImageFile(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    const formData = new FormData();
+    Object.keys(form).forEach(key => formData.append(key, form[key]));
+    if (imageFile) formData.append("image", imageFile);
+    if (mobileImageFile) formData.append("mobileImage", mobileImageFile);
+
     try {
       if (editingId) {
-        await api.put(`/banners/${editingId}`, form);
+        await api.put(`/banners/${editingId}`, formData);
         toast.success("Banner updated");
       } else {
-        await api.post("/banners", form);
+        await api.post("/banners", formData);
         toast.success("Banner created");
       }
       resetForm();
@@ -122,15 +135,15 @@ export default function BannersPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Image URL</label>
-            <input type="text" value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" placeholder="https://example.com/image.jpg" />
+            <label className="block text-xs font-medium text-gray-600 mb-1">Desktop Image (1920x500)</label>
+            <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files[0])}
+              className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Mobile Image URL</label>
-            <input type="text" value={form.mobileImage} onChange={(e) => setForm({ ...form, mobileImage: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" placeholder="Separate mobile image (optional)" />
+            <label className="block text-xs font-medium text-gray-600 mb-1">Mobile Image (800x600)</label>
+            <input type="file" accept="image/*" onChange={(e) => setMobileImageFile(e.target.files[0])}
+              className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" />
           </div>
 
           <div>
@@ -150,7 +163,7 @@ export default function BannersPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Background Color</label>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Background Color (Fallback)</label>
             <select value={form.bgColor} onChange={(e) => setForm({ ...form, bgColor: e.target.value })}
               className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none">
               {bgColorOptions.map(opt => (
@@ -166,14 +179,14 @@ export default function BannersPage() {
           </div>
         </div>
 
-        {form.image && (
+        {form.image && !imageFile && (
           <div className="mt-4">
-            <label className="block text-xs font-medium text-gray-600 mb-1">Preview</label>
-            <img src={form.image} alt="Preview" className="h-24 md:h-32 rounded-lg object-cover border" />
+            <label className="block text-xs font-medium text-gray-600 mb-1">Current Desktop Image</label>
+            <img src={form.image.startsWith('http') ? form.image : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5004'}${form.image}`} alt="Preview" className="h-24 md:h-32 rounded-lg object-cover border" />
           </div>
         )}
 
-        <button type="submit" className="mt-4 bg-pink-600 text-white rounded-lg px-6 py-2.5 text-sm font-medium hover:bg-pink-700 transition flex items-center gap-2">
+        <button type="submit" className="mt-6 bg-pink-600 text-white rounded-lg px-6 py-2.5 text-sm font-medium hover:bg-pink-700 transition flex items-center gap-2">
           {editingId ? <><Edit2 size={14} /> Update Banner</> : <><Plus size={14} /> Add Banner</>}
         </button>
       </form>
@@ -200,7 +213,7 @@ export default function BannersPage() {
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       {banner.image ? (
-                        <img src={banner.image} alt={banner.title} className="w-16 h-10 rounded object-cover" />
+                        <img src={banner.image.startsWith('http') ? banner.image : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5004'}${banner.image}`} alt={banner.title} className="w-16 h-10 rounded object-cover" />
                       ) : (
                         <div className={`w-16 h-10 rounded bg-gradient-to-r ${banner.bgColor || "from-pink-500 to-pink-600"} flex items-center justify-center`}>
                           <span className="text-white text-[8px] font-bold">NO IMG</span>

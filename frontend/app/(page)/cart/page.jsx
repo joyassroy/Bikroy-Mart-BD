@@ -33,7 +33,13 @@ export default function CartPage() {
             <div className="lg:col-span-2 space-y-2">
               {cartItems.map((item) => (
                 <div key={item.productId} className="bg-white rounded-lg p-2.5 sm:p-3 flex items-center gap-2.5 sm:gap-3 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">
-                  <span className="text-2xl sm:text-3xl flex-shrink-0">{item.image || "📦"}</span>
+                <div className="w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0 rounded-lg border border-[#E5E7EB] overflow-hidden bg-gray-50">
+                    {item.image && item.image.startsWith("http") ? (
+                      <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="w-full h-full flex items-center justify-center text-2xl">📦</span>
+                    )}
+                  </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium text-[#000000] text-[11px] sm:text-xs truncate">{item.name}</h3>
                     <p className="text-[#000000] font-bold text-xs sm:text-sm mt-0.5">৳{item.price}</p>

@@ -137,17 +137,27 @@ export const createProduct = async (req: Request, res: Response) => {
   try {
     const {
       name, nameBn, description, descriptionBn, price, discountPrice,
-      unit, minQuantity, stock, sku, barcode, images, categoryId,
+      unit, minQuantity, stock, sku, barcode, categoryId,
       subcategoryId, isFeatured, deliveryTime, badges, managerId,
     } = req.body;
+
+    let images = req.body.images || [];
+    if (typeof images === 'string') {
+      images = [images];
+    }
+
+    if (req.files && Array.isArray(req.files)) {
+      const paths = req.files.map((f: any) => `/uploads/${f.filename}`);
+      images = [...images, ...paths];
+    }
 
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
     const product = await prisma.product.create({
       data: {
-        name, nameBn, slug, description, descriptionBn, price, discountPrice,
-        unit, minQuantity, stock, sku, barcode, images: images || [],
-        categoryId, subcategoryId, isFeatured, deliveryTime, badges: badges || [],
+        name, nameBn, slug, description, descriptionBn, price: parseFloat(price), discountPrice: discountPrice ? parseFloat(discountPrice) : null,
+        unit, minQuantity: parseFloat(minQuantity) || 1, stock: parseInt(stock, 10) || 0, sku, barcode, images,
+        categoryId, subcategoryId, isFeatured: isFeatured === 'true' || isFeatured === true, deliveryTime, badges: badges ? (Array.isArray(badges) ? badges : [badges]) : [],
         managerId,
       },
     });
@@ -159,9 +169,47 @@ export const createProduct = async (req: Request, res: Response) => {
 
 export const updateProduct = async (req: Request, res: Response) => {
   try {
+    const {
+      name, nameBn, description, descriptionBn, price, discountPrice,
+      unit, minQuantity, stock, sku, barcode, categoryId,
+      subcategoryId, isFeatured, deliveryTime, badges, managerId, isActive
+    } = req.body;
+
+    let images = req.body.images || [];
+    if (typeof images === 'string') {
+      images = [images];
+    }
+
+    if (req.files && Array.isArray(req.files)) {
+      const paths = req.files.map((f: any) => `/uploads/${f.filename}`);
+      images = [...images, ...paths];
+    }
+
+    const updateData: any = {};
+    if (name) updateData.name = name;
+    if (nameBn) updateData.nameBn = nameBn;
+    if (description) updateData.description = description;
+    if (descriptionBn) updateData.descriptionBn = descriptionBn;
+    if (price) updateData.price = parseFloat(price);
+    if (discountPrice !== undefined) updateData.discountPrice = discountPrice ? parseFloat(discountPrice) : null;
+    if (unit) updateData.unit = unit;
+    if (minQuantity) updateData.minQuantity = parseFloat(minQuantity);
+    if (stock) updateData.stock = parseInt(stock, 10);
+    if (sku) updateData.sku = sku;
+    if (barcode) updateData.barcode = barcode;
+    if (categoryId) updateData.categoryId = categoryId;
+    if (subcategoryId) updateData.subcategoryId = subcategoryId;
+    if (isFeatured !== undefined) updateData.isFeatured = isFeatured === 'true' || isFeatured === true;
+    if (isActive !== undefined) updateData.isActive = isActive === 'true' || isActive === true;
+    if (deliveryTime) updateData.deliveryTime = deliveryTime;
+    if (badges) updateData.badges = Array.isArray(badges) ? badges : [badges];
+    if (managerId) updateData.managerId = managerId;
+    if (images.length > 0) updateData.images = images; // only update images if new ones are provided, otherwise keep existing
+    // if client wants to clear images or keep existing but we received empty, we might need a specific flag, but this is simple
+
     const product = await prisma.product.update({
       where: { id: String(req.params.id) },
-      data: req.body,
+      data: updateData,
     });
     return sendSuccess(res, "Product updated", product);
   } catch (error: any) {

@@ -66,3 +66,16 @@ export const refreshToken = async (req: Request, res: Response) => {
     return sendError(res, error.message, 401);
   }
 };
+
+export const googleSignIn = async (req: Request, res: Response) => {
+  try {
+    const { name, email, image, googleId } = req.body;
+    if (!name || !email || !googleId) {
+      return sendError(res, "Name, email, and googleId are required", 400);
+    }
+    const result = await authService.googleSignIn({ name, email, image, googleId });
+    return sendSuccess(res, "Google sign-in successful", result);
+  } catch (error: any) {
+    return sendError(res, error.message, 401);
+  }
+};

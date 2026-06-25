@@ -28,5 +28,6 @@ router.post(
   authController.verifyOtp
 );
 router.post("/refresh-token", authController.refreshToken);
+router.post("/google", authController.googleSignIn);
 
 export default router;
