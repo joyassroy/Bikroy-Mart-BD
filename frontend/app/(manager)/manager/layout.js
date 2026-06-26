@@ -1,8 +1,10 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { LayoutDashboard, Package, ShoppingCart, Users, MapPin, Menu, X, ClipboardList } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { useAuthChecked } from "@/helper/AuthInit";
 
 const menu = [
   { label: "Dashboard", href: "/manager", icon: LayoutDashboard },
@@ -15,7 +17,24 @@ const menu = [
 
 export default function ManagerLayout({ children }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { authChecked } = useAuthChecked();
+  const user = useSelector((state) => state.user?.data);
+
+  useEffect(() => {
+    if (authChecked && (!user || user.role !== "MANAGER")) {
+      router.replace("/signin");
+    }
+  }, [authChecked, user, router]);
+
+  if (!authChecked || !user || user.role !== "MANAGER") {
+    return (
+      <div className="min-h-screen bg-[#F4F7FB] flex items-center justify-center">
+        <p className="text-sm text-gray-400">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-[#F4F7FB]">

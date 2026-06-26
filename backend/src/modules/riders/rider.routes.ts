@@ -5,7 +5,7 @@ import { authorize } from "../../middlewares/role.middleware";
 
 const router = Router();
 
-router.get("/", authenticate, authorize("ADMIN"), riderController.getAllRiders);
+router.get("/", authenticate, authorize("ADMIN", "MANAGER"), riderController.getAllRiders);
 router.post("/", authenticate, authorize("ADMIN"), riderController.createRider);
 router.put("/location", authenticate, authorize("RIDER"), riderController.updateLocation);
 router.put("/availability", authenticate, authorize("RIDER"), riderController.toggleAvailability);

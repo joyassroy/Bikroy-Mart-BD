@@ -262,6 +262,7 @@ const en = {
   totalSales: "Total Sales",
   totalOrders: "Total Orders",
   totalProducts: "Total Products",
+  activeProducts: "Active Products",
   totalUsers: "Total Users",
   recentOrders: "Recent Orders",
   topSelling: "Top Selling",

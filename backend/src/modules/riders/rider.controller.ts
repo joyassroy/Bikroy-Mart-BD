@@ -4,9 +4,21 @@ import { AuthRequest } from "../../middlewares/auth.middleware";
 import { sendSuccess, sendError } from "../../utils/apiResponse";
 import { hashPassword } from "../../utils/bcrypt";
 
-export const getAllRiders = async (req: Request, res: Response) => {
+export const getAllRiders = async (req: AuthRequest, res: Response) => {
   try {
+    let where: any = {};
+
+    if (req.user?.role === "MANAGER") {
+      const manager = await prisma.managerProfile.findUnique({
+        where: { userId: req.user.userId },
+      });
+      if (manager) {
+        where.assignedZila = manager.assignedZila;
+      }
+    }
+
     const riders = await prisma.riderProfile.findMany({
+      where,
       include: {
         user: { select: { id: true, name: true, email: true, phone: true } },
         _count: { select: { orders: true } },

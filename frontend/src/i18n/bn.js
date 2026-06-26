@@ -262,6 +262,7 @@ const bn = {
   totalSales: "মোট বিক্রয়",
   totalOrders: "মোট অর্ডার",
   totalProducts: "মোট পণ্য",
+  activeProducts: "সক্রিয় পণ্য",
   totalUsers: "মোট ব্যবহারকারী",
   recentOrders: "সাম্প্রতিক অর্ডার",
   topSelling: "শীর্ষ বিক্রয়",

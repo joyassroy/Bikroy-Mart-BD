@@ -186,6 +186,12 @@ export default function ManagerCustomRequestsPage() {
                             className="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition">
                             <Eye size={14} />
                           </button>
+                          {req.status === "PENDING" && (
+                            <button onClick={() => updateStatus(req.id, "MANAGER_REVIEW")} title="Start Review"
+                              className="p-1.5 rounded-lg bg-yellow-50 text-yellow-600 hover:bg-yellow-100 transition">
+                              <ClipboardList size={14} />
+                            </button>
+                          )}
                           {(req.status === "PENDING" || req.status === "MANAGER_REVIEW") && (
                             <button onClick={() => handleQuote(req)} title="Set Quote"
                               className="p-1.5 rounded-lg bg-purple-50 text-purple-600 hover:bg-purple-100 transition">
