@@ -15,6 +15,7 @@ export const getAllProducts = async (req: Request, res: Response) => {
       sort = "newest",
       featured,
       managerId,
+      offer,
     } = req.query;
 
     const pageNum = parseInt(page as string, 10);
@@ -36,6 +37,19 @@ export const getAllProducts = async (req: Request, res: Response) => {
       where.price = {};
       if (minPrice) where.price.gte = parseFloat(minPrice as string);
       if (maxPrice) where.price.lte = parseFloat(maxPrice as string);
+    }
+    if (offer) {
+      const now = new Date();
+      const flashDeals = await prisma.flashDeal.findMany({
+        where: { type: String(offer), isActive: true, startsAt: { lte: now }, endsAt: { gte: now } },
+        select: { productId: true },
+      });
+      const productIds = flashDeals.map((d) => d.productId);
+      if (productIds.length > 0) {
+        where.id = { in: productIds };
+      } else {
+        where.id = { in: [] };
+      }
     }
 
     const orderBy: any = {};

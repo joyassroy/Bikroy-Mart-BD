@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import prisma from "../../config/db";
 import { AuthRequest } from "../../middlewares/auth.middleware";
 import { sendSuccess, sendError } from "../../utils/apiResponse";
+import { hashPassword } from "../../utils/bcrypt";
 
 export const getAllManagers = async (req: Request, res: Response) => {
   try {
@@ -20,13 +21,35 @@ export const getAllManagers = async (req: Request, res: Response) => {
 
 export const createManager = async (req: Request, res: Response) => {
   try {
-    const { userId, assignedZila, assignedDistrict } = req.body;
+    const { userId, name, email, phone, password, assignedZila, assignedDistrict } = req.body;
 
-    const existing = await prisma.managerProfile.findUnique({ where: { userId } });
+    let finalUserId = userId;
+
+    if (!userId) {
+      if (!name || !email || !password) {
+        return sendError(res, "Name, email and password are required when not linking an existing user", 400);
+      }
+
+      const existingUser = await prisma.user.findFirst({
+        where: { OR: [{ email }, phone ? { phone } : {}].filter(Boolean) },
+      });
+      if (existingUser) return sendError(res, "User with this email or phone already exists", 400);
+
+      const hashedPassword = await hashPassword(password);
+      const user = await prisma.user.create({
+        data: { name, email, phone, password: hashedPassword, role: "MANAGER" },
+      });
+      finalUserId = user.id;
+    } else {
+      await prisma.user.update({ where: { id: userId }, data: { role: "MANAGER" } });
+    }
+
+    const existing = await prisma.managerProfile.findUnique({ where: { userId: finalUserId } });
     if (existing) return sendError(res, "Manager profile already exists", 400);
 
     const manager = await prisma.managerProfile.create({
-      data: { userId, assignedZila, assignedDistrict },
+      data: { userId: finalUserId, assignedZila, assignedDistrict },
+      include: { user: { select: { id: true, name: true, email: true, phone: true } } },
     });
     return sendSuccess(res, "Manager created", manager, 201);
   } catch (error: any) {
@@ -76,5 +99,19 @@ export const getManagerStats = async (req: AuthRequest, res: Response) => {
     });
   } catch (error: any) {
     return sendError(res, error.message);
+  }
+};
+
+export const deleteManager = async (req: Request, res: Response) => {
+  try {
+    const manager = await prisma.managerProfile.findUnique({
+      where: { id: String(req.params.id) },
+    });
+    if (!manager) return sendError(res, "Manager not found", 404);
+
+    await prisma.user.delete({ where: { id: manager.userId } });
+    return sendSuccess(res, "Manager deleted");
+  } catch (error: any) {
+    return sendError(res, error.message, 400);
   }
 };

@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import prisma from "../../config/db";
 import { AuthRequest } from "../../middlewares/auth.middleware";
 import { sendSuccess, sendError } from "../../utils/apiResponse";
+import { hashPassword } from "../../utils/bcrypt";
 
 export const getAllRiders = async (req: Request, res: Response) => {
   try {
@@ -133,5 +134,54 @@ export const getDeliveryHistory = async (req: AuthRequest, res: Response) => {
     return sendSuccess(res, "Delivery history fetched", orders);
   } catch (error: any) {
     return sendError(res, error.message);
+  }
+};
+
+export const createRider = async (req: Request, res: Response) => {
+  try {
+    const { name, email, phone, password, vehicleType, vehicleNumber, licenseNumber, assignedZila } = req.body;
+
+    if (!name || !email || !password) {
+      return sendError(res, "Name, email and password are required", 400);
+    }
+
+    const existingUser = await prisma.user.findFirst({
+      where: { OR: [{ email }, phone ? { phone } : {}].filter(Boolean) },
+    });
+    if (existingUser) return sendError(res, "User with this email or phone already exists", 400);
+
+    const hashedPassword = await hashPassword(password);
+    const user = await prisma.user.create({
+      data: { name, email, phone, password: hashedPassword, role: "RIDER" },
+    });
+
+    const rider = await prisma.riderProfile.create({
+      data: {
+        userId: user.id,
+        vehicleType: vehicleType || null,
+        vehicleNumber: vehicleNumber || null,
+        licenseNumber: licenseNumber || null,
+        assignedZila: assignedZila || null,
+      },
+      include: { user: { select: { id: true, name: true, email: true, phone: true } } },
+    });
+
+    return sendSuccess(res, "Rider created", rider, 201);
+  } catch (error: any) {
+    return sendError(res, error.message, 400);
+  }
+};
+
+export const deleteRider = async (req: Request, res: Response) => {
+  try {
+    const rider = await prisma.riderProfile.findUnique({
+      where: { id: String(req.params.id) },
+    });
+    if (!rider) return sendError(res, "Rider not found", 404);
+
+    await prisma.user.delete({ where: { id: rider.userId } });
+    return sendSuccess(res, "Rider deleted");
+  } catch (error: any) {
+    return sendError(res, error.message, 400);
   }
 };

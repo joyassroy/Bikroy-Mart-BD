@@ -256,6 +256,7 @@ model Coupon {
 
 model FlashDeal {
   id         String   @id @default(uuid())
+  type       String   @default("FLASH_DEAL")
   productId  String
   product    Product  @relation(fields: [productId], references: [id])
   dealPrice  Float

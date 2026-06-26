@@ -5,8 +5,11 @@ import { sendSuccess, sendError } from "../../utils/apiResponse";
 export const getActiveFlashDeals = async (req: Request, res: Response) => {
   try {
     const now = new Date();
+    const { type } = req.query;
+    const where: any = { isActive: true, startsAt: { lte: now }, endsAt: { gte: now } };
+    if (type) where.type = String(type);
     const deals = await prisma.flashDeal.findMany({
-      where: { isActive: true, startsAt: { lte: now }, endsAt: { gte: now } },
+      where,
       include: { product: true },
       orderBy: { createdAt: "desc" },
     });
@@ -18,9 +21,9 @@ export const getActiveFlashDeals = async (req: Request, res: Response) => {
 
 export const createFlashDeal = async (req: Request, res: Response) => {
   try {
-    const { productId, dealPrice, quantity, startsAt, endsAt } = req.body;
+    const { type, productId, dealPrice, quantity, startsAt, endsAt } = req.body;
     const deal = await prisma.flashDeal.create({
-      data: { productId, dealPrice, quantity, startsAt, endsAt },
+      data: { type: type || "FLASH_DEAL", productId, dealPrice, quantity, startsAt, endsAt },
       include: { product: true },
     });
     return sendSuccess(res, "Flash deal created", deal, 201);
