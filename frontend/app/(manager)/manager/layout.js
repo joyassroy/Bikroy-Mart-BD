@@ -1,13 +1,14 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package, ShoppingCart, Users, MapPin, Menu, X } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Users, MapPin, Menu, X, ClipboardList } from "lucide-react";
 import { useState } from "react";
 
 const menu = [
   { label: "Dashboard", href: "/manager", icon: LayoutDashboard },
   { label: "Products", href: "/manager/products", icon: Package },
   { label: "Orders", href: "/manager/orders", icon: ShoppingCart },
+  { label: "Custom Requests", href: "/manager/custom-requests", icon: ClipboardList },
   { label: "Inventory", href: "/manager/inventory", icon: Package },
   { label: "Riders", href: "/manager/riders", icon: Users },
 ];

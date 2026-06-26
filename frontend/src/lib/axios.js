@@ -11,7 +11,6 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   if (config.data instanceof FormData) {
     delete config.headers["Content-Type"];
-    delete config.headers.common["Content-Type"];
   }
   if (typeof window !== "undefined") {
     const token = localStorage.getItem("bm-token");
@@ -23,8 +22,10 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      if (typeof window !== "undefined") {
+    const status = error.response?.status;
+    if (status === 401) {
+      const url = error.config?.url || "";
+      if (url.includes("/auth/me") && typeof window !== "undefined") {
         localStorage.removeItem("bm-token");
       }
     }

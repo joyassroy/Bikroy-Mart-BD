@@ -1,3 +1,6 @@
+-- CreateSchema
+CREATE SCHEMA IF NOT EXISTS "public";
+
 -- CreateEnum
 CREATE TYPE "Role" AS ENUM ('ADMIN', 'MANAGER', 'RIDER', 'CUSTOMER');
 
@@ -9,6 +12,9 @@ CREATE TYPE "PaymentStatus" AS ENUM ('PENDING', 'PAID', 'FAILED', 'REFUNDED');
 
 -- CreateEnum
 CREATE TYPE "OrderStatus" AS ENUM ('PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED', 'RETURNED');
+
+-- CreateEnum
+CREATE TYPE "CustomRequestStatus" AS ENUM ('PENDING', 'MANAGER_REVIEW', 'PRICING_SET', 'CUSTOMER_APPROVED', 'CUSTOMER_REJECTED', 'PROCESSING', 'SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED');
 
 -- CreateTable
 CREATE TABLE "User" (
@@ -105,6 +111,7 @@ CREATE TABLE "Order" (
     "orderNumber" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "riderId" TEXT,
+    "customRequestId" TEXT,
     "subtotal" DOUBLE PRECISION NOT NULL,
     "deliveryCharge" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "discount" DOUBLE PRECISION NOT NULL DEFAULT 0,
@@ -196,14 +203,26 @@ CREATE TABLE "Review" (
 CREATE TABLE "Banner" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
-    "image" TEXT NOT NULL,
+    "subtitle" TEXT,
+    "image" TEXT,
+    "mobileImage" TEXT,
     "link" TEXT,
     "position" TEXT NOT NULL,
+    "bgColor" TEXT,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
     "sortOrder" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Banner_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Setting" (
+    "id" TEXT NOT NULL,
+    "key" TEXT NOT NULL,
+    "value" TEXT NOT NULL,
+
+    CONSTRAINT "Setting_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -226,6 +245,7 @@ CREATE TABLE "Coupon" (
 -- CreateTable
 CREATE TABLE "FlashDeal" (
     "id" TEXT NOT NULL,
+    "type" TEXT NOT NULL DEFAULT 'FLASH_DEAL',
     "productId" TEXT NOT NULL,
     "dealPrice" DOUBLE PRECISION NOT NULL,
     "quantity" INTEGER NOT NULL,
@@ -236,6 +256,87 @@ CREATE TABLE "FlashDeal" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "FlashDeal_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Blog" (
+    "id" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "image" TEXT,
+    "author" TEXT,
+    "isPublished" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Blog_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "EmailSubscriber" (
+    "id" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'SUBSCRIBED',
+    "subscribedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "EmailSubscriber_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "MediaLibrary" (
+    "id" TEXT NOT NULL,
+    "filename" TEXT NOT NULL,
+    "url" TEXT NOT NULL,
+    "fileType" TEXT NOT NULL,
+    "size" INTEGER,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "MediaLibrary_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Sponsor" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "logo" TEXT NOT NULL,
+    "website" TEXT,
+    "sortOrder" INTEGER NOT NULL DEFAULT 0,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Sponsor_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "CustomRequest" (
+    "id" TEXT NOT NULL,
+    "requestNumber" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "managerId" TEXT,
+    "riderId" TEXT,
+    "productName" TEXT NOT NULL,
+    "description" TEXT,
+    "quantity" DOUBLE PRECISION NOT NULL,
+    "unit" TEXT NOT NULL DEFAULT 'piece',
+    "images" TEXT[],
+    "deliveryAddress" TEXT NOT NULL,
+    "deliveryDivision" TEXT NOT NULL,
+    "deliveryDistrict" TEXT NOT NULL,
+    "deliveryUpazila" TEXT NOT NULL,
+    "deliveryLatitude" DOUBLE PRECISION,
+    "deliveryLongitude" DOUBLE PRECISION,
+    "quotedPrice" DOUBLE PRECISION,
+    "totalAmount" DOUBLE PRECISION,
+    "deliveryCharge" DOUBLE PRECISION DEFAULT 0,
+    "status" "CustomRequestStatus" NOT NULL DEFAULT 'PENDING',
+    "customerNotes" TEXT,
+    "managerNotes" TEXT,
+    "rejectionReason" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "CustomRequest_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -260,6 +361,9 @@ CREATE UNIQUE INDEX "Product_sku_key" ON "Product"("sku");
 CREATE UNIQUE INDEX "Order_orderNumber_key" ON "Order"("orderNumber");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Order_customRequestId_key" ON "Order"("customRequestId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "RiderProfile_userId_key" ON "RiderProfile"("userId");
 
 -- CreateIndex
@@ -269,7 +373,28 @@ CREATE UNIQUE INDEX "ManagerProfile_userId_key" ON "ManagerProfile"("userId");
 CREATE UNIQUE INDEX "Wishlist_userId_productId_key" ON "Wishlist"("userId", "productId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Setting_key_key" ON "Setting"("key");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Coupon_code_key" ON "Coupon"("code");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Blog_slug_key" ON "Blog"("slug");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "EmailSubscriber_email_key" ON "EmailSubscriber"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "CustomRequest_requestNumber_key" ON "CustomRequest"("requestNumber");
+
+-- CreateIndex
+CREATE INDEX "CustomRequest_userId_idx" ON "CustomRequest"("userId");
+
+-- CreateIndex
+CREATE INDEX "CustomRequest_managerId_idx" ON "CustomRequest"("managerId");
+
+-- CreateIndex
+CREATE INDEX "CustomRequest_status_idx" ON "CustomRequest"("status");
 
 -- AddForeignKey
 ALTER TABLE "Address" ADD CONSTRAINT "Address_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -291,6 +416,9 @@ ALTER TABLE "Order" ADD CONSTRAINT "Order_userId_fkey" FOREIGN KEY ("userId") RE
 
 -- AddForeignKey
 ALTER TABLE "Order" ADD CONSTRAINT "Order_riderId_fkey" FOREIGN KEY ("riderId") REFERENCES "RiderProfile"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Order" ADD CONSTRAINT "Order_customRequestId_fkey" FOREIGN KEY ("customRequestId") REFERENCES "CustomRequest"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "OrderItem" ADD CONSTRAINT "OrderItem_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -318,3 +446,9 @@ ALTER TABLE "Review" ADD CONSTRAINT "Review_productId_fkey" FOREIGN KEY ("produc
 
 -- AddForeignKey
 ALTER TABLE "FlashDeal" ADD CONSTRAINT "FlashDeal_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CustomRequest" ADD CONSTRAINT "CustomRequest_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CustomRequest" ADD CONSTRAINT "CustomRequest_riderId_fkey" FOREIGN KEY ("riderId") REFERENCES "RiderProfile"("id") ON DELETE SET NULL ON UPDATE CASCADE;

@@ -542,6 +542,7 @@ async function clearDatabase() {
   await prisma.wishlist.deleteMany();
   await prisma.orderItem.deleteMany();
   await prisma.order.deleteMany();
+  await prisma.customRequest.deleteMany();
   await prisma.product.deleteMany();
   await prisma.subcategory.deleteMany();
   await prisma.category.deleteMany();

@@ -29,6 +29,7 @@ import blogsRoutes from "./modules/content/blogs/blogs.routes";
 import subscribersRoutes from "./modules/content/subscribers/subscribers.routes";
 import mediaRoutes from "./modules/content/media/media.routes";
 import sponsorsRoutes from "./modules/sponsors/sponsors.routes";
+import customRequestRoutes from "./modules/custom-requests/customRequest.routes";
 
 const app = express();
 const httpServer = createServer(app);
@@ -70,6 +71,7 @@ app.use("/api/blogs", blogsRoutes);
 app.use("/api/subscribers", subscribersRoutes);
 app.use("/api/media", mediaRoutes);
 app.use("/api/sponsors", sponsorsRoutes);
+app.use("/api/custom-requests", customRequestRoutes);
 
 // Error handler
 app.use(errorHandler);

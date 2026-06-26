@@ -25,7 +25,6 @@ export default function SigninPage() {
       if (backendUser && backendToken) {
         localStorage.setItem("bm-token", backendToken);
         dispatch(setUser({ user: backendUser, accessToken: backendToken }));
-        toast.success("Login successful!");
         if (backendUser.role === "ADMIN") router.push("/dashboard");
         else if (backendUser.role === "MANAGER") router.push("/manager");
         else if (backendUser.role === "RIDER") router.push("/rider");

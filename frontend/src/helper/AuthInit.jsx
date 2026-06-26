@@ -1,12 +1,15 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, createContext, useContext, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setUser, clearUser } from "@/redux/userSlice";
 import api from "@/lib/axios";
 
+const AuthContext = createContext({ authChecked: false });
+export const useAuthChecked = () => useContext(AuthContext);
+
 export default function AuthInit({ children }) {
   const dispatch = useDispatch();
-  const user = useSelector((state) => state.user.data);
+  const [authChecked, setAuthChecked] = useState(false);
   const initRef = useRef(false);
 
   useEffect(() => {
@@ -14,7 +17,10 @@ export default function AuthInit({ children }) {
     initRef.current = true;
 
     const token = localStorage.getItem("bm-token");
-    if (!token) return;
+    if (!token) {
+      setAuthChecked(true);
+      return;
+    }
 
     api.get("/auth/me")
       .then((res) => {
@@ -25,8 +31,15 @@ export default function AuthInit({ children }) {
       .catch(() => {
         localStorage.removeItem("bm-token");
         dispatch(clearUser());
+      })
+      .finally(() => {
+        setAuthChecked(true);
       });
   }, [dispatch]);
 
-  return children;
+  return (
+    <AuthContext.Provider value={{ authChecked }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }

@@ -1,11 +1,12 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package, Clock, User, Menu, X } from "lucide-react";
+import { LayoutDashboard, Package, Clock, User, Menu, X, ClipboardList } from "lucide-react";
 import { useState } from "react";
 
 const menu = [
   { label: "My Deliveries", href: "/rider", icon: LayoutDashboard },
+  { label: "Custom Deliveries", href: "/rider/custom-deliveries", icon: ClipboardList },
   { label: "History", href: "/rider/history", icon: Clock },
   { label: "Profile", href: "/rider/profile", icon: User },
 ];

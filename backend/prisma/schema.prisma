@@ -8,22 +8,23 @@ datasource db {
 }
 
 model User {
-  id             String          @id @default(uuid())
-  name           String
-  email          String          @unique
-  phone          String?         @unique
-  password       String
-  role           Role            @default(CUSTOMER)
-  avatar         String?
-  isBlocked      Boolean         @default(false)
-  addresses      Address[]
-  orders         Order[]
-  wishlist       Wishlist[]
-  reviews        Review[]
-  riderProfile   RiderProfile?
-  managerProfile ManagerProfile?
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  id              String           @id @default(uuid())
+  name            String
+  email           String           @unique
+  phone           String?          @unique
+  password        String
+  role            Role             @default(CUSTOMER)
+  avatar          String?
+  isBlocked       Boolean          @default(false)
+  addresses       Address[]
+  orders          Order[]
+  customRequests  CustomRequest[]
+  wishlist        Wishlist[]
+  reviews         Review[]
+  riderProfile    RiderProfile?
+  managerProfile  ManagerProfile?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 }
 
 enum Role {
@@ -113,6 +114,8 @@ model Order {
   user               User            @relation(fields: [userId], references: [id])
   riderId            String?
   rider              RiderProfile?   @relation(fields: [riderId], references: [id])
+  customRequestId    String?         @unique
+  customRequest      CustomRequest?  @relation(fields: [customRequestId], references: [id])
   items              OrderItem[]
   subtotal           Float
   deliveryCharge     Float           @default(0)
@@ -172,21 +175,35 @@ enum OrderStatus {
   RETURNED
 }
 
+enum CustomRequestStatus {
+  PENDING
+  MANAGER_REVIEW
+  PRICING_SET
+  CUSTOMER_APPROVED
+  CUSTOMER_REJECTED
+  PROCESSING
+  SHIPPED
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
 model RiderProfile {
-  id              String    @id @default(uuid())
-  userId          String    @unique
-  user            User      @relation(fields: [userId], references: [id])
+  id              String           @id @default(uuid())
+  userId          String           @unique
+  user            User             @relation(fields: [userId], references: [id])
   vehicleType     String?
   vehicleNumber   String?
   licenseNumber   String?
-  isAvailable     Boolean   @default(true)
+  isAvailable     Boolean          @default(true)
   currentLat      Float?
   currentLng      Float?
   assignedZila    String?
   orders          Order[]
-  ratings         Float     @default(0)
-  totalDeliveries Int       @default(0)
-  createdAt       DateTime  @default(now())
+  customRequests  CustomRequest[]
+  ratings         Float            @default(0)
+  totalDeliveries Int              @default(0)
+  createdAt       DateTime         @default(now())
 }
 
 model ManagerProfile {
@@ -304,4 +321,39 @@ model Sponsor {
   sortOrder Int      @default(0)
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
+}
+
+model CustomRequest {
+  id                String              @id @default(uuid())
+  requestNumber     String              @unique
+  userId            String
+  user              User                @relation(fields: [userId], references: [id])
+  managerId         String?
+  riderId           String?
+  rider             RiderProfile?       @relation(fields: [riderId], references: [id])
+  productName       String
+  description       String?
+  quantity          Float
+  unit              String              @default("piece")
+  images            String[]
+  deliveryAddress   String
+  deliveryDivision  String
+  deliveryDistrict  String
+  deliveryUpazila   String
+  deliveryLatitude  Float?
+  deliveryLongitude Float?
+  quotedPrice       Float?
+  totalAmount       Float?
+  deliveryCharge    Float?              @default(0)
+  status            CustomRequestStatus @default(PENDING)
+  customerNotes     String?
+  managerNotes      String?
+  rejectionReason   String?
+  order             Order?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  @@index([userId])
+  @@index([managerId])
+  @@index([status])
 }
