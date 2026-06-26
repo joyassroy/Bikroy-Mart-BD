@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { clearCart } from "@/redux/cartSlice";
 import Header from "@/components/layout/Header";
@@ -14,6 +14,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cart.items);
+  const user = useSelector((state) => state.user.data);
   const { t } = useLanguage();
   const [showCustomReq, setShowCustomReq] = useState(false);
   const [customRequirement, setCustomRequirement] = useState("");
@@ -23,6 +24,24 @@ export default function CheckoutPage() {
     paymentMethod: "COD",
   });
 
+  useEffect(() => {
+    const token = localStorage.getItem("bm-token");
+    if (!user || !token) {
+      toast.error("Please sign in to place an order");
+      router.push("/signin");
+    }
+  }, [user, router]);
+
+  useEffect(() => {
+    if (user) {
+      setForm((prev) => ({
+        ...prev,
+        name: prev.name || user.name || "",
+        phone: prev.phone || user.phone || "",
+      }));
+    }
+  }, [user]);
+
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const deliveryCharge = subtotal >= 1500 ? 0 : 60;
   const total = subtotal + deliveryCharge;
@@ -30,6 +49,12 @@ export default function CheckoutPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (cartItems.length === 0) return toast.error("Cart is empty");
+    const token = localStorage.getItem("bm-token");
+    if (!token || !user) {
+      toast.error("Please sign in to place an order");
+      router.push("/signin");
+      return;
+    }
     setLoading(true);
     try {
       const orderData = {

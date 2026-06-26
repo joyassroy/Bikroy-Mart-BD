@@ -7,6 +7,7 @@ import { User, Package, MapPin, LogOut } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { clearUser } from "@/redux/userSlice";
 import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 import toast from "react-hot-toast";
 
 export default function AccountPage() {
@@ -21,9 +22,10 @@ export default function AccountPage() {
     api.get("/orders/my-orders").then((res) => setOrders(res.data.data || [])).catch(console.error);
   }, [user]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     localStorage.removeItem("bm-token");
     dispatch(clearUser());
+    await signOut({ redirect: false });
     toast.success("Logged out");
     router.push("/");
   };

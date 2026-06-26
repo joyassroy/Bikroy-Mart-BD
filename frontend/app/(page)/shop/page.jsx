@@ -23,19 +23,27 @@ function ShopContent() {
   const [totalPages, setTotalPages] = useState(1);
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [viewMode, setViewMode] = useState("grid");
+  const [offerType, setOfferType] = useState("");
   const { t } = useLanguage();
+
+  const OFFER_TITLES = {
+    STOCK_CLEARANCE: "Stock Clearance Sale",
+    EXECUTIVE: "Executive Offer",
+    COMBO: "Combo Offer",
+    BOGO: "Buy One Get One Free",
+  };
 
   useEffect(() => {
     fetchCategories();
     const urlCategory = searchParams.get("category");
-    if (urlCategory) {
-      setSelectedCategory(urlCategory);
-    }
+    const urlOffer = searchParams.get("offer");
+    if (urlCategory) setSelectedCategory(urlCategory);
+    if (urlOffer) setOfferType(urlOffer);
   }, []);
 
   useEffect(() => {
     fetchProducts();
-  }, [selectedCategory, sortBy, minPrice, maxPrice, currentPage]);
+  }, [selectedCategory, sortBy, minPrice, maxPrice, currentPage, offerType]);
 
   const fetchCategories = async () => {
     try {
@@ -55,6 +63,7 @@ function ShopContent() {
       if (minPrice) params.set("minPrice", minPrice);
       if (maxPrice) params.set("maxPrice", maxPrice);
       if (searchQuery) params.set("search", searchQuery);
+      if (offerType) params.set("offer", offerType);
       params.set("page", currentPage.toString());
       params.set("limit", "20");
 
@@ -92,6 +101,7 @@ function ShopContent() {
     setMaxPrice("");
     setSearchQuery("");
     setSortBy("newest");
+    setOfferType("");
     setCurrentPage(1);
   };
 
@@ -169,7 +179,9 @@ function ShopContent() {
         {/* Page Header */}
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h1 className="text-base sm:text-lg md:text-xl font-semibold text-[#00215B]">{t.shopTitle}</h1>
+            <h1 className="text-base sm:text-lg md:text-xl font-semibold text-[#00215B]">
+              {offerType ? (OFFER_TITLES[offerType] || "Shop") : t.shopTitle}
+            </h1>
             <p className="text-[10px] sm:text-[11px] text-[#667085] mt-0.5">
               {totalProducts} {t.resultsFound}
             </p>
@@ -288,9 +300,17 @@ function ShopContent() {
             </div>
 
             {/* Active Filters */}
-            {(selectedCategory || minPrice || maxPrice || searchQuery) && (
+            {(selectedCategory || minPrice || maxPrice || searchQuery || offerType) && (
               <div className="flex flex-wrap items-center gap-2 mb-3">
                 <span className="text-[10px] text-[#667085] font-medium">{t.filters}:</span>
+                {offerType && (
+                  <span className="inline-flex items-center gap-1 bg-[#E8EDF5] text-[#00215B] text-[10px] font-medium px-2 py-1 rounded-full">
+                    {OFFER_TITLES[offerType] || offerType}
+                    <button onClick={() => { setOfferType(""); setCurrentPage(1); }} className="hover:text-[#001A4A]">
+                      <X size={10} />
+                    </button>
+                  </span>
+                )}
                 {selectedCategory && (
                   <span className="inline-flex items-center gap-1 bg-[#FCE8F3] text-[#EC008C] text-[10px] font-medium px-2 py-1 rounded-full">
                     {categories.find(c => c.slug === selectedCategory)?.name || selectedCategory}

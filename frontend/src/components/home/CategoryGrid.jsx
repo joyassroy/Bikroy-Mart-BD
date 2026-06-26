@@ -58,9 +58,9 @@ export default function CategoryGrid() {
     return (
       <section className="max-w-[1200px] mx-auto mt-2 md:mt-4">
         <div className="h-5 w-32 bg-[#E5E7EB] rounded animate-pulse mb-2 md:mb-3"></div>
-        <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-y-2.5 md:gap-y-4 px-1 sm:px-0">
+        <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-3 md:gap-4 px-1 sm:px-0">
           {[...Array(7)].map((_, i) => (
-            <div key={i} className="bg-[#E5E7EB] rounded-lg h-20 sm:h-24 animate-pulse"></div>
+            <div key={i} className="bg-[#E5E7EB] rounded-lg h-32 sm:h-36 md:h-40 animate-pulse"></div>
           ))}
         </div>
       </section>
@@ -72,19 +72,19 @@ export default function CategoryGrid() {
       <h2 className="pl-2 text-base sm:text-lg md:text-xl font-semibold text-[#181717] mb-2 md:mb-3">
         {t.shop} {t.home === "হোম" ? "শাকসবজি" : "by Category"}
       </h2>
-      <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-y-2.5 md:gap-y-4 px-1 sm:px-0">
+      <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-3 md:gap-4 px-1 sm:px-0">
         {categories.map((cat) => (
           <Link
             key={cat.slug}
             href={`/shop?category=${cat.slug}`}
-            className="flex flex-col items-center bg-white border border-[#E5E7EB] rounded-lg py-3 md:py-4 hover:shadow-[rgba(0,0,0,0.1)_0px_4px_12px_0px] hover:scale-[1.02] transition-all duration-200"
+            className="flex flex-col items-center bg-white border border-[#E5E7EB] rounded-lg p-4 md:p-5 hover:shadow-[rgba(0,0,0,0.1)_0px_4px_12px_0px] hover:scale-[1.02] transition-all duration-200"
           >
             {cat.image ? (
-              <img src={cat.image} alt={cat.name} className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 object-contain mb-1.5 md:mb-2" />
+              <img src={cat.image} alt={cat.name} className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 object-contain mb-2 md:mb-3" />
             ) : (
-              <span className="text-2xl sm:text-3xl md:text-4xl mb-1.5 md:mb-2">{cat.icon}</span>
+              <span className="text-4xl sm:text-5xl md:text-6xl mb-2 md:mb-3">{cat.icon}</span>
             )}
-            <span className="text-[10px] sm:text-[11px] md:text-xs font-semibold text-[#364152] text-center px-1 line-clamp-2 leading-tight">
+            <span className="text-[11px] sm:text-xs md:text-sm font-semibold text-[#364152] text-center px-1 line-clamp-2 leading-tight">
               {cat.name}
             </span>
           </Link>
