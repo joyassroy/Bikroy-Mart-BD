@@ -37,13 +37,15 @@ function ShopContent() {
     fetchCategories();
     const urlCategory = searchParams.get("category");
     const urlOffer = searchParams.get("offer");
+    const urlSearch = searchParams.get("search");
     if (urlCategory) setSelectedCategory(urlCategory);
     if (urlOffer) setOfferType(urlOffer);
+    if (urlSearch) setSearchQuery(urlSearch);
   }, []);
 
   useEffect(() => {
     fetchProducts();
-  }, [selectedCategory, sortBy, minPrice, maxPrice, currentPage, offerType]);
+  }, [selectedCategory, sortBy, minPrice, maxPrice, currentPage, offerType, searchQuery]);
 
   const fetchCategories = async () => {
     try {

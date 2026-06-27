@@ -23,10 +23,10 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error.response?.status;
-    if (status === 401) {
-      const url = error.config?.url || "";
-      if (url.includes("/auth/me") && typeof window !== "undefined") {
-        localStorage.removeItem("bm-token");
+    if (status === 401 && typeof window !== "undefined") {
+      localStorage.removeItem("bm-token");
+      if (!window.location.pathname.includes("/signin")) {
+        window.location.href = "/signin";
       }
     }
     return Promise.reject(error);

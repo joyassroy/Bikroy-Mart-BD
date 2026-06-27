@@ -3,7 +3,7 @@ import { io } from "socket.io-client";
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5004";
 
-let socket: any;
+let socket;
 
 export const getSocket = () => {
   if (!socket) {
@@ -14,6 +14,13 @@ export const getSocket = () => {
     });
   }
   return socket;
+};
+
+export const disconnectSocket = () => {
+  if (socket) {
+    socket.disconnect();
+    socket = undefined;
+  }
 };
 
 export default getSocket;

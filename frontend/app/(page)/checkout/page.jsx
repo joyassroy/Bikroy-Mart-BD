@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { MessageSquare } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useAuthChecked } from "@/helper/AuthInit";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -16,6 +17,7 @@ export default function CheckoutPage() {
   const cartItems = useSelector((state) => state.cart.items);
   const user = useSelector((state) => state.user.data);
   const { t } = useLanguage();
+  const { authChecked } = useAuthChecked();
   const [showCustomReq, setShowCustomReq] = useState(false);
   const [customRequirement, setCustomRequirement] = useState("");
   const [loading, setLoading] = useState(false);
@@ -25,12 +27,11 @@ export default function CheckoutPage() {
   });
 
   useEffect(() => {
-    const token = localStorage.getItem("bm-token");
-    if (!user || !token) {
+    if (authChecked && (!user || !localStorage.getItem("bm-token"))) {
       toast.error("Please sign in to place an order");
       router.push("/signin");
     }
-  }, [user, router]);
+  }, [authChecked, user, router]);
 
   useEffect(() => {
     if (user) {

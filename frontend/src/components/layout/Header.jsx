@@ -1,11 +1,13 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
-import { Search, ShoppingCart, User, MapPin, Menu, X, ChevronDown, Globe, ClipboardList } from "lucide-react";
+import { Search, ShoppingCart, User, MapPin, Menu, X, ChevronDown, Globe, ClipboardList, Loader2 } from "lucide-react";
 import { useSelector } from "react-redux";
 import LocationSelector from "./LocationSelector";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useAuthChecked } from "@/helper/AuthInit";
 
 const categories = [
   { name: "food", slug: "food", icon: "🍞" },
@@ -21,16 +23,19 @@ const categories = [
 ];
 
 export default function Header() {
+  const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [megaMenuOpen, setMegaMenuOpen] = useState(false);
   const [locationOpen, setLocationOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const cartItems = useSelector((state) => state.cart.items);
   const user = useSelector((state) => state.user.data);
   const location = useSelector((state) => state.location);
   const { language, t, setLang } = useLanguage();
   const pathname = usePathname();
+  const { authChecked } = useAuthChecked();
 
   const cartCount = mounted ? cartItems.reduce((sum, item) => sum + item.quantity, 0) : 0;
   const getCategoryName = (key) => t[key] || key;
@@ -88,20 +93,23 @@ export default function Header() {
 
               {/* Search */}
               <div className="flex-1 min-w-0">
-                <div className="relative flex">
+                <form onSubmit={(e) => { e.preventDefault(); if (searchQuery.trim()) router.push(`/shop?search=${encodeURIComponent(searchQuery.trim())}`); }} className="relative flex">
                   <input
                     type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder={t.searchPlaceholder}
-                    className="w-full rounded-l-md px-3 sm:px-4 text-xs sm:text-[13px] bg-white text-[#000000] placeholder:text-[#99A0B4] border border-[#E5E7EB] border-r-0 focus:outline-none focus:border-[2px] focus:border-[#EC008C] focus:shadow-[0px_0px_0px_3px_rgba(236,0,140,0.1)] h-[38px] md:h-[42px] transition-all"
+                    className="w-full rounded-l-md px-3 sm:px-4 text-xs sm:text-[13px] bg-white text-[#000000] placeholder:text-[#99A0B4] border border-[#E5E7EB] border-r-0 focus:outline-none focus:border-[#E5E7EB] h-[38px] md:h-[42px] transition-all"
                     aria-label={t.searchPlaceholder}
                   />
                   <button
+                    type="submit"
                     className="bg-[#EC008C] text-white px-3 sm:px-4 rounded-r-md hover:bg-[#D60071] transition flex items-center justify-center h-[38px] md:h-[42px] flex-shrink-0"
                     aria-label={t.searchPlaceholder}
                   >
                     <Search size={16} />
                   </button>
-                </div>
+                </form>
               </div>
 
               {/* Language */}
@@ -141,9 +149,13 @@ export default function Header() {
                     </span>
                   )}
                 </Link>
-                <Link href={user ? "/account" : "/signin"} className="text-[#364152] hover:bg-[#F3F4F6] p-1.5 rounded-md transition" aria-label={user ? t.myAccount : t.signIn}>
-                  <User size={18} />
-                </Link>
+                {authChecked ? (
+                  <Link href={user ? "/account" : "/signin"} className="text-[#364152] hover:bg-[#F3F4F6] p-1.5 rounded-md transition" aria-label={user ? t.myAccount : t.signIn}>
+                    <User size={18} />
+                  </Link>
+                ) : (
+                  <span className="p-1.5"><Loader2 size={18} className="animate-spin text-gray-300" /></span>
+                )}
               </div>
             </div>
           </div>
@@ -206,13 +218,13 @@ export default function Header() {
 
           <div className="overflow-y-auto h-[calc(100%-56px)] pb-20">
             <div className="p-3 border-b border-[#E5E7EB]">
-              <Link href={user ? "/account" : "/signin"} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5">
+              <Link href={authChecked ? (user ? "/account" : "/signin") : "#"} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-full bg-[#F4F7FB] flex items-center justify-center">
                   <User size={18} className="text-[#667085]" />
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-[#000000]">{user ? user.name : t.signIn}</p>
-                  <p className="text-[10px] text-[#667085]">{user ? user.email : t.myAccount}</p>
+                  <p className="text-xs font-semibold text-[#000000]">{authChecked ? (user ? user.name : t.signIn) : "..."}</p>
+                  <p className="text-[10px] text-[#667085]">{authChecked ? (user ? user.email : t.myAccount) : "..."}</p>
                 </div>
               </Link>
             </div>
@@ -278,9 +290,9 @@ export default function Header() {
               </div>
               <span className="text-[9px] font-semibold">{t.cart}</span>
             </Link>
-            <Link href={user ? "/account" : "/signin"} className={`flex flex-col items-center gap-0.5 min-w-[50px] ${pathname === "/account" || pathname === "/signin" ? "text-[#EC008C]" : "text-[#667085]"}`}>
+            <Link href={authChecked ? (user ? "/account" : "/signin") : "#"} className={`flex flex-col items-center gap-0.5 min-w-[50px] ${pathname === "/account" || pathname === "/signin" ? "text-[#EC008C]" : "text-[#667085]"}`}>
               <User size={20} />
-              <span className="text-[9px] font-semibold">{user ? t.myAccount : t.signIn}</span>
+              <span className="text-[9px] font-semibold">{authChecked ? (user ? t.myAccount : t.signIn) : "..."}</span>
             </Link>
           </div>
         </div>

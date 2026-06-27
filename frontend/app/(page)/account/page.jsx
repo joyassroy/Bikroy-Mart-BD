@@ -3,32 +3,51 @@ import { useState, useEffect } from "react";
 import api from "@/lib/axios";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { User, Package, MapPin, LogOut } from "lucide-react";
+import { User, Package, MapPin, LogOut, Loader2 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { clearUser } from "@/redux/userSlice";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
+import { useAuthChecked } from "@/helper/AuthInit";
+import { disconnectSocket } from "@/lib/socket";
 import toast from "react-hot-toast";
 
 export default function AccountPage() {
   const dispatch = useDispatch();
   const router = useRouter();
   const user = useSelector((state) => state.user.data);
+  const { authChecked } = useAuthChecked();
   const [orders, setOrders] = useState([]);
   const [activeTab, setActiveTab] = useState("orders");
 
   useEffect(() => {
-    if (!user) { router.push("/signin"); return; }
-    api.get("/orders/my-orders").then((res) => setOrders(res.data.data || [])).catch(console.error);
+    if (authChecked && !user) {
+      router.push("/signin");
+    }
+  }, [authChecked, user, router]);
+
+  useEffect(() => {
+    if (user) {
+      api.get("/orders/my-orders").then((res) => setOrders(res.data.data || [])).catch(console.error);
+    }
   }, [user]);
 
   const handleLogout = async () => {
     localStorage.removeItem("bm-token");
     dispatch(clearUser());
+    disconnectSocket();
     await signOut({ redirect: false });
     toast.success("Logged out");
-    router.push("/");
+    router.replace("/");
   };
+
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="animate-spin text-[#0067A0]" size={32} />
+      </div>
+    );
+  }
 
   if (!user) return null;
 
