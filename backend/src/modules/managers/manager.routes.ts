@@ -7,6 +7,7 @@ const router = Router();
 
 router.get("/", authenticate, authorize("ADMIN"), managerController.getAllManagers);
 router.post("/", authenticate, authorize("ADMIN"), managerController.createManager);
+router.put("/:id", authenticate, authorize("ADMIN"), managerController.updateManager);
 router.get("/products", authenticate, authorize("MANAGER"), managerController.getManagerProducts);
 router.get("/stats", authenticate, authorize("MANAGER"), managerController.getManagerStats);
 router.delete("/:id", authenticate, authorize("ADMIN"), managerController.deleteManager);

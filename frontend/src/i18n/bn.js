@@ -328,6 +328,39 @@ const bn = {
   faq: "প্রশ্নোত্তর",
   helpCenter: "সাহায্য কেন্দ্র",
 
+  // Order Success
+  orderPlacedSuccessfully: "অর্ডার সফলভাবে দেওয়া হয়েছে!",
+  yourTrackingId: "আপনার ট্র্যাকিং আইডি",
+  copyTrackingId: "ট্র্যাকিং আইডি কপি করুন",
+  trackYourOrder: "আপনার অর্ডার ট্র্যাক করুন",
+  continueShopping: "কেনাকাটা চালিয়ে যান",
+  orderConfirmedMsg: "আপনার অর্ডার নিশ্চিত হয়েছে। ডেলিভারি ট্র্যাক করতে ট্র্যাকিং আইডি ব্যবহার করুন।",
+
+  // Order Details Modal
+  orderDetails: "অর্ডারের বিস্তারিত",
+  orderDate: "অর্ডারের তারিখ",
+  deliveryAddressLabel: "ডেলিভারি ঠিকানা",
+  paymentMethodLabel: "পেমেন্ট পদ্ধতি",
+  paymentStatusLabel: "পেমেন্ট স্ট্যাটাস",
+  riderInfo: "রাইডার তথ্য",
+  riderName: "রাইডারের নাম",
+  riderPhone: "রাইডারের ফোন",
+
+  // Addresses
+  savedAddresses: "সংরক্ষিত ঠিকানা",
+  noSavedAddresses: "এখনো কোনো সংরক্ষিত ঠিকানা নেই। চেকআউটে ব্যবহার করতে একটি যোগ করুন।",
+  addNewAddress: "নতুন ঠিকানা যোগ করুন",
+  editAddress: "ঠিকানা সম্পাদনা করুন",
+  recipientName: "প্রাপকের নাম",
+  recipientPhone: "প্রাপকের ফোন",
+  setAsDefault: "ডিফল্ট হিসেবে সেট করুন",
+  defaultAddress: "ডিফল্ট",
+  addressSaved: "ঠিকানা সফলভাবে সংরক্ষিত হয়েছে!",
+  addressDeleted: "ঠিকানা মুছে ফেলা হয়েছে!",
+  selectSavedAddress: "একটি সংরক্ষিত ঠিকানা নির্বাচন করুন",
+  fillManually: "ম্যানুয়ালি পূরণ করুন",
+  selectAddress: "ঠিকানা নির্বাচন করুন",
+
   // Custom Request
   customRequestTitle: "কাস্টম পণ্য অনুরোধ",
   customRequestSubtitle: "আপনি যা খুঁজছেন তা পাচ্ছেন না? বলুন আপনি কী চান!",

@@ -23,10 +23,21 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error.response?.status;
-    if (status === 401 && typeof window !== "undefined") {
-      localStorage.removeItem("bm-token");
-      if (!window.location.pathname.includes("/signin")) {
-        window.location.href = "/signin";
+    if (typeof window !== "undefined") {
+      if (status === 401) {
+        localStorage.removeItem("bm-token");
+        if (!window.location.pathname.includes("/signin")) {
+          window.location.href = "/signin";
+        }
+      } else if (status === 403) {
+        const pathname = window.location.pathname;
+        if (pathname.startsWith("/dashboard")) {
+          window.location.href = "/signin";
+        } else if (pathname.startsWith("/manager")) {
+          window.location.href = "/signin";
+        } else if (pathname.startsWith("/rider")) {
+          window.location.href = "/signin";
+        }
       }
     }
     return Promise.reject(error);

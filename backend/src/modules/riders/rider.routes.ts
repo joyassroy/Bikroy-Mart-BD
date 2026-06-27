@@ -7,6 +7,7 @@ const router = Router();
 
 router.get("/", authenticate, authorize("ADMIN", "MANAGER"), riderController.getAllRiders);
 router.post("/", authenticate, authorize("ADMIN"), riderController.createRider);
+router.put("/:id", authenticate, authorize("ADMIN"), riderController.updateRider);
 router.put("/location", authenticate, authorize("RIDER"), riderController.updateLocation);
 router.put("/availability", authenticate, authorize("RIDER"), riderController.toggleAvailability);
 router.get("/active-delivery", authenticate, authorize("RIDER"), riderController.getActiveDelivery);

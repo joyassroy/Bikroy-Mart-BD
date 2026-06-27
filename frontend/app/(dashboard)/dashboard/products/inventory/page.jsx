@@ -96,7 +96,7 @@ export default function InventoryPage() {
             placeholder="Search by name or SKU..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#EC008C] focus:outline-none text-sm"
+            className="w-full pl-10 pr-4 py-2 border border-[#E5E7EB] rounded-lg focus:outline-none focus:border-[#E5E7EB] text-sm"
           />
         </div>
         <div className="flex gap-2 w-full md:w-auto">

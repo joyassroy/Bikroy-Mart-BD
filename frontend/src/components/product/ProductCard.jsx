@@ -1,16 +1,50 @@
 "use client";
+import { useState, useCallback } from "react";
 import { useDispatch } from "react-redux";
 import Link from "next/link";
 import { addToCart } from "@/redux/cartSlice";
-import { ShoppingCart, Star } from "lucide-react";
+import { ShoppingCart, Star, Pencil, Trash2, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
+import EditProductModal from "./EditProductModal";
 
-export default function ProductCard({ product }) {
+function DeleteModal({ product, onConfirm, onCancel }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onCancel} />
+      <div className="relative bg-white rounded-xl shadow-xl w-full max-w-sm p-5 z-10">
+        <button onClick={onCancel} className="absolute top-3 right-3 p-1 rounded-md hover:bg-gray-100 transition text-[#667085]">
+          <X size={16} />
+        </button>
+        <div className="text-center">
+          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-red-50 flex items-center justify-center">
+            <Trash2 size={20} className="text-red-500" />
+          </div>
+          <h3 className="text-sm font-semibold text-[#000000] mb-1">Delete Product</h3>
+          <p className="text-xs text-[#667085] mb-4">
+            Are you sure you want to delete <span className="font-medium text-[#000000]">{product.name}</span>? This action cannot be undone.
+          </p>
+          <div className="flex gap-2">
+            <button onClick={onCancel} className="flex-1 px-4 py-2 text-xs font-semibold border border-[#E5E7EB] rounded-lg text-[#364152] hover:bg-[#F4F7FB] transition">
+              Cancel
+            </button>
+            <button onClick={onConfirm} className="flex-1 px-4 py-2 text-xs font-semibold bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function ProductCard({ product, showActions, onDelete, onProductUpdated }) {
   const dispatch = useDispatch();
   const { t } = useLanguage();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
-  const handleAddToCart = (e) => {
+  const handleAddToCart = useCallback((e) => {
     e.preventDefault();
     e.stopPropagation();
     dispatch(addToCart({
@@ -21,7 +55,24 @@ export default function ProductCard({ product }) {
       quantity: 1,
     }));
     toast.success(t.addToCart);
-  };
+  }, [dispatch, product, t]);
+
+  const handleDelete = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowDeleteModal(true);
+  }, []);
+
+  const handleEdit = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowEditModal(true);
+  }, []);
+
+  const confirmDelete = useCallback(() => {
+    setShowDeleteModal(false);
+    onDelete?.(product.id);
+  }, [onDelete, product.id]);
 
   const avgRating = product._count?.reviews > 0
     ? (product.reviews?.reduce?.((sum, r) => sum + r.rating, 0) / product.reviews.length) || 0
@@ -30,7 +81,7 @@ export default function ProductCard({ product }) {
   const isOutOfStock = product.stock !== undefined && product.stock <= 0;
 
   return (
-    <Link href={`/product/${product.slug}`}>
+    <>
       <div className="bg-[#f4f7fb] rounded-lg overflow-hidden hover:shadow-[rgba(0,0,0,0.1)_0px_1px_3px_0px,rgba(0,0,0,0.1)_0px_1px_2px_-1px] transition-all duration-300 hover:scale-[1.02] group cursor-pointer">
         <div className="relative p-2 sm:p-3 flex items-center justify-center" style={{ aspectRatio: "1/1" }}>
           {product.badges?.length > 0 && (
@@ -60,7 +111,6 @@ export default function ProductCard({ product }) {
             {product.name}
           </h3>
 
-          {/* Rating */}
           {(product._count?.reviews > 0 || avgRating > 0) && (
             <div className="flex items-center gap-1 mb-1">
               <div className="flex items-center gap-0.5">
@@ -90,16 +140,54 @@ export default function ProductCard({ product }) {
             )}
           </div>
 
-          <button
-            onClick={handleAddToCart}
-            disabled={isOutOfStock}
-            className="btn-primary w-full py-1 sm:py-1.5 text-[10px] sm:text-[11px] disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            <ShoppingCart size={12} />
-            {isOutOfStock ? t.outOfStock : t.addToCart}
-          </button>
+          {showActions ? (
+            <div className="space-y-1.5">
+              <button
+                onClick={handleAddToCart}
+                disabled={isOutOfStock}
+                className="btn-primary w-full py-1 sm:py-1.5 text-[10px] sm:text-[11px] disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <ShoppingCart size={12} />
+                {isOutOfStock ? t.outOfStock : t.addToCart}
+              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleEdit}
+                  className="flex-1 flex items-center justify-center gap-1 py-1.5 text-[10px] sm:text-[11px] font-semibold bg-[#00215B] text-white rounded-md hover:bg-[#001A4A] transition"
+                >
+                  <Pencil size={11} /> Edit
+                </button>
+                <button
+                  onClick={handleDelete}
+                  className="flex-1 flex items-center justify-center gap-1 py-1.5 text-[10px] sm:text-[11px] font-semibold bg-red-50 text-red-500 border border-red-200 rounded-md hover:bg-red-100 transition"
+                >
+                  <Trash2 size={11} /> Delete
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={handleAddToCart}
+              disabled={isOutOfStock}
+              className="btn-primary w-full py-1 sm:py-1.5 text-[10px] sm:text-[11px] disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <ShoppingCart size={12} />
+              {isOutOfStock ? t.outOfStock : t.addToCart}
+            </button>
+          )}
         </div>
       </div>
-    </Link>
+
+      {showDeleteModal && (
+        <DeleteModal product={product} onConfirm={confirmDelete} onCancel={() => setShowDeleteModal(false)} />
+      )}
+      {showEditModal && (
+        <EditProductModal
+          productId={product.id}
+          onClose={() => setShowEditModal(false)}
+          onUpdated={() => onProductUpdated?.()}
+        />
+      )}
+    </>
   );
 }

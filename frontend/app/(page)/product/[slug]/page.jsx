@@ -10,6 +10,7 @@ import Footer from "@/components/layout/Footer";
 import ProductCard from "@/components/product/ProductCard";
 import api from "@/lib/axios";
 import { useLanguage } from "@/i18n/LanguageContext";
+import useDistrict from "@/helper/useDistrict";
 import { ShoppingCart, Heart, Star, StarOff, ChevronRight, Minus, Plus, Truck, Shield, RotateCcw, Clock, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -17,6 +18,7 @@ export default function ProductDetailPage() {
   const { slug } = useParams();
   const dispatch = useDispatch();
   const { t } = useLanguage();
+  const district = useDistrict();
   const wishlistItems = useSelector((state) => state.wishlist.items);
 
   const [product, setProduct] = useState(null);
@@ -41,7 +43,8 @@ export default function ProductDetailPage() {
       setProduct(data);
 
       if (data?.category?.slug) {
-        const relatedRes = await api.get(`/products?category=${data.category.slug}&limit=8`);
+        const districtParam = district ? `&district=${encodeURIComponent(district)}` : "";
+        const relatedRes = await api.get(`/products?category=${data.category.slug}&limit=8${districtParam}`);
         setRelatedProducts((relatedRes.data.data || []).filter((p) => p.id !== data.id).slice(0, 4));
       }
     } catch (err) {

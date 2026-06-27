@@ -18,7 +18,6 @@ export const metadata = {
   },
   description: "Bikroy-Mart-BD - Your trusted online grocery store. Fresh products, 60-minute delivery, and the best prices in Bangladesh.",
   keywords: ["grocery", "online shopping", "bangladesh", "Bikroy-Mart", "fresh products", "delivery"],
-  viewport: "width=device-width, initial-scale=1, maximum-scale=5",
   openGraph: {
     title: "Bikroy-Mart-BD - Best Online Grocery Shopping in Bangladesh",
     description: "Fresh groceries delivered to your doorstep in 60 minutes.",
@@ -26,6 +25,12 @@ export const metadata = {
     siteName: "Bikroy-Mart-BD",
     type: "website",
   },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({ children }) {

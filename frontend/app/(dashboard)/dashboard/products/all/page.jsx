@@ -1,27 +1,30 @@
 "use client";
 import { useState, useEffect } from "react";
 import api from "@/lib/axios";
-import { Plus, Search, Edit, Trash2 } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
+import EditProductModal from "@/components/product/EditProductModal";
 
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [editProductId, setEditProductId] = useState(null);
+  const [deleteModal, setDeleteModal] = useState(null);
 
   useEffect(() => { fetchProducts(); }, []);
 
   const fetchProducts = async () => {
     try {
-      const res = await api.get(`/products?limit=50${search ? `&search=${search}` : ""}`);
+      const res = await api.get(`/products?limit=50&includeInactive=true${search ? `&search=${search}` : ""}`);
       setProducts(res.data.data || []);
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
 
   const handleDelete = async (id) => {
-    if (!confirm("Are you sure you want to delete this product?")) return;
+    setDeleteModal(null);
     try {
       await api.delete(`/products/${id}`);
       toast.success("Product deleted");
@@ -46,7 +49,7 @@ export default function ProductsPage() {
               type="text" placeholder="Search products..."
               value={search} onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && fetchProducts()}
-              className="w-full pl-9 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none"
+              className="w-full pl-9 pr-4 py-2 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:border-[#E5E7EB]"
             />
           </div>
         </div>
@@ -72,7 +75,15 @@ export default function ProductsPage() {
                   <tr key={p.id} className="border-b hover:bg-gray-50">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <span className="text-2xl">{p.images?.[0] || "📦"}</span>
+                        {p.images?.[0] ? (
+                          p.images[0].startsWith("http") || p.images[0].startsWith("/") ? (
+                            <img src={p.images[0]} alt={p.name} className="w-10 h-10 object-cover rounded border border-[#E5E7EB]" />
+                          ) : (
+                            <span className="text-2xl">{p.images[0]}</span>
+                          )
+                        ) : (
+                          <span className="text-2xl">📦</span>
+                        )}
                         <div>
                           <p className="font-medium text-sm">{p.name}</p>
                           <p className="text-xs text-gray-400">{p.sku}</p>
@@ -89,8 +100,8 @@ export default function ProductsPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <Link href={`/dashboard/products/edit/${p.id}`} className="text-blue-500 hover:text-blue-700"><Edit size={16} /></Link>
-                        <button onClick={() => handleDelete(p.id)} className="text-red-500 hover:text-red-700"><Trash2 size={16} /></button>
+                        <button onClick={() => setEditProductId(p.id)} className="text-blue-500 hover:text-blue-700"><Edit size={16} /></button>
+                        <button onClick={() => setDeleteModal(p)} className="text-red-500 hover:text-red-700"><Trash2 size={16} /></button>
                       </div>
                     </td>
                   </tr>
@@ -100,6 +111,34 @@ export default function ProductsPage() {
           </table>
         </div>
       </div>
+
+      {editProductId && (
+        <EditProductModal
+          productId={editProductId}
+          onClose={() => setEditProductId(null)}
+          onUpdated={fetchProducts}
+        />
+      )}
+
+      {deleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setDeleteModal(null)} />
+          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-sm p-5 z-10">
+            <h3 className="text-sm font-semibold text-[#000000] mb-1">Delete Product</h3>
+            <p className="text-xs text-[#667085] mb-4">
+              Are you sure you want to delete <span className="font-medium text-[#000000]">{deleteModal.name}</span>?
+            </p>
+            <div className="flex gap-2">
+              <button onClick={() => setDeleteModal(null)} className="flex-1 px-4 py-2 text-xs font-semibold border border-[#E5E7EB] rounded-lg text-[#364152] hover:bg-[#F4F7FB] transition">
+                Cancel
+              </button>
+              <button onClick={() => handleDelete(deleteModal.id)} className="flex-1 px-4 py-2 text-xs font-semibold bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

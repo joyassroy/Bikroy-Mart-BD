@@ -2,13 +2,15 @@
 import { useState, useEffect } from "react";
 import api from "@/lib/axios";
 import { DELIVERY_AREAS } from "@/lib/constants";
-import { Plus, Trash2, X } from "lucide-react";
+import { Plus, Trash2, X, Pencil } from "lucide-react";
 import toast from "react-hot-toast";
+import EditRiderModal from "@/components/rider/EditRiderModal";
 
 export default function RidersPage() {
   const [riders, setRiders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editRider, setEditRider] = useState(null);
   const [form, setForm] = useState({
     name: "", email: "", phone: "", password: "",
     vehicleType: "Bike", vehicleNumber: "", licenseNumber: "", assignedZila: "",
@@ -170,9 +172,14 @@ export default function RidersPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <button onClick={() => handleDelete(rider.id)} className="text-red-400 hover:text-red-600 transition p-1" title="Delete rider">
-                        <Trash2 size={16} />
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => setEditRider(rider)} className="text-blue-400 hover:text-blue-600 transition p-1" title="Edit rider">
+                          <Pencil size={16} />
+                        </button>
+                        <button onClick={() => handleDelete(rider.id)} className="text-red-400 hover:text-red-600 transition p-1" title="Delete rider">
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -181,6 +188,14 @@ export default function RidersPage() {
           </table>
         </div>
       </div>
+
+      {editRider && (
+        <EditRiderModal
+          rider={editRider}
+          onClose={() => setEditRider(null)}
+          onUpdated={fetchRiders}
+        />
+      )}
     </div>
   );
 }

@@ -38,6 +38,8 @@ model Address {
   id          String  @id @default(uuid())
   userId      String
   user        User    @relation(fields: [userId], references: [id])
+  name        String
+  phone       String
   division    String
   district    String
   upazila     String
@@ -45,6 +47,8 @@ model Address {
   isDefault   Boolean @default(false)
   latitude    Float?
   longitude   Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Category {
@@ -103,6 +107,7 @@ model Product {
   orderItems    OrderItem[]
   wishlist      Wishlist[]
   flashDeals    FlashDeal[]
+  promoOfferItems PromoOfferItem[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 }
@@ -283,6 +288,35 @@ model FlashDeal {
   endsAt     DateTime
   isActive   Boolean  @default(true)
   createdAt  DateTime @default(now())
+}
+
+model PromoOffer {
+  id              String            @id @default(uuid())
+  title           String
+  description     String?
+  type            String            // "COMBO", "BOGO"
+  offerPrice      Float             // Bundle price for COMBO, or discount for BOGO
+  buyQuantity     Int               @default(1)   // For BOGO: how many to buy
+  getQuantity     Int               @default(1)   // For BOGO: how many free/discounted
+  getDiscount     Float             @default(100) // For BOGO: % discount on get item (100=free)
+  items           PromoOfferItem[]
+  startsAt        DateTime
+  endsAt          DateTime
+  isActive        Boolean           @default(true)
+  sortOrder       Int               @default(0)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+model PromoOfferItem {
+  id            String       @id @default(uuid())
+  promoOfferId  String
+  promoOffer    PromoOffer   @relation(fields: [promoOfferId], references: [id], onDelete: Cascade)
+  productId     String
+  product       Product      @relation(fields: [productId], references: [id])
+  quantity      Int          @default(1)
+
+  @@unique([promoOfferId, productId])
 }
 
 model Blog {

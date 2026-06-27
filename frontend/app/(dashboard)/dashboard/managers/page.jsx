@@ -2,13 +2,15 @@
 import { useState, useEffect } from "react";
 import api from "@/lib/axios";
 import { DELIVERY_AREAS } from "@/lib/constants";
-import { Plus, Trash2, X } from "lucide-react";
+import { Plus, Trash2, X, Pencil } from "lucide-react";
 import toast from "react-hot-toast";
+import EditManagerModal from "@/components/manager/EditManagerModal";
 
 export default function ManagersPage() {
   const [managers, setManagers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editManager, setEditManager] = useState(null);
   const [form, setForm] = useState({
     name: "", email: "", phone: "", password: "",
     assignedDistrict: "Dhaka", assignedZila: "",
@@ -127,9 +129,14 @@ export default function ManagersPage() {
                   <p className="text-sm text-gray-500">{manager.user?.email}</p>
                   {manager.user?.phone && <p className="text-xs text-gray-400">{manager.user?.phone}</p>}
                 </div>
-                <button onClick={() => handleDelete(manager.id)} className="text-red-400 hover:text-red-600 transition p-1" title="Delete manager">
-                  <Trash2 size={16} />
-                </button>
+                <div className="flex items-center gap-1">
+                  <button onClick={() => setEditManager(manager)} className="text-blue-400 hover:text-blue-600 transition p-1" title="Edit manager">
+                    <Pencil size={16} />
+                  </button>
+                  <button onClick={() => handleDelete(manager.id)} className="text-red-400 hover:text-red-600 transition p-1" title="Delete manager">
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </div>
               <div className="mt-4 space-y-2">
                 <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -145,6 +152,14 @@ export default function ManagersPage() {
           ))
         )}
       </div>
+
+      {editManager && (
+        <EditManagerModal
+          manager={editManager}
+          onClose={() => setEditManager(null)}
+          onUpdated={fetchManagers}
+        />
+      )}
     </div>
   );
 }

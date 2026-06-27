@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, Package, ShoppingCart, Users, MapPin, Menu, X, ClipboardList } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Users, MapPin, Menu, X, ClipboardList, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useAuthChecked } from "@/helper/AuthInit";
@@ -24,14 +24,14 @@ export default function ManagerLayout({ children }) {
 
   useEffect(() => {
     if (authChecked && (!user || user.role !== "MANAGER")) {
-      router.replace("/signin");
+      router.replace("/");
     }
   }, [authChecked, user, router]);
 
   if (!authChecked || !user || user.role !== "MANAGER") {
     return (
       <div className="min-h-screen bg-[#F4F7FB] flex items-center justify-center">
-        <p className="text-sm text-gray-400">Loading...</p>
+        <Loader2 size={24} className="animate-spin text-[#EC008C]" />
       </div>
     );
   }
@@ -44,10 +44,10 @@ export default function ManagerLayout({ children }) {
 
       <aside className={`fixed lg:sticky top-0 left-0 z-50 lg:z-auto h-screen w-56 lg:w-52 bg-[#00215B] text-white flex-shrink-0 transition-transform duration-200 lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="p-3 border-b border-[#001A4A] flex items-center justify-between">
-          <div>
+          <Link href="/" className="block">
             <h2 className="text-xs font-bold">Bikroy<span className="text-[#EC008C]">-Mart</span>-BD</h2>
             <p className="text-[9px] text-white/50">Manager Panel</p>
-          </div>
+          </Link>
           <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-white/60 hover:text-white p-1">
             <X size={16} />
           </button>
@@ -75,7 +75,7 @@ export default function ManagerLayout({ children }) {
             <button onClick={() => setSidebarOpen(true)} className="text-[#364152] p-1">
               <Menu size={20} />
             </button>
-            <span className="text-xs font-bold text-[#00215B]">Bikroy<span className="text-[#EC008C]">-Mart</span>-BD</span>
+            <Link href="/" className="text-xs font-bold text-[#00215B]">Bikroy<span className="text-[#EC008C]">-Mart</span>-BD</Link>
           </div>
         </div>
         <main className="p-3 sm:p-4">{children}</main>

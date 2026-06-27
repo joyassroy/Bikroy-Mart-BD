@@ -21,13 +21,23 @@ const PLACEHOLDER_PRODUCTS = [
 
 export default function OfferSection({ type, title, subtitle, bgColor = "from-[#00215B] to-[#00AFCC]", badgeColor = "bg-[#EC008C]" }) {
   const [deals, setDeals] = useState([]);
+  const [promoOffers, setPromoOffers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get(`/flash-deals?type=${type}`)
-      .then((res) => setDeals(res.data.data || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    const isMulti = type === "COMBO" || type === "BOGO";
+    const fetches = [];
+    if (!isMulti) fetches.push(api.get(`/flash-deals?type=${type}`).catch(() => ({ data: { data: [] } })));
+    if (isMulti) fetches.push(api.get(`/offers?type=${type}`).catch(() => ({ data: { data: [] } })));
+    fetches.push(Promise.resolve({ data: { data: [] } }));
+
+    Promise.all(fetches).then((results) => {
+      if (isMulti) {
+        setPromoOffers(results[0].data.data || []);
+      } else {
+        setDeals(results[0].data.data || []);
+      }
+    }).finally(() => setLoading(false));
   }, [type]);
 
   const displayItems = deals.length > 0
@@ -44,6 +54,27 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
           discount,
           deliveryTime: product.deliveryTime || "1-2 hours",
           isPlaceholder: false,
+          badge: null,
+        };
+      })
+    : promoOffers.length > 0
+    ? promoOffers.map((offer) => {
+        const firstItem = offer.items?.[0]?.product;
+        const totalOriginal = offer.items?.reduce((sum, i) => sum + (i.product?.price || 0) * i.quantity, 0) || 0;
+        const discount = totalOriginal > 0 ? Math.round(((totalOriginal - offer.offerPrice) / totalOriginal) * 100) : 0;
+        const name = offer.title || (offer.items?.map((i) => i.product?.name).join(" + "));
+        return {
+          id: offer.id,
+          slug: firstItem?.slug,
+          name,
+          price: totalOriginal,
+          dealPrice: offer.offerPrice,
+          image: firstItem?.images?.[0] || null,
+          discount,
+          deliveryTime: firstItem?.deliveryTime || "1-2 hours",
+          isPlaceholder: false,
+          badge: type === "BOGO" ? `Buy ${offer.buyQuantity} Get ${offer.getQuantity}` : type === "COMBO" ? "Bundle Deal" : null,
+          items: offer.items,
         };
       })
     : PLACEHOLDER_PRODUCTS.map((p, i) => ({
@@ -57,6 +88,7 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
         discount: 30,
         deliveryTime: "1-2 hours",
         isPlaceholder: true,
+        badge: null,
       }));
 
   if (loading) {
@@ -97,6 +129,11 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
               <span className={`absolute top-2 left-2 ${badgeColor} text-white text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded z-10`}>
                 {item.discount}% OFF
               </span>
+              {item.badge && (
+                <span className="absolute top-2 right-2 bg-yellow-400 text-yellow-900 text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded z-10">
+                  {item.badge}
+                </span>
+              )}
               {item.isPlaceholder ? (
                 <span className="text-5xl sm:text-6xl md:text-7xl group-hover:scale-110 transition-transform duration-200">{item.emoji}</span>
               ) : item.image ? (
@@ -116,6 +153,11 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
             </div>
             <div className="p-3 sm:p-3.5">
               <h3 className="text-xs sm:text-[13px] md:text-sm font-medium text-[#181717] line-clamp-2 mb-1.5 min-h-[36px] sm:min-h-[40px] leading-tight">{item.name}</h3>
+              {item.items && item.items.length > 1 && (
+                <div className="text-[9px] text-gray-400 mb-1">
+                  {item.items.map((i) => i.product?.name).filter(Boolean).join(" + ")}
+                </div>
+              )}
               <div className="flex items-center gap-1.5 mb-1.5">
                 <span className="text-[#181717] font-bold text-sm sm:text-[15px] md:text-base">৳{item.dealPrice}</span>
                 <span className="text-[#667085] text-[11px] sm:text-xs line-through">৳{item.price}</span>

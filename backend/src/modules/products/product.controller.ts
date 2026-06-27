@@ -16,13 +16,18 @@ export const getAllProducts = async (req: Request, res: Response) => {
       featured,
       managerId,
       offer,
+      district,
+      includeInactive,
     } = req.query;
 
     const pageNum = parseInt(page as string, 10);
     const limitNum = parseInt(limit as string, 10);
     const skip = (pageNum - 1) * limitNum;
 
-    const where: any = { isActive: true };
+    const where: any = {};
+    if (includeInactive !== "true") {
+      where.isActive = true;
+    }
     if (category) where.category = { slug: category };
     if (subcategory) where.subcategory = { slug: subcategory };
     if (managerId) where.managerId = managerId;
@@ -50,6 +55,19 @@ export const getAllProducts = async (req: Request, res: Response) => {
       } else {
         where.id = { in: [] };
       }
+    }
+
+    if (district) {
+      const managers = await prisma.managerProfile.findMany({
+        where: { assignedDistrict: String(district) },
+        select: { id: true },
+      });
+      const managerIds = managers.map((m) => m.id);
+      where.OR = [
+        ...(where.OR || []),
+        { managerId: { in: managerIds } },
+        { managerId: null },
+      ];
     }
 
     const orderBy: any = {};
@@ -132,8 +150,23 @@ export const getProductById = async (req: Request, res: Response) => {
 
 export const getFeaturedProducts = async (req: Request, res: Response) => {
   try {
+    const { district } = req.query;
+    const where: any = { isActive: true, isFeatured: true };
+
+    if (district) {
+      const managers = await prisma.managerProfile.findMany({
+        where: { assignedDistrict: String(district) },
+        select: { id: true },
+      });
+      const managerIds = managers.map((m) => m.id);
+      where.OR = [
+        { managerId: { in: managerIds } },
+        { managerId: null },
+      ];
+    }
+
     const products = await prisma.product.findMany({
-      where: { isActive: true, isFeatured: true },
+      where,
       include: {
         category: { select: { id: true, name: true, slug: true } },
         _count: { select: { reviews: true } },

@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
-import { Search, ShoppingCart, User, MapPin, Menu, X, ChevronDown, Globe, ClipboardList, Loader2 } from "lucide-react";
+import { Search, ShoppingCart, User, MapPin, Menu, X, ChevronDown, Globe, ClipboardList, Loader2, LayoutDashboard } from "lucide-react";
 import { useSelector } from "react-redux";
 import LocationSelector from "./LocationSelector";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -39,6 +39,13 @@ export default function Header() {
 
   const cartCount = mounted ? cartItems.reduce((sum, item) => sum + item.quantity, 0) : 0;
   const getCategoryName = (key) => t[key] || key;
+  const getDashboardHref = () => {
+    if (!user) return "/signin";
+    if (user.role === "ADMIN") return "/dashboard";
+    if (user.role === "MANAGER") return "/manager";
+    if (user.role === "RIDER") return "/rider";
+    return "/account";
+  };
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -138,6 +145,12 @@ export default function Header() {
 
               {/* Actions */}
               <div className="flex items-center gap-0.5 flex-shrink-0">
+                {authChecked && user && (
+                  <Link href={getDashboardHref()} className="hidden sm:flex items-center gap-1 text-[#364152] hover:bg-[#F3F4F6] p-1.5 rounded-md transition text-[11px] font-semibold" aria-label="Dashboard">
+                    <LayoutDashboard size={16} className="text-[#EC008C]" />
+                    <span className="hidden md:inline">{user.role === "ADMIN" ? "Admin" : user.role === "MANAGER" ? "Manager" : "Rider"}</span>
+                  </Link>
+                )}
                 <Link href="/wishlist" className="hidden sm:flex text-[#364152] hover:bg-[#F3F4F6] p-1.5 rounded-md transition" aria-label={t.wishlist}>
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
                 </Link>
@@ -184,7 +197,8 @@ export default function Header() {
                   {getCategoryName(cat.name)}
                 </Link>
               ))}
-              <Link href="/shop" className="px-2.5 py-2 text-[11px] text-[#EC008C] font-semibold hover:bg-[#FCE8F3] transition">{t.viewAll}</Link>
+              <Link href="/shop" className="px-2.5 py-2 text-[11px] text-[#EC008C] font-semibold hover:bg-[#FCE8F3] transition">{t.shopAll || "Shop"}</Link>
+              <Link href="/shop" className="px-2.5 py-2 text-[11px] text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3] transition font-semibold">{t.viewAll}</Link>
               <Link href="/custom-request" className="px-2.5 py-2 text-[11px] text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3] transition font-semibold flex items-center gap-1">
                 <ClipboardList size={12} />{t.customRequest}
               </Link>
@@ -240,6 +254,12 @@ export default function Header() {
               <Link href="/custom-request" onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 py-2 text-xs text-[#364152] font-medium hover:text-[#EC008C] transition">
                 <ClipboardList size={16} className="text-[#EC008C]" />{t.customRequest}
               </Link>
+              {authChecked && user && (
+                <Link href={getDashboardHref()} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 py-2 text-xs text-[#364152] font-medium hover:text-[#EC008C] transition">
+                  <LayoutDashboard size={16} className="text-[#EC008C]" />
+                  {user.role === "ADMIN" ? "Admin Dashboard" : user.role === "MANAGER" ? "Manager Panel" : "Rider Dashboard"}
+                </Link>
+              )}
             </div>
 
             <div className="p-3">
@@ -294,6 +314,12 @@ export default function Header() {
               <User size={20} />
               <span className="text-[9px] font-semibold">{authChecked ? (user ? t.myAccount : t.signIn) : "..."}</span>
             </Link>
+            {authChecked && user && (user.role === "ADMIN" || user.role === "MANAGER" || user.role === "RIDER") && (
+              <Link href={getDashboardHref()} className={`flex flex-col items-center gap-0.5 min-w-[50px] ${pathname.startsWith(getDashboardHref()) ? "text-[#EC008C]" : "text-[#667085]"}`}>
+                <LayoutDashboard size={20} />
+                <span className="text-[9px] font-semibold">{user.role === "ADMIN" ? "Admin" : user.role === "MANAGER" ? "Manager" : "Rider"}</span>
+              </Link>
+            )}
           </div>
         </div>
       </div>

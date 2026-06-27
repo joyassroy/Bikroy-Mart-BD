@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import api from "@/lib/axios";
@@ -7,7 +8,9 @@ import { Search, Package, Truck, CheckCircle, Clock, MapPin } from "lucide-react
 import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function TrackOrderPage() {
-  const [orderNumber, setOrderNumber] = useState("");
+  const searchParams = useSearchParams();
+  const initialOrder = searchParams.get("order") || "";
+  const [orderNumber, setOrderNumber] = useState(initialOrder);
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -22,13 +25,12 @@ export default function TrackOrderPage() {
     { key: "DELIVERED", label: t.delivered, icon: CheckCircle },
   ];
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
-    if (!orderNumber.trim()) return;
+  const fetchOrder = async (number) => {
+    if (!number.trim()) return;
     setLoading(true);
     setError("");
     try {
-      const res = await api.get(`/tracking/${orderNumber}`);
+      const res = await api.get(`/tracking/${number}`);
       setOrder(res.data.data);
     } catch {
       setError(t.orderNotFound);
@@ -36,6 +38,17 @@ export default function TrackOrderPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    if (initialOrder) {
+      fetchOrder(initialOrder);
+    }
+  }, []);
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    fetchOrder(orderNumber);
   };
 
   const getStatusIndex = (status) => statusSteps.findIndex((s) => s.key === status);

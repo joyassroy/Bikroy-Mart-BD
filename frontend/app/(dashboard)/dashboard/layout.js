@@ -1,8 +1,10 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package, ShoppingCart, Users, BarChart3, Settings, Tag, Truck, MapPin, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { LayoutDashboard, Package, ShoppingCart, Users, BarChart3, Settings, Tag, Truck, MapPin, Menu, X, Loader2, Gift } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { useAuthChecked } from "@/helper/AuthInit";
 
 const menu = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -17,6 +19,7 @@ const menu = [
     ]
   },
   { label: "Orders", href: "/dashboard/orders", icon: ShoppingCart },
+  { label: "Offers", href: "/dashboard/offers", icon: Gift },
   { label: "Customers", href: "/dashboard/customers", icon: Users },
   { label: "Riders", href: "/dashboard/riders", icon: Truck },
   { label: "Managers", href: "/dashboard/managers", icon: MapPin },
@@ -42,8 +45,25 @@ const menu = [
 
 export default function DashboardLayout({ children }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [openSubmenu, setOpenSubmenu] = useState("Products");
+  const user = useSelector((state) => state.user.data);
+  const { authChecked } = useAuthChecked();
+
+  useEffect(() => {
+    if (authChecked && (!user || user.role !== "ADMIN")) {
+      router.replace("/");
+    }
+  }, [authChecked, user, router]);
+
+  if (!authChecked || !user || user.role !== "ADMIN") {
+    return (
+      <div className="flex min-h-screen bg-[#F4F7FB] items-center justify-center">
+        <Loader2 size={24} className="animate-spin text-[#EC008C]" />
+      </div>
+    );
+  }
 
   const handleMenuClick = (item) => {
     if (item.subItems) {
@@ -63,10 +83,10 @@ export default function DashboardLayout({ children }) {
       {/* Sidebar */}
       <aside className={`fixed lg:sticky top-0 left-0 z-50 lg:z-auto h-screen w-56 lg:w-52 bg-[#00215B] text-white flex-shrink-0 transition-transform duration-200 lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="p-3 border-b border-[#001A4A] flex items-center justify-between">
-          <div>
+          <Link href="/" className="block">
             <h2 className="text-xs font-bold">Bikroy<span className="text-[#EC008C]">-Mart</span>-BD</h2>
             <p className="text-[9px] text-white/50">Admin Panel</p>
-          </div>
+          </Link>
           <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-white/60 hover:text-white p-1">
             <X size={16} />
           </button>
@@ -132,7 +152,7 @@ export default function DashboardLayout({ children }) {
             <button onClick={() => setSidebarOpen(true)} className="text-[#364152] p-1">
               <Menu size={20} />
             </button>
-            <span className="text-xs font-bold text-[#00215B]">Bikroy<span className="text-[#EC008C]">-Mart</span>-BD</span>
+            <Link href="/" className="text-xs font-bold text-[#00215B]">Bikroy<span className="text-[#EC008C]">-Mart</span>-BD</Link>
           </div>
         </div>
         <main className="p-3 sm:p-4">{children}</main>

@@ -1,15 +1,23 @@
 "use client";
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import ProductCard from "@/components/product/ProductCard";
 import api from "@/lib/axios";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { SlidersHorizontal, X, ChevronDown, Grid3X3, List, Search } from "lucide-react";
+import { SlidersHorizontal, X, ChevronDown, Grid3X3, List, Search, Plus } from "lucide-react";
+import useDistrict from "@/helper/useDistrict";
+import { useSelector } from "react-redux";
+import toast from "react-hot-toast";
 
 function ShopContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const district = useDistrict();
+  const user = useSelector((state) => state.user.data);
+  const isAdminOrManager = user && (user.role === "ADMIN" || user.role === "MANAGER");
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -45,7 +53,7 @@ function ShopContent() {
 
   useEffect(() => {
     fetchProducts();
-  }, [selectedCategory, sortBy, minPrice, maxPrice, currentPage, offerType, searchQuery]);
+  }, [selectedCategory, sortBy, minPrice, maxPrice, currentPage, offerType, searchQuery, district]);
 
   const fetchCategories = async () => {
     try {
@@ -66,6 +74,7 @@ function ShopContent() {
       if (maxPrice) params.set("maxPrice", maxPrice);
       if (searchQuery) params.set("search", searchQuery);
       if (offerType) params.set("offer", offerType);
+      if (district) params.set("district", district);
       params.set("page", currentPage.toString());
       params.set("limit", "20");
 
@@ -105,6 +114,17 @@ function ShopContent() {
     setSortBy("newest");
     setOfferType("");
     setCurrentPage(1);
+  };
+
+  const handleDeleteProduct = async (productId) => {
+    try {
+      await api.delete(`/products/${productId}`);
+      setProducts((prev) => prev.filter((p) => p.id !== productId));
+      setTotalProducts((prev) => prev - 1);
+      toast.success("Product deleted successfully");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to delete product");
+    }
   };
 
   const FilterSidebar = ({ isDrawer = false }) => (
@@ -198,7 +218,7 @@ function ShopContent() {
               placeholder={t.productSearchPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 rounded-l-md px-3 py-2 text-xs bg-white text-[#000000] placeholder:text-[#99A0B4] border border-[#E5E7EB] border-r-0 focus:outline-none focus:border-[#EC008C]"
+              className="flex-1 rounded-l-md px-3 py-2 text-xs bg-white text-[#000000] placeholder:text-[#99A0B4] border border-[#E5E7EB] border-r-0 focus:outline-none focus:border-[#E5E7EB]"
             />
             <button
               type="submit"
@@ -224,7 +244,7 @@ function ShopContent() {
               placeholder={t.productSearchPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 rounded-l-md px-4 py-2 text-sm bg-white text-[#000000] placeholder:text-[#99A0B4] border border-[#E5E7EB] border-r-0 focus:outline-none focus:border-[#EC008C]"
+              className="flex-1 rounded-l-md px-4 py-2 text-sm bg-white text-[#000000] placeholder:text-[#99A0B4] border border-[#E5E7EB] border-r-0 focus:outline-none focus:border-[#E5E7EB]"
             />
             <button
               type="submit"
@@ -372,7 +392,13 @@ function ShopContent() {
               <>
                 <div className={`grid gap-2.5 sm:gap-3 ${viewMode === "grid" ? "grid-cols-2 md:grid-cols-3 lg:grid-cols-4" : "grid-cols-1 sm:grid-cols-2"}`}>
                   {products.map((product) => (
-                    <ProductCard key={product.id} product={product} />
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      showActions={isAdminOrManager}
+                      onDelete={handleDeleteProduct}
+                      onProductUpdated={fetchProducts}
+                    />
                   ))}
                 </div>
 
@@ -454,6 +480,17 @@ function ShopContent() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Add Product FAB — Admin & Manager only */}
+      {isAdminOrManager && (
+        <button
+          onClick={() => router.push("/dashboard/products/add")}
+          className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-40 bg-[#EC008C] text-white w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-[0_4px_12px_rgba(236,0,140,0.4)] flex items-center justify-center hover:bg-[#D60071] hover:scale-110 transition-all"
+          aria-label="Add Product"
+        >
+          <Plus size={22} />
+        </button>
       )}
 
       <Footer />

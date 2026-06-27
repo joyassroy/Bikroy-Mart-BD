@@ -7,7 +7,7 @@ import Footer from "@/components/layout/Footer";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, CheckCircle, Copy, ExternalLink, Home } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useAuthChecked } from "@/helper/AuthInit";
 
@@ -21,6 +21,10 @@ export default function CheckoutPage() {
   const [showCustomReq, setShowCustomReq] = useState(false);
   const [customRequirement, setCustomRequirement] = useState("");
   const [loading, setLoading] = useState(false);
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState("");
+  const [showOrderSuccess, setShowOrderSuccess] = useState(false);
+  const [placedOrderNumber, setPlacedOrderNumber] = useState("");
   const [form, setForm] = useState({
     name: "", phone: "", address: "", division: "Dhaka", district: "Dhaka", upazila: "",
     paymentMethod: "COD",
@@ -40,8 +44,26 @@ export default function CheckoutPage() {
         name: prev.name || user.name || "",
         phone: prev.phone || user.phone || "",
       }));
+      api.get("/addresses").then((res) => setSavedAddresses(res.data.data || [])).catch(console.error);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (selectedAddressId) {
+      const addr = savedAddresses.find((a) => a.id === selectedAddressId);
+      if (addr) {
+        setForm((prev) => ({
+          ...prev,
+          name: addr.name,
+          phone: addr.phone,
+          division: addr.division,
+          district: addr.district,
+          upazila: addr.upazila,
+          address: addr.fullAddress,
+        }));
+      }
+    }
+  }, [selectedAddressId, savedAddresses]);
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const deliveryCharge = subtotal >= 1500 ? 0 : 60;
@@ -75,13 +97,18 @@ export default function CheckoutPage() {
       };
       const res = await api.post("/orders", orderData);
       dispatch(clearCart());
-      toast.success("Order placed successfully!");
-      router.push(`/track-order?order=${res.data.data.orderNumber}`);
+      setPlacedOrderNumber(res.data.data.orderNumber);
+      setShowOrderSuccess(true);
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to place order");
     } finally {
       setLoading(false);
     }
+  };
+
+  const copyTrackingId = () => {
+    navigator.clipboard.writeText(placedOrderNumber);
+    toast.success("Tracking ID copied!");
   };
 
   return (
@@ -92,6 +119,20 @@ export default function CheckoutPage() {
 
         <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
           <div className="lg:col-span-2 space-y-2.5 sm:space-y-3">
+            {savedAddresses.length > 0 && (
+              <div className="bg-white rounded-lg p-3 sm:p-4 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">
+                <label className="block text-[10px] sm:text-[11px] font-semibold text-[#364152] mb-1">{t.selectAddress}</label>
+                <select value={selectedAddressId} onChange={(e) => setSelectedAddressId(e.target.value)} className="input-field">
+                  <option value="">{t.fillManually}</option>
+                  {savedAddresses.map((addr) => (
+                    <option key={addr.id} value={addr.id}>
+                      {addr.name} - {addr.fullAddress}{addr.isDefault ? " (Default)" : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             <div className="bg-white rounded-lg p-3 sm:p-4 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">
               <h2 className="font-semibold text-[#000000] text-xs sm:text-sm mb-2 sm:mb-3">{t.deliveryInformation}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
@@ -163,6 +204,7 @@ export default function CheckoutPage() {
                 </div>
               ))}
             </div>
+
             <div className="space-y-1 sm:space-y-1.5 text-[11px] sm:text-xs border-t border-[#E5E7EB] pt-2">
               <div className="flex justify-between"><span className="text-[#667085]">{t.subtotal}</span><span>৳{subtotal}</span></div>
               <div className="flex justify-between"><span className="text-[#667085]">{t.deliveryFee}</span><span>{deliveryCharge === 0 ? t.free : `৳${deliveryCharge}`}</span></div>
@@ -175,6 +217,39 @@ export default function CheckoutPage() {
           </div>
         </form>
       </main>
+
+      {showOrderSuccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 sm:p-8 text-center shadow-2xl">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle size={36} className="text-green-600" />
+            </div>
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-1">{t.orderPlacedSuccessfully}</h2>
+            <p className="text-sm text-gray-500 mb-4">{t.orderConfirmedMsg}</p>
+
+            <div className="bg-gray-50 rounded-xl p-4 mb-5">
+              <p className="text-xs text-gray-500 mb-1">{t.yourTrackingId}</p>
+              <p className="text-lg sm:text-xl font-mono font-bold text-[#00215B] tracking-wider">{placedOrderNumber}</p>
+            </div>
+
+            <button onClick={copyTrackingId} className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium text-gray-700 transition mb-3">
+              <Copy size={16} />
+              {t.copyTrackingId}
+            </button>
+
+            <button onClick={() => router.push(`/track-order?order=${placedOrderNumber}`)} className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-[#EC008C] hover:bg-[#D60071] rounded-xl text-sm font-semibold text-white transition mb-3">
+              <ExternalLink size={16} />
+              {t.trackYourOrder}
+            </button>
+
+            <button onClick={() => router.push("/")} className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-[#00215B] hover:bg-[#001845] rounded-xl text-sm font-semibold text-white transition">
+              <Home size={16} />
+              {t.continueShopping}
+            </button>
+          </div>
+        </div>
+      )}
+
       <Footer />
     </div>
   );

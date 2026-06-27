@@ -115,3 +115,47 @@ export const deleteManager = async (req: Request, res: Response) => {
     return sendError(res, error.message, 400);
   }
 };
+
+export const updateManager = async (req: Request, res: Response) => {
+  try {
+    const { name, email, phone, assignedZila, assignedDistrict } = req.body;
+    const managerId = String(req.params.id);
+
+    const manager = await prisma.managerProfile.findUnique({
+      where: { id: managerId },
+    });
+    if (!manager) return sendError(res, "Manager not found", 404);
+
+    if (email) {
+      const existingUser = await prisma.user.findFirst({
+        where: { email, NOT: { id: manager.userId } },
+      });
+      if (existingUser) return sendError(res, "Email already in use", 400);
+    }
+
+    const userUpdate: any = {};
+    if (name) userUpdate.name = name;
+    if (email) userUpdate.email = email;
+    if (phone !== undefined) userUpdate.phone = phone;
+
+    if (Object.keys(userUpdate).length > 0) {
+      await prisma.user.update({ where: { id: manager.userId }, data: userUpdate });
+    }
+
+    const profileUpdate: any = {};
+    if (assignedZila !== undefined) profileUpdate.assignedZila = assignedZila;
+    if (assignedDistrict !== undefined) profileUpdate.assignedDistrict = assignedDistrict;
+
+    if (Object.keys(profileUpdate).length > 0) {
+      await prisma.managerProfile.update({ where: { id: managerId }, data: profileUpdate });
+    }
+
+    const updated = await prisma.managerProfile.findUnique({
+      where: { id: managerId },
+      include: { user: { select: { id: true, name: true, email: true, phone: true } } },
+    });
+    return sendSuccess(res, "Manager updated", updated);
+  } catch (error: any) {
+    return sendError(res, error.message, 400);
+  }
+};

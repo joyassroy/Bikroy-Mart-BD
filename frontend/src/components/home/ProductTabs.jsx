@@ -3,12 +3,14 @@ import { useState, useEffect } from "react";
 import ProductCard from "@/components/product/ProductCard";
 import { useLanguage } from "@/i18n/LanguageContext";
 import api from "@/lib/axios";
+import useDistrict from "@/helper/useDistrict";
 
 export default function ProductTabs() {
   const [activeTab, setActiveTab] = useState("featured");
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const { t } = useLanguage();
+  const district = useDistrict();
 
   const tabs = [
     { label: t.featured, value: "featured" },
@@ -19,16 +21,17 @@ export default function ProductTabs() {
 
   useEffect(() => {
     fetchProducts();
-  }, [activeTab]);
+  }, [activeTab, district]);
 
   const fetchProducts = async () => {
     try {
       setLoading(true);
+      const districtParam = district ? `&district=${encodeURIComponent(district)}` : "";
       let url = "/products?limit=12";
       if (activeTab === "featured") {
-        url = "/products/featured";
+        url = `/products/featured?limit=12${districtParam}`;
       } else {
-        url += `&sort=${activeTab}`;
+        url += `&sort=${activeTab}${districtParam}`;
       }
       const res = await api.get(url);
       setProducts(res.data.data || []);

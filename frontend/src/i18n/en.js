@@ -328,6 +328,39 @@ const en = {
   faq: "FAQ",
   helpCenter: "Help Center",
 
+  // Order Success
+  orderPlacedSuccessfully: "Order Placed Successfully!",
+  yourTrackingId: "Your Tracking ID",
+  copyTrackingId: "Copy Tracking ID",
+  trackYourOrder: "Track Your Order",
+  continueShopping: "Continue Shopping",
+  orderConfirmedMsg: "Your order has been confirmed. Use the tracking ID to track your delivery.",
+
+  // Order Details Modal
+  orderDetails: "Order Details",
+  orderDate: "Order Date",
+  deliveryAddressLabel: "Delivery Address",
+  paymentMethodLabel: "Payment Method",
+  paymentStatusLabel: "Payment Status",
+  riderInfo: "Rider Info",
+  riderName: "Rider Name",
+  riderPhone: "Rider Phone",
+
+  // Addresses
+  savedAddresses: "Saved Addresses",
+  noSavedAddresses: "No saved addresses yet. Add one to use at checkout.",
+  addNewAddress: "Add New Address",
+  editAddress: "Edit Address",
+  recipientName: "Recipient Name",
+  recipientPhone: "Recipient Phone",
+  setAsDefault: "Set as Default",
+  defaultAddress: "Default",
+  addressSaved: "Address saved successfully!",
+  addressDeleted: "Address deleted!",
+  selectSavedAddress: "Select a saved address",
+  fillManually: "Fill manually",
+  selectAddress: "Select Address",
+
   // Custom Request
   customRequestTitle: "Custom Product Request",
   customRequestSubtitle: "Can't find what you need? Tell us what you want!",

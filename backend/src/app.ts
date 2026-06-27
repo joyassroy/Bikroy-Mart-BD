@@ -30,6 +30,8 @@ import subscribersRoutes from "./modules/content/subscribers/subscribers.routes"
 import mediaRoutes from "./modules/content/media/media.routes";
 import sponsorsRoutes from "./modules/sponsors/sponsors.routes";
 import customRequestRoutes from "./modules/custom-requests/customRequest.routes";
+import addressRoutes from "./modules/addresses/address.routes";
+import offerRoutes from "./modules/offers/offer.routes";
 
 const app = express();
 const httpServer = createServer(app);
@@ -72,6 +74,8 @@ app.use("/api/subscribers", subscribersRoutes);
 app.use("/api/media", mediaRoutes);
 app.use("/api/sponsors", sponsorsRoutes);
 app.use("/api/custom-requests", customRequestRoutes);
+app.use("/api/addresses", addressRoutes);
+app.use("/api/offers", offerRoutes);
 
 // Error handler
 app.use(errorHandler);
