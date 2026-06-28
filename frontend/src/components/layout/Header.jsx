@@ -1,41 +1,48 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
-import { Search, ShoppingCart, User, MapPin, Menu, X, ChevronDown, Globe, ClipboardList, Loader2, LayoutDashboard } from "lucide-react";
+import { Search, ShoppingCart, User, MapPin, Menu, X, ChevronDown, ChevronRight, Globe, ClipboardList, Loader2, LayoutDashboard, ChevronUp } from "lucide-react";
 import { useSelector } from "react-redux";
 import LocationSelector from "./LocationSelector";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useAuthChecked } from "@/helper/AuthInit";
+import api from "@/lib/axios";
 
-const categories = [
-  { name: "food", slug: "food", icon: "🍞" },
-  { name: "fruitsVegetables", slug: "fruits-vegetables", icon: "🥬" },
-  { name: "meatFish", slug: "meat-fish", icon: "🥩" },
-  { name: "dairyEggs", slug: "dairy-eggs", icon: "🥛" },
-  { name: "drinks", slug: "drinks-beverages", icon: "☕" },
-  { name: "snacks", slug: "snacks-frozen", icon: "🍪" },
-  { name: "cooking", slug: "cooking-essentials", icon: "🍳" },
-  { name: "beauty", slug: "beauty-health", icon: "✨" },
-  { name: "homeCleaning", slug: "home-cleaning", icon: "🧹" },
-  { name: "baby", slug: "baby-care", icon: "👶" },
+const FALLBACK_CATEGORIES = [
+  { name: "food", slug: "food", icon: "🍞", subcategories: [] },
+  { name: "fruitsVegetables", slug: "fruits-vegetables", icon: "🥬", subcategories: [] },
+  { name: "meatFish", slug: "meat-fish", icon: "🥩", subcategories: [] },
+  { name: "dairyEggs", slug: "dairy-eggs", icon: "🥛", subcategories: [] },
+  { name: "drinks", slug: "drinks-beverages", icon: "☕", subcategories: [] },
+  { name: "snacks", slug: "snacks-frozen", icon: "🍪", subcategories: [] },
+  { name: "cooking", slug: "cooking-essentials", icon: "🍳", subcategories: [] },
+  { name: "beauty", slug: "beauty-health", icon: "✨", subcategories: [] },
+  { name: "homeCleaning", slug: "home-cleaning", icon: "🧹", subcategories: [] },
+  { name: "baby", slug: "baby-care", icon: "👶", subcategories: [] },
 ];
 
 export default function Header() {
   const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [megaMenuOpen, setMegaMenuOpen] = useState(false);
+  const [hoveredCatSlug, setHoveredCatSlug] = useState(null);
   const [locationOpen, setLocationOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [apiCategories, setApiCategories] = useState([]);
+  const [expandedCats, setExpandedCats] = useState({});
+  const megaMenuRef = useRef(null);
   const cartItems = useSelector((state) => state.cart.items);
   const user = useSelector((state) => state.user.data);
   const location = useSelector((state) => state.location);
   const { language, t, setLang } = useLanguage();
   const pathname = usePathname();
   const { authChecked } = useAuthChecked();
+
+  const categories = apiCategories.length > 0 ? apiCategories : FALLBACK_CATEGORIES;
 
   const cartCount = mounted ? cartItems.reduce((sum, item) => sum + item.quantity, 0) : 0;
   const getCategoryName = (key) => t[key] || key;
@@ -48,6 +55,28 @@ export default function Header() {
   };
 
   useEffect(() => { setMounted(true); }, []);
+
+  useEffect(() => {
+    api.get("/categories")
+      .then((res) => {
+        const data = res.data.data || [];
+        if (data.length > 0) {
+          setApiCategories(data.map((cat) => ({
+            name: cat.nameBn || cat.name,
+            nameEn: cat.name,
+            slug: cat.slug,
+            icon: cat.icon || "📦",
+            image: cat.image,
+            subcategories: (cat.subcategories || []).map((sub) => ({
+              name: sub.nameBn || sub.name,
+              slug: sub.slug,
+              image: sub.image,
+            })),
+          })));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     document.body.style.overflow = drawerOpen ? "hidden" : "";
@@ -106,7 +135,7 @@ export default function Header() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder={t.searchPlaceholder}
-                    className="w-full rounded-l-md px-3 sm:px-4 text-xs sm:text-[13px] bg-white text-[#000000] placeholder:text-[#99A0B4] border border-[#E5E7EB] border-r-0 focus:outline-none focus:border-[#E5E7EB] h-[38px] md:h-[42px] transition-all"
+                    className="w-full rounded-l-md px-3 sm:px-4 text-xs sm:text-[13px] bg-white text-[#000000] placeholder:text-[#99A0B4] border border-[#E5E7EB] border-r-0 focus:outline-none focus:border-transparent h-[38px] md:h-[42px] transition-all"
                     aria-label={t.searchPlaceholder}
                   />
                   <button
@@ -163,9 +192,16 @@ export default function Header() {
                   )}
                 </Link>
                 {authChecked ? (
-                  <Link href={user ? "/account" : "/signin"} className="text-[#364152] hover:bg-[#F3F4F6] p-1.5 rounded-md transition" aria-label={user ? t.myAccount : t.signIn}>
-                    <User size={18} />
-                  </Link>
+                  user ? (
+                    <Link href="/account" className="text-[#364152] hover:bg-[#F3F4F6] p-1.5 rounded-md transition" aria-label={t.myAccount}>
+                      <User size={18} />
+                    </Link>
+                  ) : (
+                    <Link href="/signin" className="hidden sm:flex items-center gap-1.5 bg-[#EC008C] hover:bg-[#D60071] text-white px-3 py-1.5 rounded-md transition text-[11px] font-semibold" aria-label={t.signIn}>
+                      <User size={14} />
+                      <span>{t.signIn}</span>
+                    </Link>
+                  )
                 ) : (
                   <span className="p-1.5"><Loader2 size={18} className="animate-spin text-gray-300" /></span>
                 )}
@@ -178,28 +214,135 @@ export default function Header() {
         <nav className="hidden lg:block bg-white border-b border-[#E5E7EB]">
           <div className="max-w-[1200px] mx-auto px-10">
             <div className="flex items-center">
-              <div className="relative" onMouseEnter={() => setMegaMenuOpen(true)} onMouseLeave={() => setMegaMenuOpen(false)}>
-                <button className="flex items-center gap-2 bg-[#00215B] text-white px-3.5 py-2 text-[11px] font-semibold hover:bg-[#001A4A] transition rounded-md">
-                  <Menu size={14} />{t.allCategories}<ChevronDown size={10} />
+              {/* Mega Menu Trigger */}
+              <div
+                ref={megaMenuRef}
+                className="relative"
+                onMouseEnter={() => setMegaMenuOpen(true)}
+                onMouseLeave={() => { setMegaMenuOpen(false); setHoveredCatSlug(null); }}
+              >
+                <button className="flex items-center gap-2 bg-[#00215B] text-white px-4 py-2.5 text-[12px] font-semibold hover:bg-[#001A4A] transition rounded-b-md">
+                  <Menu size={15} />
+                  {t.allCategories}
+                  <ChevronDown size={11} className={`transition-transform ${megaMenuOpen ? "rotate-180" : ""}`} />
                 </button>
+
                 {megaMenuOpen && (
-                  <div className="absolute top-full left-0 bg-white border border-[#E5E7EB] rounded-b-md shadow-[rgba(0,0,0,0.1)_0px_2px_4px_0px] w-56 z-50">
-                    {categories.map((cat) => (
-                      <Link key={cat.slug} href={`/shop?category=${cat.slug}`} className="flex items-center gap-2 px-3 py-2 hover:bg-[#F4F7FB] text-[11px] text-[#364152] hover:text-[#EC008C] transition">
-                        <span className="text-base">{cat.icon}</span>{getCategoryName(cat.name)}
-                      </Link>
-                    ))}
+                  <div className="absolute top-full left-0 bg-white border border-[#E5E7EB] rounded-b-lg shadow-[0_8px_30px_rgba(0,0,0,0.12)] z-50 flex overflow-hidden" style={{ minWidth: 580, maxHeight: 460 }}>
+                    {/* Left: Category List */}
+                    <div className="w-[240px] border-r border-[#E5E7EB] overflow-y-auto flex-shrink-0" style={{ background: "linear-gradient(180deg, #F9FAFB 0%, #FFFFFF 100%)" }}>
+                      <div className="p-2">
+                        {categories.map((cat, idx) => {
+                          const isActive = hoveredCatSlug === cat.slug;
+                          const hasSubs = cat.subcategories && cat.subcategories.length > 0;
+                          return (
+                            <div
+                              key={cat.slug}
+                              onMouseEnter={() => setHoveredCatSlug(cat.slug)}
+                              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[12px] cursor-pointer transition-all duration-150 ${
+                                isActive
+                                  ? "bg-[#FCE8F3] text-[#EC008C] shadow-sm"
+                                  : "text-[#364152] hover:bg-white hover:shadow-sm"
+                              }`}
+                              style={{ animationDelay: `${idx * 20}ms` }}
+                            >
+                              <span className={`text-lg flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${isActive ? "bg-[#EC008C]/10" : "bg-[#F4F7FB]"}`}>
+                                {cat.icon}
+                              </span>
+                              <span className="flex-1 font-medium truncate">{cat.name}</span>
+                              {hasSubs && (
+                                <ChevronRight size={13} className={`flex-shrink-0 transition-transform ${isActive ? "text-[#EC008C] translate-x-0.5" : "text-gray-300"}`} />
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Right: Subcategory Panel */}
+                    <div className="flex-1 overflow-y-auto" style={{ minWidth: 300 }}>
+                      {hoveredCatSlug && (() => {
+                        const hovered = categories.find((c) => c.slug === hoveredCatSlug);
+                        if (!hovered) return (
+                          <div className="flex flex-col items-center justify-center h-full p-6 text-center">
+                            <span className="text-4xl mb-3">{hovered?.icon || "📦"}</span>
+                            <p className="text-sm font-semibold text-[#364152]">{hovered?.name}</p>
+                            <Link
+                              href={`/shop?category=${hoveredCatSlug}`}
+                              onClick={() => { setMegaMenuOpen(false); setHoveredCatSlug(null); }}
+                              className="mt-3 text-[11px] font-semibold text-[#EC008C] hover:underline"
+                            >
+                              View All Products →
+                            </Link>
+                          </div>
+                        );
+                        if (!hovered.subcategories || hovered.subcategories.length === 0) return (
+                          <div className="flex flex-col items-center justify-center h-full p-6 text-center">
+                            <span className="text-4xl mb-3">{hovered.icon}</span>
+                            <p className="text-sm font-semibold text-[#364152] mb-1">{hovered.name}</p>
+                            <p className="text-[11px] text-[#667085] mb-3">No subcategories yet</p>
+                            <Link
+                              href={`/shop?category=${hoveredCatSlug}`}
+                              onClick={() => { setMegaMenuOpen(false); setHoveredCatSlug(null); }}
+                              className="bg-[#EC008C] text-white text-[11px] font-semibold px-4 py-2 rounded-lg hover:bg-[#D60071] transition"
+                            >
+                              Browse {hovered.name}
+                            </Link>
+                          </div>
+                        );
+                        return (
+                          <div className="p-4">
+                            <div className="flex items-center gap-3 mb-4 pb-3 border-b border-[#E5E7EB]">
+                              <span className="text-2xl w-10 h-10 rounded-xl bg-[#FCE8F3] flex items-center justify-center">{hovered.icon}</span>
+                              <div>
+                                <p className="text-[13px] font-bold text-[#00215B]">{hovered.name}</p>
+                                <p className="text-[10px] text-[#667085]">{hovered.subcategories.length} subcategories</p>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-1.5">
+                              {hovered.subcategories.map((sub) => (
+                                <Link
+                                  key={sub.slug}
+                                  href={`/shop?category=${hoveredCatSlug}&subcategory=${sub.slug}`}
+                                  onClick={() => { setMegaMenuOpen(false); setHoveredCatSlug(null); }}
+                                  className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[11px] text-[#364152] hover:bg-[#FCE8F3] hover:text-[#EC008C] transition-all duration-150 group"
+                                >
+                                  {sub.image ? (
+                                    <img src={sub.image} alt={sub.name} className="w-7 h-7 rounded-md object-contain flex-shrink-0 bg-[#F4F7FB] p-0.5" />
+                                  ) : (
+                                    <span className="w-7 h-7 rounded-md bg-[#F4F7FB] flex items-center justify-center text-[10px] font-bold text-[#00215B] flex-shrink-0 group-hover:bg-[#EC008C]/10 group-hover:text-[#EC008C] transition-colors">
+                                      {sub.name.charAt(0)}
+                                    </span>
+                                  )}
+                                  <span className="truncate font-medium">{sub.name}</span>
+                                </Link>
+                              ))}
+                            </div>
+                            <div className="mt-3 pt-3 border-t border-[#E5E7EB]">
+                              <Link
+                                href={`/shop?category=${hoveredCatSlug}`}
+                                onClick={() => { setMegaMenuOpen(false); setHoveredCatSlug(null); }}
+                                className="flex items-center justify-center gap-1.5 w-full py-2 text-[11px] font-semibold text-[#EC008C] hover:bg-[#FCE8F3] rounded-lg transition"
+                              >
+                                View All {hovered.name} →
+                              </Link>
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
                   </div>
                 )}
               </div>
+
+              {/* Nav Links */}
               {categories.slice(0, 6).map((cat) => (
-                <Link key={cat.slug} href={`/shop?category=${cat.slug}`} className="px-2.5 py-2 text-[11px] text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3] transition font-semibold">
-                  {getCategoryName(cat.name)}
+                <Link key={cat.slug} href={`/shop?category=${cat.slug}`} className="px-3 py-2.5 text-[11px] text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3] transition font-semibold">
+                  {cat.name}
                 </Link>
               ))}
-              <Link href="/shop" className="px-2.5 py-2 text-[11px] text-[#EC008C] font-semibold hover:bg-[#FCE8F3] transition">{t.shopAll || "Shop"}</Link>
-              <Link href="/shop" className="px-2.5 py-2 text-[11px] text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3] transition font-semibold">{t.viewAll}</Link>
-              <Link href="/custom-request" className="px-2.5 py-2 text-[11px] text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3] transition font-semibold flex items-center gap-1">
+              <Link href="/shop" className="px-3 py-2.5 text-[11px] text-[#EC008C] font-semibold hover:bg-[#FCE8F3] transition">Shop</Link>
+              <Link href="/custom-request" className="px-3 py-2.5 text-[11px] text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3] transition font-semibold flex items-center gap-1">
                 <ClipboardList size={12} />{t.customRequest}
               </Link>
             </div>
@@ -233,14 +376,20 @@ export default function Header() {
           <div className="overflow-y-auto h-[calc(100%-56px)] pb-20">
             <div className="p-3 border-b border-[#E5E7EB]">
               <Link href={authChecked ? (user ? "/account" : "/signin") : "#"} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-full bg-[#F4F7FB] flex items-center justify-center">
-                  <User size={18} className="text-[#667085]" />
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${user ? "bg-[#FCE8F3]" : "bg-[#F4F7FB]"}`}>
+                  <User size={20} className={user ? "text-[#EC008C]" : "text-[#667085]"} />
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-[#000000]">{authChecked ? (user ? user.name : t.signIn) : "..."}</p>
                   <p className="text-[10px] text-[#667085]">{authChecked ? (user ? user.email : t.myAccount) : "..."}</p>
                 </div>
               </Link>
+              {authChecked && !user && (
+                <Link href="/signup" onClick={() => setDrawerOpen(false)} className="mt-2 flex items-center justify-center gap-2 w-full py-2.5 rounded-md text-xs font-semibold border border-[#E5E7EB] text-[#364152] hover:bg-[#F4F7FB] transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
+                  {t.signUp}
+                </Link>
+              )}
             </div>
 
             <div className="p-3 border-b border-[#E5E7EB]">
@@ -263,14 +412,59 @@ export default function Header() {
             </div>
 
             <div className="p-3">
-              <p className="text-[10px] font-semibold text-[#667085] uppercase tracking-wider mb-2">{t.allCategories}</p>
+              <p className="text-[10px] font-semibold text-[#667085] uppercase tracking-wider mb-2 px-2">{t.allCategories}</p>
               <div className="space-y-0.5">
-                {categories.map((cat) => (
-                  <Link key={cat.slug} href={`/shop?category=${cat.slug}`} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-2 py-2.5 hover:bg-[#F4F7FB] rounded-md transition">
-                    <span className="text-lg">{cat.icon}</span>
-                    <span className="text-xs font-medium text-[#364152]">{getCategoryName(cat.name)}</span>
-                  </Link>
-                ))}
+                {categories.map((cat) => {
+                  const isExpanded = expandedCats[cat.slug];
+                  const hasSubs = cat.subcategories && cat.subcategories.length > 0;
+                  return (
+                    <div key={cat.slug}>
+                      <div className="flex items-center">
+                        <Link
+                          href={`/shop?category=${cat.slug}`}
+                          onClick={() => setDrawerOpen(false)}
+                          className="flex items-center gap-2.5 px-2 py-2.5 hover:bg-[#F4F7FB] rounded-lg transition flex-1"
+                        >
+                          <span className="w-8 h-8 rounded-lg bg-[#F4F7FB] flex items-center justify-center text-base flex-shrink-0">{cat.icon}</span>
+                          <span className="text-[12px] font-medium text-[#364152] flex-1">{cat.name}</span>
+                          {hasSubs && (
+                            <span className="text-[9px] bg-[#F4F7FB] text-[#667085] px-1.5 py-0.5 rounded-full">{cat.subcategories.length}</span>
+                          )}
+                        </Link>
+                        {hasSubs && (
+                          <button
+                            onClick={() => setExpandedCats((prev) => ({ ...prev, [cat.slug]: !prev[cat.slug] }))}
+                            className="p-2 text-gray-400 hover:text-[#EC008C] transition"
+                          >
+                            {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                          </button>
+                        )}
+                      </div>
+                      {hasSubs && isExpanded && (
+                        <div className="pl-10 pr-2 pb-1 space-y-0.5">
+                          {cat.subcategories.map((sub) => (
+                            <Link
+                              key={sub.slug}
+                              href={`/shop?category=${cat.slug}&subcategory=${sub.slug}`}
+                              onClick={() => setDrawerOpen(false)}
+                              className="flex items-center gap-2 px-2 py-2 text-[11px] text-[#667085] hover:text-[#EC008C] hover:bg-[#FCE8F3] rounded-lg transition"
+                            >
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#E5E7EB] flex-shrink-0"></span>
+                              {sub.name}
+                            </Link>
+                          ))}
+                          <Link
+                            href={`/shop?category=${cat.slug}`}
+                            onClick={() => setDrawerOpen(false)}
+                            className="flex items-center gap-1 px-2 py-1.5 text-[10px] font-semibold text-[#EC008C] hover:underline"
+                          >
+                            View All →
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
@@ -292,18 +486,22 @@ export default function Header() {
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#E5E7EB] shadow-[0_-2px_8px_rgba(0,0,0,0.08)] pb-[max(6px,env(safe-area-inset-bottom))] pointer-events-auto">
           <div className="flex items-center justify-around py-1.5">
             <Link href="/" className={`flex flex-col items-center gap-0.5 min-w-[50px] ${pathname === "/" ? "text-[#EC008C]" : "text-[#667085]"}`}>
-              <span className="text-base font-bold text-[#00215B] leading-none">BM</span>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center transition ${pathname === "/" ? "bg-[#FCE8F3]" : "bg-[#F4F7FB]"}`}>
+                <span className="text-[11px] font-bold text-[#00215B] leading-none">BM</span>
+              </div>
               <span className="text-[9px] font-semibold">{t.home}</span>
             </Link>
             <button onClick={() => setDrawerOpen(true)} className="flex flex-col items-center gap-0.5 min-w-[50px] text-[#667085]">
-              <Menu size={20} />
+              <div className="w-8 h-8 rounded-full bg-[#F4F7FB] flex items-center justify-center transition">
+                <Menu size={18} />
+              </div>
               <span className="text-[9px] font-semibold">{t.categories}</span>
             </button>
             <Link href="/cart" className={`relative flex flex-col items-center gap-0.5 min-w-[50px] ${pathname === "/cart" ? "text-[#EC008C]" : "text-[#667085]"}`}>
-              <div className="relative">
-                <ShoppingCart size={20} />
+              <div className={`relative w-8 h-8 rounded-full flex items-center justify-center transition ${pathname === "/cart" ? "bg-[#FCE8F3]" : "bg-[#F4F7FB]"}`}>
+                <ShoppingCart size={18} />
                 {cartCount > 0 && (
-                  <span className="absolute -top-1.5 -right-2 bg-[#EC008C] text-white text-[8px] w-3.5 h-3.5 flex items-center justify-center rounded-full font-bold leading-none">
+                  <span className="absolute -top-1 -right-1 bg-[#EC008C] text-white text-[8px] w-3.5 h-3.5 flex items-center justify-center rounded-full font-bold leading-none">
                     {cartCount > 9 ? "9+" : cartCount}
                   </span>
                 )}
@@ -311,12 +509,16 @@ export default function Header() {
               <span className="text-[9px] font-semibold">{t.cart}</span>
             </Link>
             <Link href={authChecked ? (user ? "/account" : "/signin") : "#"} className={`flex flex-col items-center gap-0.5 min-w-[50px] ${pathname === "/account" || pathname === "/signin" ? "text-[#EC008C]" : "text-[#667085]"}`}>
-              <User size={20} />
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center transition ${pathname === "/account" || pathname === "/signin" ? "bg-[#FCE8F3]" : "bg-[#F4F7FB]"}`}>
+                <User size={18} />
+              </div>
               <span className="text-[9px] font-semibold">{authChecked ? (user ? t.myAccount : t.signIn) : "..."}</span>
             </Link>
             {authChecked && user && (user.role === "ADMIN" || user.role === "MANAGER" || user.role === "RIDER") && (
               <Link href={getDashboardHref()} className={`flex flex-col items-center gap-0.5 min-w-[50px] ${pathname.startsWith(getDashboardHref()) ? "text-[#EC008C]" : "text-[#667085]"}`}>
-                <LayoutDashboard size={20} />
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center transition ${pathname.startsWith(getDashboardHref()) ? "bg-[#FCE8F3]" : "bg-[#F4F7FB]"}`}>
+                  <LayoutDashboard size={18} />
+                </div>
                 <span className="text-[9px] font-semibold">{user.role === "ADMIN" ? "Admin" : user.role === "MANAGER" ? "Manager" : "Rider"}</span>
               </Link>
             )}

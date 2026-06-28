@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useAuthChecked } from "@/helper/AuthInit";
 import { disconnectSocket } from "@/lib/socket";
+import { BANGLADESH_LOCATIONS, getUpazilas } from "@/lib/constants";
 import toast from "react-hot-toast";
 
 const statusSteps = ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED"];
@@ -18,6 +19,7 @@ export default function AccountPage() {
   const dispatch = useDispatch();
   const router = useRouter();
   const user = useSelector((state) => state.user.data);
+  const location = useSelector((state) => state.location);
   const { authChecked } = useAuthChecked();
   const [orders, setOrders] = useState([]);
   const [addresses, setAddresses] = useState([]);
@@ -28,6 +30,18 @@ export default function AccountPage() {
   const [addressForm, setAddressForm] = useState({
     name: "", phone: "", division: "Dhaka", district: "Dhaka", upazila: "", fullAddress: "", isDefault: false,
   });
+  const [districts, setDistricts] = useState([]);
+  const [upazilas, setUpazilas] = useState([]);
+
+  useEffect(() => {
+    const div = BANGLADESH_LOCATIONS.find((d) => d.division === addressForm.division);
+    setDistricts(div ? div.districts.map((d) => d.name) : []);
+  }, [addressForm.division]);
+
+  useEffect(() => {
+    const ups = getUpazilas(addressForm.division, addressForm.district);
+    setUpazilas(ups);
+  }, [addressForm.division, addressForm.district]);
 
   useEffect(() => {
     if (authChecked && !user) {
@@ -102,6 +116,9 @@ export default function AccountPage() {
       district: addr.district, upazila: addr.upazila,
       fullAddress: addr.fullAddress, isDefault: addr.isDefault,
     });
+    const div = BANGLADESH_LOCATIONS.find((d) => d.division === addr.division);
+    setDistricts(div ? div.districts.map((d) => d.name) : []);
+    setUpazilas(getUpazilas(addr.division, addr.district));
     setShowAddressForm(true);
   };
 
@@ -194,7 +211,7 @@ export default function AccountPage() {
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
                 <div className="p-6 border-b border-gray-100 flex justify-between items-center">
                   <h3 className="font-semibold text-gray-900 text-lg">Saved Addresses</h3>
-                  <button onClick={() => { setEditingAddress(null); setAddressForm({ name: "", phone: "", division: "Dhaka", district: "Dhaka", upazila: "", fullAddress: "", isDefault: false }); setShowAddressForm(true); }} className="flex items-center gap-1.5 bg-[#0067A0] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#005580] transition">
+                  <button onClick={() => { const div = location.division || "Dhaka"; const dist = location.district || "Dhaka"; setEditingAddress(null); setAddressForm({ name: user?.name || "", phone: user?.phone || "", division: div, district: dist, upazila: "", fullAddress: "", isDefault: false }); const divData = BANGLADESH_LOCATIONS.find((d) => d.division === div); setDistricts(divData ? divData.districts.map((d) => d.name) : []); setUpazilas(getUpazilas(div, dist)); setShowAddressForm(true); }} className="flex items-center gap-1.5 bg-[#0067A0] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#005580] transition">
                     <Plus size={16} /> Add
                   </button>
                 </div>
@@ -214,15 +231,45 @@ export default function AccountPage() {
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Division</label>
-                          <input type="text" required value={addressForm.division} onChange={(e) => setAddressForm({ ...addressForm, division: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#0067A0] focus:border-transparent" />
+                          <select
+                            required
+                            value={addressForm.division}
+                            onChange={(e) => setAddressForm({ ...addressForm, division: e.target.value, district: "", upazila: "" })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#0067A0] focus:border-transparent"
+                          >
+                            <option value="">Select Division</option>
+                            {BANGLADESH_LOCATIONS.map((d) => (
+                              <option key={d.division} value={d.division}>{d.division}</option>
+                            ))}
+                          </select>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">District</label>
-                          <input type="text" required value={addressForm.district} onChange={(e) => setAddressForm({ ...addressForm, district: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#0067A0] focus:border-transparent" />
+                          <select
+                            required
+                            value={addressForm.district}
+                            onChange={(e) => setAddressForm({ ...addressForm, district: e.target.value, upazila: "" })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#0067A0] focus:border-transparent"
+                          >
+                            <option value="">Select District</option>
+                            {districts.map((d) => (
+                              <option key={d} value={d}>{d}</option>
+                            ))}
+                          </select>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Upazila</label>
-                          <input type="text" required value={addressForm.upazila} onChange={(e) => setAddressForm({ ...addressForm, upazila: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#0067A0] focus:border-transparent" />
+                          <select
+                            required
+                            value={addressForm.upazila}
+                            onChange={(e) => setAddressForm({ ...addressForm, upazila: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#0067A0] focus:border-transparent"
+                          >
+                            <option value="">Select Upazila</option>
+                            {upazilas.map((u) => (
+                              <option key={u} value={u}>{u}</option>
+                            ))}
+                          </select>
                         </div>
                       </div>
                       <div>

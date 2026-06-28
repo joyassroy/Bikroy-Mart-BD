@@ -10,12 +10,14 @@ import { useRouter } from "next/navigation";
 import { MessageSquare, CheckCircle, Copy, ExternalLink, Home } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useAuthChecked } from "@/helper/AuthInit";
+import { BANGLADESH_LOCATIONS, getUpazilas } from "@/lib/constants";
 
 export default function CheckoutPage() {
   const router = useRouter();
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cart.items);
   const user = useSelector((state) => state.user.data);
+  const reduxLocation = useSelector((state) => state.location);
   const { t } = useLanguage();
   const { authChecked } = useAuthChecked();
   const [showCustomReq, setShowCustomReq] = useState(false);
@@ -26,9 +28,21 @@ export default function CheckoutPage() {
   const [showOrderSuccess, setShowOrderSuccess] = useState(false);
   const [placedOrderNumber, setPlacedOrderNumber] = useState("");
   const [form, setForm] = useState({
-    name: "", phone: "", address: "", division: "Dhaka", district: "Dhaka", upazila: "",
+    name: "", phone: "", address: "", division: reduxLocation.division || "Dhaka", district: reduxLocation.district || "Dhaka", upazila: "",
     paymentMethod: "COD",
   });
+  const [districts, setDistricts] = useState([]);
+  const [upazilas, setUpazilas] = useState([]);
+
+  useEffect(() => {
+    const div = BANGLADESH_LOCATIONS.find((d) => d.division === form.division);
+    setDistricts(div ? div.districts.map((d) => d.name) : []);
+  }, [form.division]);
+
+  useEffect(() => {
+    const ups = getUpazilas(form.division, form.district);
+    setUpazilas(ups);
+  }, [form.division, form.district]);
 
   useEffect(() => {
     if (authChecked && (!user || !localStorage.getItem("bm-token"))) {
@@ -145,18 +159,46 @@ export default function CheckoutPage() {
                   <input type="tel" placeholder={t.phoneNumber} required value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="input-field" />
                 </div>
                 <div>
-                  <label className="block text-[10px] sm:text-[11px] font-semibold text-[#364152] mb-1">{t.selectArea}</label>
-                  <select value={form.district} onChange={(e) => setForm({ ...form, district: e.target.value })} className="input-field">
-                    <option>Dhaka</option>
-                    <option>Gazipur</option>
-                    <option>Narayanganj</option>
-                    <option>Chattogram</option>
-                    <option>Sylhet</option>
+                  <label className="block text-[10px] sm:text-[11px] font-semibold text-[#364152] mb-1">Division</label>
+                  <select
+                    value={form.division}
+                    onChange={(e) => setForm({ ...form, division: e.target.value, district: "", upazila: "" })}
+                    className="input-field"
+                    required
+                  >
+                    <option value="">Select Division</option>
+                    {BANGLADESH_LOCATIONS.map((d) => (
+                      <option key={d.division} value={d.division}>{d.division}</option>
+                    ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[10px] sm:text-[11px] font-semibold text-[#364152] mb-1">{t.houseStreet}</label>
-                  <input type="text" placeholder={t.houseStreet} value={form.upazila} onChange={(e) => setForm({ ...form, upazila: e.target.value })} className="input-field" />
+                  <label className="block text-[10px] sm:text-[11px] font-semibold text-[#364152] mb-1">District</label>
+                  <select
+                    value={form.district}
+                    onChange={(e) => setForm({ ...form, district: e.target.value, upazila: "" })}
+                    className="input-field"
+                    required
+                  >
+                    <option value="">Select District</option>
+                    {districts.map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] sm:text-[11px] font-semibold text-[#364152] mb-1">Upazila</label>
+                  <select
+                    value={form.upazila}
+                    onChange={(e) => setForm({ ...form, upazila: e.target.value })}
+                    className="input-field"
+                    required
+                  >
+                    <option value="">Select Upazila</option>
+                    {upazilas.map((u) => (
+                      <option key={u} value={u}>{u}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
               <div className="mt-2 sm:mt-2.5">

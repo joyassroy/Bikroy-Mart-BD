@@ -740,6 +740,61 @@ async function main() {
     console.log("⚡ Flash deals created");
   }
 
+  // ── Stock Clearance & Executive Flash Deals ──────────────────────────────────
+  const allProducts = await prisma.product.findMany({ where: { isActive: true }, take: 10 });
+  if (allProducts.length >= 4) {
+    const offerFlashDeals = [
+      { productId: allProducts[0].id, type: "STOCK_CLEARANCE", dealPrice: Math.round(allProducts[0].price * 0.6), quantity: 25, startsAt: now, endsAt: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000), isActive: true },
+      { productId: allProducts[1].id, type: "STOCK_CLEARANCE", dealPrice: Math.round(allProducts[1].price * 0.5), quantity: 15, startsAt: now, endsAt: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000), isActive: true },
+      { productId: allProducts[2].id, type: "EXECUTIVE", dealPrice: Math.round(allProducts[2].price * 0.75), quantity: 30, startsAt: now, endsAt: new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000), isActive: true },
+      { productId: allProducts[3].id, type: "EXECUTIVE", dealPrice: Math.round(allProducts[3].price * 0.7), quantity: 20, startsAt: now, endsAt: new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000), isActive: true },
+    ];
+    await prisma.flashDeal.createMany({ data: offerFlashDeals, skipDuplicates: true });
+    console.log("🏷️ Stock clearance & executive deals created");
+  }
+
+  // ── Combo & BOGO Promo Offers ───────────────────────────────────────────────
+  if (allProducts.length >= 6) {
+    const comboItems = [
+      allProducts[4], allProducts[5],
+    ];
+    const comboOffer = await prisma.promoOffer.create({
+      data: {
+        title: "Combo: " + comboItems.map((p) => p.name).join(" + "),
+        description: "Buy this combo and save big!",
+        type: "COMBO",
+        offerPrice: Math.round(comboItems.reduce((s, p) => s + p.price, 0) * 0.8),
+        startsAt: now,
+        endsAt: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000),
+        isActive: true,
+        items: {
+          create: comboItems.map((p) => ({ productId: p.id, quantity: 1 })),
+        },
+      },
+    });
+    console.log("🛒 Combo offer created:", comboOffer.title);
+
+    const bogoProduct = allProducts[0];
+    const bogoOffer = await prisma.promoOffer.create({
+      data: {
+        title: `Buy 1 Get 1 Free: ${bogoProduct.name}`,
+        description: `Buy one ${bogoProduct.name} and get another free!`,
+        type: "BOGO",
+        buyQuantity: 1,
+        getQuantity: 1,
+        getDiscount: 100,
+        offerPrice: bogoProduct.price,
+        startsAt: now,
+        endsAt: new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000),
+        isActive: true,
+        items: {
+          create: [{ productId: bogoProduct.id, quantity: 2 }],
+        },
+      },
+    });
+    console.log("🎁 BOGO offer created:", bogoOffer.title);
+  }
+
   // ── Site Settings ─────────────────────────────────────────────────────────
   const settings = [
     { key: "storeName", value: "Bikroy-Mart-BD" },

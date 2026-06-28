@@ -3,6 +3,7 @@ import { useEffect, useRef, createContext, useContext, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setUser, clearUser } from "@/redux/userSlice";
 import api from "@/lib/axios";
+import { detectLocationFromIP } from "@/lib/ipLocation";
 
 const AuthContext = createContext({ authChecked: false });
 export const useAuthChecked = () => useContext(AuthContext);
@@ -15,6 +16,8 @@ export default function AuthInit({ children }) {
   useEffect(() => {
     if (initRef.current) return;
     initRef.current = true;
+
+    detectLocationFromIP(dispatch);
 
     const token = localStorage.getItem("bm-token");
     if (!token) {

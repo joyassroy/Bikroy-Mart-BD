@@ -17,7 +17,7 @@ export const getAdminStats = async (req: Request, res: Response) => {
       totalCoupons,
       totalFlashDeals,
     ] = await Promise.all([
-      prisma.user.count({ where: { role: "CUSTOMER" } }),
+      prisma.user.count(),
       prisma.product.count(),
       prisma.order.count(),
       prisma.order.aggregate({ _sum: { total: true }, where: { paymentStatus: "PAID" } }),

@@ -61,6 +61,63 @@ export const toggleAvailability = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const getRiderStats = async (req: AuthRequest, res: Response) => {
+  try {
+    const rider = await prisma.riderProfile.findUnique({
+      where: { userId: req.user!.userId },
+    });
+    if (!rider) return sendError(res, "Rider profile not found", 404);
+
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
+
+    const [totalDeliveries, todayDelivered, activeCount, pendingAssigned, riderProfile] = await Promise.all([
+      prisma.order.count({ where: { riderId: rider.id, orderStatus: "DELIVERED" } }),
+      prisma.order.count({ where: { riderId: rider.id, orderStatus: "DELIVERED", actualDelivery: { gte: todayStart, lte: todayEnd } } }),
+      prisma.order.count({ where: { riderId: rider.id, orderStatus: { in: ["OUT_FOR_DELIVERY", "SHIPPED"] } } }),
+      prisma.order.count({ where: { riderId: rider.id, orderStatus: { in: ["OUT_FOR_DELIVERY", "SHIPPED"] } } }),
+      prisma.riderProfile.findUnique({ where: { id: rider.id }, select: { ratings: true, totalDeliveries: true, isAvailable: true } }),
+    ]);
+
+    return sendSuccess(res, "Rider stats fetched", {
+      totalDeliveries: riderProfile?.totalDeliveries || 0,
+      ratings: riderProfile?.ratings || 0,
+      isAvailable: riderProfile?.isAvailable ?? true,
+      todayDelivered,
+      activeDeliveries: activeCount,
+      pendingDeliveries: pendingAssigned,
+    });
+  } catch (error: any) {
+    return sendError(res, error.message);
+  }
+};
+
+export const getAssignedOrders = async (req: AuthRequest, res: Response) => {
+  try {
+    const rider = await prisma.riderProfile.findUnique({
+      where: { userId: req.user!.userId },
+    });
+    if (!rider) return sendError(res, "Rider profile not found", 404);
+
+    const orders = await prisma.order.findMany({
+      where: {
+        riderId: rider.id,
+        orderStatus: { notIn: ["DELIVERED", "CANCELLED"] },
+      },
+      include: {
+        items: { include: { product: true } },
+        user: { select: { id: true, name: true, phone: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    return sendSuccess(res, "Assigned orders fetched", orders);
+  } catch (error: any) {
+    return sendError(res, error.message);
+  }
+};
+
 export const getActiveDelivery = async (req: AuthRequest, res: Response) => {
   try {
     const rider = await prisma.riderProfile.findUnique({

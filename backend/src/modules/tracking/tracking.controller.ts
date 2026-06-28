@@ -31,12 +31,16 @@ export const getRiderLocation = async (req: Request, res: Response) => {
     const order = await prisma.order.findUnique({
       where: { id: String(req.params.orderId) },
       select: {
-        rider: { select: { currentLat: true, currentLng: true, user: { select: { name: true } } } },
+        orderNumber: true,
         orderStatus: true,
+        deliveryAddress: true,
+        deliveryLatitude: true,
+        deliveryLongitude: true,
+        rider: { select: { currentLat: true, currentLng: true, user: { select: { name: true, phone: true } } } },
       },
     });
     if (!order) return sendError(res, "Order not found", 404);
-    return sendSuccess(res, "Rider location fetched", order.rider);
+    return sendSuccess(res, "Rider location fetched", order);
   } catch (error: any) {
     return sendError(res, error.message);
   }

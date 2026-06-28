@@ -1,15 +1,97 @@
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5004/api";
 
-export const DELIVERY_AREAS = [
-  { division: "Dhaka", districts: ["Dhaka", "Gazipur", "Narayanganj", "Manikganj"] },
-  { division: "Chattogram", districts: ["Chattogram", "Cox's Bazar"] },
-  { division: "Sylhet", districts: ["Sylhet"] },
-  { division: "Rajshahi", districts: ["Rajshahi", "Bogura"] },
-  { division: "Khulna", districts: ["Khulna"] },
-  { division: "Barishal", districts: ["Barishal"] },
-  { division: "Rangpur", districts: ["Rangpur"] },
-  { division: "Mymensingh", districts: ["Mymensingh"] },
+export const BANGLADESH_LOCATIONS = [
+  {
+    division: "Dhaka",
+    districts: [
+      { name: "Dhaka", upazilas: ["Adabor", "Badda", "Banani", "Bandar", "Bangshal", "Bhashantek", "Bimanbandar", "Cantonment", "Chackbair", "Dakshinkhan", "Dhanmondi", "Dohar", "Dumki", "Gazipur", "Gulshan", "Hazaribagh", "Jatrabari", "Kadamtali", "Kafrul", "Keraniganj", "Khilgaon", "Khilkhet", "Kotwali", "Lalbagh", "Meghna", "Mirpur", "Mohammadpur", "Motijheel", "Mugda", "Nayatola", "Newmarket", "Pallabi", "Paltan", "Ramna", "Rampura", "Rupganj", "Sabujbagh", "Savar", "Shah Ali", "Shahbagh", "Shahjahanpur", "Shyamoli", "Shyampur", "Singair", "Sutrapur", "Tejgaon", "Turag", "Uttara", "Uttarkhan", "Zindabazar"] },
+      { name: "Gazipur", upazilas: ["Gazipur Sadar", "Kaliakair", "Kaliganj", "Kapasia", "Sreepur"] },
+      { name: "Narayanganj", upazilas: ["Araihazar", "Bandar", "Fatullah", "Narayanganj Sadar", "Rupganj", "Sonargaon"] },
+      { name: "Manikganj", upazilas: ["Daulatpur", "Ghior", "Harirampur", "Manikganj Sadar", "Saturia", "Shivalaya", "Singair"] },
+      { name: "Munshiganj", upazilas: ["Gazaria", "Lohajang", "Munshiganj Sadar", "Sirajdikhan", "Sreenagar", "Tongibari"] },
+      { name: "Narsingdi", upazilas: ["Belabo", "Monohardi", "Narsingdi Sadar", "Palash", "Raipura", "Shibpur"] },
+      { name: "Tangail", upazilas: ["Basail", "Bhuapur", "Delduar", "Ghatail", "Gopalpur", "Jamalpur", "Kalihati", "Madhupur", "Mirzapur", "Nagarpur", "Sakhipur", "Tangail Sadar"] },
+    ],
+  },
+  {
+    division: "Chattogram",
+    districts: [
+      { name: "Chattogram", upazilas: ["Anwara", "Banshkhali", "Boalkhali", "Chandanaish", "Chattogram Sadar", "Fatikchhari", "Hathazari", "Lohagara", "Mirsharai", "Patiya", "Rangunia", "Raozan", "Sandwip", "Satkania", "Sitakunda"] },
+      { name: "Cox's Bazar", upazilas: ["Chakaria", "Cox's Bazar Sadar", "Kutubdia", "Maheshkhali", "Pekua", "Ramu", "Teknaf", "Ukhia"] },
+      { name: "Bandarban", upazilas: ["Alikadam", "Bandarban Sadar", "Lama", "Naikhongchhari", "Rowangchhari", "Ruma", "Thanchi"] },
+      { name: "Khagrachhari", upazilas: ["Dighinala", "Khagrachhari Sadar", "Lakshmichhari", "Mahalchhari", "Manikchhari", "Matiranga", "Panchhari", "Ramgarh"] },
+      { name: "Rangamati", upazilas: ["Baghaichhari", "Barkal", "Juraichhari", "Kalampati", "Kaptai", "Langadu", "Naniarchar", "Rajasthali", "Rangamati Sadar"] },
+    ],
+  },
+  {
+    division: "Sylhet",
+    districts: [
+      { name: "Sylhet", upazilas: ["Bishwanath", "Companiganj", "Fenchuganj", "Golapganj", "Gowainghat", "Jaintiapur", "Kanaighat", "Osmani", "South Surma", "Sylhet Sadar", "Zakiganj"] },
+      { name: "Moulvibazar", upazilas: ["Barlekha", "Juri", "Kamalganj", "Kulaura", "Moulvibazar Sadar", "Rajnagar", "Sreemangal"] },
+      { name: "Habiganj", upazilas: ["Ajmiriganj", "Bahubal", "Baniachang", "Chunarughat", "Habiganj Sadar", "Lakhai", "Madhabpur", "Nabiganj"] },
+      { name: "Sunamganj", upazilas: ["Bishwambarpur", "Chhatak", "Derai", "Dharmandal", "Jamalganj", "Patharkandi", "Salanjhana", "Sunamganj Sadar", "Tahirpur"] },
+    ],
+  },
+  {
+    division: "Rajshahi",
+    districts: [
+      { name: "Rajshahi", upazilas: ["Bagha", "Baghmara", "Boalia", "Charghat", "Durgapur", "Godagari", "Mohanpur", "Paba", "Puthia", "Rajshahi Sadar", "Tanore"] },
+      { name: "Bogura", upazilas: ["Adamdighi", "Bogura Sadar", "Dhunat", "Dhupchanchia", "Gabtali", "Kahaloo", "Nandigram", "Sariakandi", "Sherpur", "Shibganj", "Sonatola"] },
+      { name: "Natore", upazilas: ["Bagatipara", "Baraigram", "Gurudaspur", "Lalpur", "Natore Sadar", "Singra"] },
+      { name: "Naogaon", upazilas: ["Atrai", "Badalgachi", "Dhamoirhat", "Manda", "Mahadevpur", "Naogaon Sadar", "Niamatpur", "Patnitala", "Porsha", "Raninagar", "Sapahar"] },
+      { name: "Chapainawabganj", upazilas: ["Bholahat", "Gomastapur", "Nachol", "Chapainawabganj Sadar", "Shibganj"] },
+      { name: "Joypurhat", upazilas: ["Akkelpur", "Kalai", "Khetlal", "Panchbibi", "Joypurhat Sadar"] },
+    ],
+  },
+  {
+    division: "Khulna",
+    districts: [
+      { name: "Khulna", upazilas: ["Batiaghata", "Dacope", "Dumuria", "Dighalia", "Khalishpur", "Khulna Sadar", "Koyra", "Paikgachha", "Phultala", "Rupsa", "Terokhada"] },
+      { name: "Bagerhat", upazilas: ["Bagerhat Sadar", "Chitalmari", "Fakirhat", "Kachua", "Mollahat", "Mongla", "Rampal", "Sharankhola"] },
+      { name: "Satkhira", upazilas: ["Assasuni", "Debhata", "Kalaroa", "Kaliganj", "Satkhira Sadar", "Shyamnagar", "Tala"] },
+      { name: "Jessore", upazilas: ["Abhaynagar", "Bagherpara", "Chaugachha", "Jhikargachha", "Keshabpur", "Jessore Sadar", "Manirampur", "Sharsha"] },
+      { name: "Magura", upazilas: ["Magura Sadar", "Mohammadpur", "Shalikha", "Sreepur"] },
+      { name: "Narail", upazilas: ["Kalia", "Lohagara", "Narail Sadar", "Swapurpasha"] },
+      { name: "Jhenaidah", upazilas: ["Harinakunda", "Jhenaidah Sadar", "Kaliganj", "Kotchandpur", "Maheshpur", "Shakhipur"] },
+    ],
+  },
+  {
+    division: "Barishal",
+    districts: [
+      { name: "Barishal", upazilas: ["Agailjhara", "Babuganj", "Bakerganj", "Banaripara", "Barishal Sadar", "Gournadi", "Hizla", "Mehendiganj", "Muladi", "Wazirpur"] },
+      { name: "Patuakhali", upazilas: ["Bauphal", "Dasmina", "Dumki", "Galachipa", "Kalapara", "Mirzaganj", "Patuakhali Sadar", "Rangabali"] },
+      { name: "Bhola", upazilas: ["Bhola Sadar", "Borhanuddin", "Charfassion", "Daulatkhan", "Lalmohan", "Manpura", "Tajumuddin"] },
+      { name: "Pirojpur", upazilas: ["Bhandaria", "Kawkhali", "Mathbaria", "Nazirpur", "Nesarabad", "Pirojpur Sadar", "Rangabali", "Swarupkathi"] },
+      { name: "Jhalakathi", upazilas: ["Jhalakathi Sadar", "Kathalia", "Nalchiti", "Rajapur"] },
+      { name: "Barguna", upazilas: ["Amtali", "Barguna Sadar", "Betagi", "Bamna", "Patharghata", "Taltali"] },
+    ],
+  },
+  {
+    division: "Rangpur",
+    districts: [
+      { name: "Rangpur", upazilas: ["Badarganj", "Gangachara", "Kaunia", "Mithapukur", "Pirgachha", "Pirganj", "Rangpur Sadar", "Taraganj"] },
+      { name: "Dinajpur", upazilas: ["Birampur", "Birganj", "Biral", "Chirirbandar", "Dinajpur Sadar", "Ghoraghat", "Hakimpur", "Kaharole", "Khansama", "Nawabganj", "Parbatipur"] },
+      { name: "Thakurgaon", upazilas: ["Baliadangi", "Haripur", "Pirganj", "Ranisankail", "Thakurgaon Sadar"] },
+      { name: "Lalmonirhat", upazilas: ["Aditmari", "Hativanga", "Kaliganj", "Lalmonirhat Sadar", "Patgram"] },
+      { name: "Kurigram", upazilas: ["Bhurungamari", "Char Rajibpur", "Chilmari", "Kurigram Sadar", "Nageshwari", "Phulbari", "Rajarhat", "Raomari", "Ulipur"] },
+      { name: "Gaibandha", upazilas: ["Fulchhari", "Gaibandha Sadar", "Gobindaganj", "Palashbari", "Sadullapur", "Sundarganj"] },
+    ],
+  },
+  {
+    division: "Mymensingh",
+    districts: [
+      { name: "Mymensingh", upazilas: ["Bhaluka", "Dobaura", "Fulbaria", "Gaffargaon", "Gauripur", "Ishwarganj", "Mymensingh Sadar", "Nandail", "Phulpur", "Tarakanda", "Trishal"] },
+      { name: "Jamalpur", upazilas: ["Bakshiganj", "Dewanganj", "Islampur", "Jamalpur Sadar", "Melandaha", "Sarishabari"] },
+      { name: "Netrokona", upazilas: ["Atpara", "Barhatta", "Durgapur", "Khaliajuri", "Kalmakanda", "Kendua", "Madan", "Mohanganj", "Netrokona Sadar", "Purbadhala"] },
+      { name: "Sherpur", upazilas: ["Jhinaigati", "Nakla", "Nalitabari", "Sherpur Sadar", "Sribordi"] },
+    ],
+  },
 ];
+
+export const DELIVERY_AREAS = BANGLADESH_LOCATIONS.map((d) => ({
+  division: d.division,
+  districts: d.districts.map((dist) => dist.name),
+}));
 
 export const ORDER_STATUSES = [
   { value: "PENDING", label: "Pending", color: "text-yellow-600 bg-yellow-50" },
@@ -42,4 +124,11 @@ export const COLORS = {
   surfaceLight: "#F9FAFB",
   error: "#FF6B6B",
   errorBg: "#FFF0F0",
+};
+
+export const getUpazilas = (division, district) => {
+  const div = BANGLADESH_LOCATIONS.find((d) => d.division === division);
+  if (!div) return [];
+  const dist = div.districts.find((d) => d.name === district);
+  return dist ? dist.upazilas : [];
 };

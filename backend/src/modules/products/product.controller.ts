@@ -45,15 +45,27 @@ export const getAllProducts = async (req: Request, res: Response) => {
     }
     if (offer) {
       const now = new Date();
-      const flashDeals = await prisma.flashDeal.findMany({
-        where: { type: String(offer), isActive: true, startsAt: { lte: now }, endsAt: { gte: now } },
-        select: { productId: true },
-      });
-      const productIds = flashDeals.map((d) => d.productId);
-      if (productIds.length > 0) {
-        where.id = { in: productIds };
+      const offerStr = String(offer);
+      const isPromoOffer = offerStr === "COMBO" || offerStr === "BOGO";
+
+      if (isPromoOffer) {
+        const promoOffers = await prisma.promoOffer.findMany({
+          where: { type: offerStr, isActive: true, startsAt: { lte: now }, endsAt: { gte: now } },
+          include: { items: { select: { productId: true } } },
+        });
+        const productIds = [...new Set(promoOffers.flatMap((o) => o.items.map((i) => i.productId)))];
+        if (productIds.length > 0) {
+          where.id = { in: productIds };
+        }
       } else {
-        where.id = { in: [] };
+        const flashDeals = await prisma.flashDeal.findMany({
+          where: { type: offerStr, isActive: true, startsAt: { lte: now }, endsAt: { gte: now } },
+          select: { productId: true },
+        });
+        const productIds = flashDeals.map((d) => d.productId);
+        if (productIds.length > 0) {
+          where.id = { in: productIds };
+        }
       }
     }
 

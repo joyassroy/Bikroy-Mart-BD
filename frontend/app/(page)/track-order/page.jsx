@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -7,7 +7,7 @@ import api from "@/lib/axios";
 import { Search, Package, Truck, CheckCircle, Clock, MapPin } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 
-export default function TrackOrderPage() {
+function TrackOrderContent() {
   const searchParams = useSearchParams();
   const initialOrder = searchParams.get("order") || "";
   const [orderNumber, setOrderNumber] = useState(initialOrder);
@@ -142,5 +142,13 @@ export default function TrackOrderPage() {
       </main>
       <Footer />
     </div>
+  );
+}
+
+export default function TrackOrderPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#F4F7FB] flex items-center justify-center">Loading...</div>}>
+      <TrackOrderContent />
+    </Suspense>
   );
 }

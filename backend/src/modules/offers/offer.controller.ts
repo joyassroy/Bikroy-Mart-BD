@@ -65,7 +65,7 @@ export const createPromoOffer = async (req: Request, res: Response) => {
 export const updatePromoOffer = async (req: Request, res: Response) => {
   try {
     const { title, description, type, offerPrice, buyQuantity, getQuantity, getDiscount, items, startsAt, endsAt, isActive, sortOrder } = req.body;
-    const offerId = req.params.id;
+    const offerId = String(req.params.id);
 
     if (items) {
       await prisma.promoOfferItem.deleteMany({ where: { promoOfferId: offerId } });

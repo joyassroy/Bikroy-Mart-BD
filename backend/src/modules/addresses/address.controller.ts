@@ -49,7 +49,7 @@ export const createAddress = async (req: AuthRequest, res: Response) => {
 export const updateAddress = async (req: AuthRequest, res: Response) => {
   try {
     const { name, phone, division, district, upazila, fullAddress, isDefault, latitude, longitude } = req.body;
-    const addressId = req.params.id;
+    const addressId = String(req.params.id);
 
     const existing = await prisma.address.findFirst({
       where: { id: addressId, userId: req.user!.userId },
@@ -85,7 +85,7 @@ export const updateAddress = async (req: AuthRequest, res: Response) => {
 
 export const deleteAddress = async (req: AuthRequest, res: Response) => {
   try {
-    const addressId = req.params.id;
+    const addressId = String(req.params.id);
     const existing = await prisma.address.findFirst({
       where: { id: addressId, userId: req.user!.userId },
     });
@@ -100,7 +100,7 @@ export const deleteAddress = async (req: AuthRequest, res: Response) => {
 
 export const setDefaultAddress = async (req: AuthRequest, res: Response) => {
   try {
-    const addressId = req.params.id;
+    const addressId = String(req.params.id);
     const existing = await prisma.address.findFirst({
       where: { id: addressId, userId: req.user!.userId },
     });
