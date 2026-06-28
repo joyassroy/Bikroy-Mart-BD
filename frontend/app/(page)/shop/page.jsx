@@ -253,7 +253,7 @@ function ShopContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F7FB]">
+    <div className="min-h-screen bg-[#F0F2F5]">
       <Header />
       <main className="max-w-[1200px] mx-auto px-3 sm:px-4 md:px-6 lg:px-10 py-3 sm:py-4">
         <div className="flex items-center justify-between mb-3">

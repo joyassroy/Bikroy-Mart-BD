@@ -17,7 +17,7 @@ export default function CartPage() {
   const total = subtotal + deliveryCharge;
 
   return (
-    <div className="min-h-screen bg-[#F4F7FB]">
+    <div className="min-h-screen bg-[#F0F2F5]">
       <Header />
       <main className="max-w-[1200px] mx-auto px-3 sm:px-4 md:px-6 lg:px-10 py-3 sm:py-4">
         <h1 className="text-base sm:text-lg md:text-xl font-semibold text-[#00215B] mb-2 sm:mb-3">{t.shoppingCart}</h1>

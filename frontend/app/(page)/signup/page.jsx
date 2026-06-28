@@ -42,7 +42,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F7FB] flex items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-[#F0F2F5] flex items-center justify-center px-4 py-8">
       <div className="bg-white rounded-lg shadow-[rgba(0,0,0,0.1)_0px_2px_4px_0px] w-full max-w-sm p-5 sm:p-6 border border-[#E5E7EB]">
         <div className="text-center mb-4 sm:mb-5">
           <h1 className="text-base sm:text-lg font-bold text-[#00215B]">Bikroy<span className="text-[#EC008C]">-Mart</span>-BD</h1>

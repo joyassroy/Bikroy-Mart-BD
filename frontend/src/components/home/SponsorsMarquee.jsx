@@ -28,7 +28,7 @@ export default function SponsorsMarquee() {
   if (displaySponsors.length === 0) return null;
 
   return (
-    <section className="py-10 bg-[#F4F7FB] border-y border-gray-200 overflow-hidden">
+    <section className="py-10 bg-[#F0F2F5] border-y border-gray-200 overflow-hidden">
       <div className="max-w-[1200px] mx-auto px-4 mb-6 text-center">
         <p className="text-xs font-semibold uppercase tracking-widest text-[#00215B]/50 mb-1">Trusted Partners</p>
         <h2 className="text-xl sm:text-2xl font-bold text-[#00215B]">Our Sponsors & Partners</h2>

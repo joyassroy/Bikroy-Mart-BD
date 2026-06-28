@@ -120,7 +120,7 @@ export const COLORS = {
   slate: "#5A6C91",
   muted: "#667085",
   border: "#E5E7EB",
-  surface: "#F4F7FB",
+  surface: "#F0F2F5",
   surfaceLight: "#F9FAFB",
   error: "#FF6B6B",
   errorBg: "#FFF0F0",

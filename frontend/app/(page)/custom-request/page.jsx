@@ -299,7 +299,7 @@ export default function CustomRequestPage() {
 
   if (!authChecked) {
     return (
-      <div className="min-h-screen bg-[#F4F7FB]">
+      <div className="min-h-screen bg-[#F0F2F5]">
         <Header />
         <main className="max-w-[1200px] mx-auto px-4 py-10">
           <div className="text-center py-20 text-sm text-[#667085]">{t.loading}</div>
@@ -311,7 +311,7 @@ export default function CustomRequestPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-[#F4F7FB]">
+    <div className="min-h-screen bg-[#F0F2F5]">
       <Header />
       <main className="max-w-[1200px] mx-auto px-4 py-6 md:py-10">
         <div className="text-center mb-8">
@@ -472,7 +472,7 @@ export default function CustomRequestPage() {
                           <img key={i} src={img} alt="" className="w-10 h-10 rounded object-cover border border-[#E5E7EB]" />
                         ))}
                         {req.images.length > 3 && (
-                          <span className="w-10 h-10 rounded bg-[#F4F7FB] flex items-center justify-center text-[10px] text-[#667085] font-semibold">
+                          <span className="w-10 h-10 rounded bg-[#F0F2F5] flex items-center justify-center text-[10px] text-[#667085] font-semibold">
                             +{req.images.length - 3}
                           </span>
                         )}

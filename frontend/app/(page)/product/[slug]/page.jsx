@@ -123,7 +123,7 @@ export default function ProductDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F4F7FB]">
+      <div className="min-h-screen bg-[#F0F2F5]">
         <Header />
         <div className="flex items-center justify-center h-[60vh]">
           <Loader2 className="animate-spin text-[#EC008C]" size={32} />
@@ -135,7 +135,7 @@ export default function ProductDetailPage() {
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-[#F4F7FB]">
+      <div className="min-h-screen bg-[#F0F2F5]">
         <Header />
         <div className="flex items-center justify-center h-[60vh]">
           <div className="text-center">
@@ -149,7 +149,7 @@ export default function ProductDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F4F7FB]">
+    <div className="min-h-screen bg-[#F0F2F5]">
       <Header />
       <main className="max-w-[1200px] mx-auto px-3 sm:px-4 md:px-6 lg:px-10 py-3 sm:py-4">
         {/* Breadcrumb */}
@@ -267,14 +267,14 @@ export default function ProductDetailPage() {
                 <div className="flex items-center border border-[#E5E7EB] rounded-md">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="p-2 hover:bg-[#F4F7FB] transition text-[#364152]"
+                    className="p-2 hover:bg-[#F0F2F5] transition text-[#364152]"
                   >
                     <Minus size={14} />
                   </button>
                   <span className="w-10 text-center text-xs font-semibold">{quantity}</span>
                   <button
                     onClick={() => setQuantity(Math.min(product.stock || 99, quantity + 1))}
-                    className="p-2 hover:bg-[#F4F7FB] transition text-[#364152]"
+                    className="p-2 hover:bg-[#F0F2F5] transition text-[#364152]"
                   >
                     <Plus size={14} />
                   </button>
@@ -352,7 +352,7 @@ export default function ProductDetailPage() {
                     <div key={star} className="flex items-center gap-2 mb-1">
                       <span className="text-[10px] text-[#667085] w-3">{star}</span>
                       <Star size={10} className="fill-yellow-400 text-yellow-400" />
-                      <div className="flex-1 h-1.5 bg-[#F4F7FB] rounded-full overflow-hidden">
+                      <div className="flex-1 h-1.5 bg-[#F0F2F5] rounded-full overflow-hidden">
                         <div className="h-full bg-yellow-400 rounded-full" style={{ width: `${pct}%` }} />
                       </div>
                       <span className="text-[9px] text-[#667085] w-6 text-right">{count}</span>
@@ -391,7 +391,7 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Write Review Form */}
-          <div className="bg-[#F4F7FB] rounded-lg p-4">
+          <div className="bg-[#F0F2F5] rounded-lg p-4">
             <h4 className="text-xs font-semibold text-[#000000] mb-3">{t.writeReview}</h4>
             <form onSubmit={handleSubmitReview}>
               <div className="mb-3">

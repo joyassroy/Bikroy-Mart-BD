@@ -13,7 +13,7 @@
   --color-slate: #5A6C91;
   --color-muted: #667085;
   --color-border: #E5E7EB;
-  --color-surface: #F4F7FB;
+  --color-surface: #F0F2F5;
   --color-surface-light: #F9FAFB;
   --color-text-primary: #000000;
   --color-text-secondary: #667085;
@@ -87,7 +87,7 @@
   height: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: #F4F7FB;
+  background: #F0F2F5;
 }
 ::-webkit-scrollbar-thumb {
   background: #667085;

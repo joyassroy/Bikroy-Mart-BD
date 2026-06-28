@@ -54,7 +54,7 @@ function TrackOrderContent() {
   const getStatusIndex = (status) => statusSteps.findIndex((s) => s.key === status);
 
   return (
-    <div className="min-h-screen bg-[#F4F7FB]">
+    <div className="min-h-screen bg-[#F0F2F5]">
       <Header />
       <main className="max-w-[1200px] mx-auto px-3 sm:px-4 md:px-6 lg:px-10 py-3 sm:py-4">
         <h1 className="text-base sm:text-lg md:text-xl font-semibold text-[#00215B] mb-2 sm:mb-3">{t.trackOrder}</h1>
@@ -94,7 +94,7 @@ function TrackOrderContent() {
                 return (
                   <div key={step.key} className="flex items-center gap-2 sm:gap-2.5">
                     <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      isCompleted ? "bg-[#EC008C] text-white" : "bg-[#F4F7FB] text-[#E5E7EB]"
+                      isCompleted ? "bg-[#EC008C] text-white" : "bg-[#F0F2F5] text-[#E5E7EB]"
                     } ${isCurrent ? "ring-2 sm:ring-3 ring-[#FCE8F3]" : ""}`}>
                       <step.icon size={12} className="sm:w-4 sm:h-4" />
                     </div>
@@ -147,7 +147,7 @@ function TrackOrderContent() {
 
 export default function TrackOrderPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#F4F7FB] flex items-center justify-center">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-[#F0F2F5] flex items-center justify-center">Loading...</div>}>
       <TrackOrderContent />
     </Suspense>
   );
