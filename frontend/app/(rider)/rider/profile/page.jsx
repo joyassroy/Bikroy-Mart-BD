@@ -1,12 +1,16 @@
 "use client";
 import { useState, useEffect } from "react";
-import { User, Truck, Star, Package, MapPin, Phone, Mail, ToggleLeft, ToggleRight, Loader2 } from "lucide-react";
+import { User, Truck, Star, Package, MapPin, Phone, Mail, ToggleLeft, ToggleRight, Loader2, LogOut, Award, TrendingUp, Clock } from "lucide-react";
 import api from "@/lib/axios";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { useRouter } from "next/navigation";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function RiderProfilePage() {
   const user = useSelector((state) => state.user?.data);
-  const [profile, setProfile] = useState(null);
+  const dispatch = useDispatch();
+  const router = useRouter();
+  const { t } = useLanguage();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -17,11 +21,6 @@ export default function RiderProfilePage() {
           api.get("/riders/stats").catch(() => ({ data: { data: null } })),
         ]);
         setStats(statsRes.data.data);
-        setProfile({
-          name: user?.name || "Rider",
-          email: user?.email || "",
-          phone: user?.phone || "",
-        });
       } catch (err) {
         console.error(err);
       } finally {
@@ -29,70 +28,131 @@ export default function RiderProfilePage() {
       }
     };
     fetchProfile();
-  }, [user]);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("bm-token");
+    dispatch({ type: "user/logout" });
+    router.push("/signin");
+  };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 size={24} className="animate-spin text-[#EC008C]" />
+      <div className="space-y-4 animate-pulse">
+        <div className="bg-white rounded-2xl h-40 border border-[#E5E7EB]" />
+        <div className="bg-white rounded-2xl h-32 border border-[#E5E7EB]" />
       </div>
     );
   }
 
+  const initials = (user?.name || "R").split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
+
   return (
-    <div>
-      <h1 className="text-base sm:text-lg md:text-xl font-semibold text-[#00215B] mb-3">My Profile</h1>
-      <div className="max-w-2xl">
-        <div className="bg-white rounded-lg p-4 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">
-          {/* Header */}
-          <div className="flex items-center gap-4 mb-4 pb-4 border-b border-[#F4F7FB]">
-            <div className="w-14 h-14 bg-[#FCE8F3] rounded-full flex items-center justify-center">
-              <User size={28} className="text-[#EC008C]" />
-            </div>
-            <div>
-              <h2 className="text-base sm:text-lg font-semibold text-[#000000]">{profile?.name}</h2>
-              <p className="text-[11px] sm:text-xs text-[#667085]">{profile?.email}</p>
-            </div>
+    <div className="space-y-5">
+      {/* Profile Header Card */}
+      <div className="bg-gradient-to-br from-[#00215B] via-[#003087] to-[#00AFCC] rounded-2xl p-6 text-white relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-12 translate-x-12" />
+        <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-10 -translate-x-10" />
+        <div className="relative z-10 flex items-center gap-4">
+          <div className="w-16 h-16 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center text-xl font-bold border border-white/20">
+            {initials}
           </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className="bg-[#F4F7FB] rounded-lg p-3 text-center">
-              <Package className="mx-auto text-[#00AFCC] mb-1" size={20} />
-              <p className="text-lg sm:text-xl font-bold text-[#000000]">{stats?.totalDeliveries ?? 0}</p>
-              <p className="text-[10px] sm:text-[11px] text-[#667085]">Total Deliveries</p>
-            </div>
-            <div className="bg-[#FFF8E1] rounded-lg p-3 text-center">
-              <Star className="mx-auto text-[#D4A017] mb-1" size={20} />
-              <p className="text-lg sm:text-xl font-bold text-[#000000]">{stats?.ratings?.toFixed(1) ?? "0.0"}</p>
-              <p className="text-[10px] sm:text-[11px] text-[#667085]">Rating</p>
-            </div>
-          </div>
-
-          {/* Details */}
-          <div className="space-y-2.5">
-            <div className="flex justify-between py-2 border-b border-[#F4F7FB]">
-              <span className="text-[#667085] text-[11px] sm:text-xs flex items-center gap-1.5"><Phone size={12} /> Phone</span>
-              <span className="text-[11px] sm:text-xs font-medium text-[#000000]">{profile?.phone || "N/A"}</span>
-            </div>
-            <div className="flex justify-between py-2 border-b border-[#F4F7FB]">
-              <span className="text-[#667085] text-[11px] sm:text-xs flex items-center gap-1.5"><Mail size={12} /> Email</span>
-              <span className="text-[11px] sm:text-xs font-medium text-[#000000]">{profile?.email || "N/A"}</span>
-            </div>
-            <div className="flex justify-between py-2 border-b border-[#F4F7FB]">
-              <span className="text-[#667085] text-[11px] sm:text-xs flex items-center gap-1.5"><Truck size={12} /> Active Today</span>
-              <span className="text-[11px] sm:text-xs font-medium text-[#000000]">{stats?.todayDelivered ?? 0} delivered</span>
-            </div>
-            <div className="flex justify-between py-2">
-              <span className="text-[#667085] text-[11px] sm:text-xs flex items-center gap-1.5"><MapPin size={12} /> Status</span>
-              <span className={`text-[11px] sm:text-xs font-medium flex items-center gap-1 ${stats?.isAvailable ? "text-green-600" : "text-gray-500"}`}>
-                {stats?.isAvailable ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
-                {stats?.isAvailable ? "Available" : "Offline"}
+          <div>
+            <h1 className="text-xl font-bold">{user?.name || "Rider"}</h1>
+            <p className="text-white/60 text-xs mt-0.5">{user?.email}</p>
+            <div className="flex items-center gap-2 mt-1.5">
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold flex items-center gap-1 ${
+                stats?.isAvailable ? "bg-emerald-500/20 text-emerald-300 border border-emerald-400/30" : "bg-white/10 text-white/50 border border-white/20"
+              }`}>
+                {stats?.isAvailable ? <ToggleRight size={10} /> : <ToggleLeft size={10} />}
+                {stats?.isAvailable ? (t.online || "Online") : (t.offline || "Offline")}
               </span>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Performance Metrics */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="bg-white rounded-2xl p-4 border border-[#E5E7EB] text-center">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center mx-auto mb-2.5">
+            <Package size={18} className="text-white" />
+          </div>
+          <p className="text-xl font-bold text-[#000000]">{stats?.totalDeliveries ?? 0}</p>
+          <p className="text-[10px] text-[#667085] font-medium mt-0.5">{t.totalDeliveries || "Total Deliveries"}</p>
+        </div>
+        <div className="bg-white rounded-2xl p-4 border border-[#E5E7EB] text-center">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center mx-auto mb-2.5">
+            <Star size={18} className="text-white" />
+          </div>
+          <p className="text-xl font-bold text-[#000000]">{stats?.ratings?.toFixed(1) ?? "0.0"}</p>
+          <p className="text-[10px] text-[#667085] font-medium mt-0.5">{t.rating || "Rating"}</p>
+        </div>
+        <div className="bg-white rounded-2xl p-4 border border-[#E5E7EB] text-center">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center mx-auto mb-2.5">
+            <TrendingUp size={18} className="text-white" />
+          </div>
+          <p className="text-xl font-bold text-[#000000]">{stats?.todayDelivered ?? 0}</p>
+          <p className="text-[10px] text-[#667085] font-medium mt-0.5">{t.todayDeliveries || "Today"}</p>
+        </div>
+      </div>
+
+      {/* Details Card */}
+      <div className="bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden">
+        <div className="px-5 py-4 border-b border-[#F4F7FB]">
+          <h3 className="font-semibold text-sm text-[#000000]">{t.personalInfo || "Personal Info"}</h3>
+        </div>
+        <div className="divide-y divide-[#F4F7FB]">
+          <div className="px-5 py-3.5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center">
+                <Phone size={14} className="text-green-500" />
+              </div>
+              <span className="text-[11px] text-[#667085] font-medium">{t.phone || "Phone"}</span>
+            </div>
+            <span className="text-xs font-semibold text-[#000000]">{user?.phone || "N/A"}</span>
+          </div>
+          <div className="px-5 py-3.5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                <Mail size={14} className="text-blue-500" />
+              </div>
+              <span className="text-[11px] text-[#667085] font-medium">{t.email || "Email"}</span>
+            </div>
+            <span className="text-xs font-semibold text-[#000000]">{user?.email || "N/A"}</span>
+          </div>
+          <div className="px-5 py-3.5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
+                <Truck size={14} className="text-orange-500" />
+              </div>
+              <span className="text-[11px] text-[#667085] font-medium">{t.activeToday || "Active Today"}</span>
+            </div>
+            <span className="text-xs font-semibold text-[#000000]">{stats?.todayDelivered ?? 0} {t.delivered || "delivered"}</span>
+          </div>
+          <div className="px-5 py-3.5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center">
+                <Award size={14} className="text-purple-500" />
+              </div>
+              <span className="text-[11px] text-[#667085] font-medium">{t.status || "Status"}</span>
+            </div>
+            <span className={`text-xs font-semibold flex items-center gap-1 ${stats?.isAvailable ? "text-emerald-600" : "text-gray-500"}`}>
+              {stats?.isAvailable ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
+              {stats?.isAvailable ? (t.available || "Available") : (t.offline || "Offline")}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Logout */}
+      <button
+        onClick={handleLogout}
+        className="w-full bg-white border border-red-200 text-red-600 py-3 rounded-xl text-xs font-semibold hover:bg-red-50 transition-all duration-200 flex items-center justify-center gap-2"
+      >
+        <LogOut size={14} />
+        {t.logout || "Logout"}
+      </button>
     </div>
   );
 }
