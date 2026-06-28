@@ -5,50 +5,52 @@ import { LayoutDashboard, Package, ShoppingCart, Users, BarChart3, Settings, Tag
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useAuthChecked } from "@/helper/AuthInit";
-
-const menu = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { 
-    label: "Products", icon: Package, 
-    subItems: [
-      { label: "All Products", href: "/dashboard/products/all" },
-      { label: "Add Product", href: "/dashboard/products/add" },
-      { label: "Categories", href: "/dashboard/products/categories" },
-      { label: "Subcategories", href: "/dashboard/products/subcategories" },
-      { label: "Inventory", href: "/dashboard/products/inventory" }
-    ]
-  },
-  { label: "Orders", href: "/dashboard/orders", icon: ShoppingCart },
-  { label: "Offers", href: "/dashboard/offers", icon: Gift },
-  { label: "Customers", href: "/dashboard/customers", icon: Users },
-  { label: "Riders", href: "/dashboard/riders", icon: Truck },
-  { label: "Managers", href: "/dashboard/managers", icon: MapPin },
-  { label: "Banners", href: "/dashboard/banners", icon: Tag },
-  { 
-    label: "Content", icon: Users,
-    subItems: [
-      { label: "Blogs", href: "/dashboard/content/blogs" },
-      { label: "Email List", href: "/dashboard/content/email-list" },
-      { label: "Media Library", href: "/dashboard/content/media-library" },
-      { label: "Sponsors", href: "/dashboard/content/sponsors" }
-    ]
-  },
-  { label: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
-  { 
-    label: "Settings", icon: Settings, 
-    subItems: [
-      { label: "General Settings", href: "/dashboard/settings/general" },
-      { label: "User Update", href: "/dashboard/settings/user-update" }
-    ]
-  },
-];
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function DashboardLayout({ children }) {
+  const { t } = useLanguage();
   const pathname = usePathname();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [openSubmenu, setOpenSubmenu] = useState("Products");
   const user = useSelector((state) => state.user.data);
+
+  const menu = [
+    { label: t.dashboard, href: "/dashboard", icon: LayoutDashboard },
+    { 
+      label: t.products, icon: Package, 
+      subItems: [
+        { label: t.allProducts, href: "/dashboard/products/all" },
+        { label: t.addProduct, href: "/dashboard/products/add" },
+        { label: t.categories, href: "/dashboard/products/categories" },
+        { label: t.subcategories, href: "/dashboard/products/subcategories" },
+        { label: t.inventory, href: "/dashboard/products/inventory" }
+      ]
+    },
+    { label: t.orders, href: "/dashboard/orders", icon: ShoppingCart },
+    { label: t.offers, href: "/dashboard/offers", icon: Gift },
+    { label: t.customers, href: "/dashboard/customers", icon: Users },
+    { label: t.riders, href: "/dashboard/riders", icon: Truck },
+    { label: t.managers, href: "/dashboard/managers", icon: MapPin },
+    { label: t.banners, href: "/dashboard/banners", icon: Tag },
+    { 
+      label: t.content, icon: Users,
+      subItems: [
+        { label: t.blogs, href: "/dashboard/content/blogs" },
+        { label: t.emailList, href: "/dashboard/content/email-list" },
+        { label: t.mediaLibrary, href: "/dashboard/content/media-library" },
+        { label: t.sponsors, href: "/dashboard/content/sponsors" }
+      ]
+    },
+    { label: t.analytics, href: "/dashboard/analytics", icon: BarChart3 },
+    { 
+      label: t.settings, icon: Settings, 
+      subItems: [
+        { label: t.generalSettings, href: "/dashboard/settings/general" },
+        { label: t.userUpdate, href: "/dashboard/settings/user-update" }
+      ]
+    },
+  ];
   const { authChecked } = useAuthChecked();
 
   useEffect(() => {
@@ -85,7 +87,7 @@ export default function DashboardLayout({ children }) {
         <div className="p-3 border-b border-[#001A4A] flex items-center justify-between">
           <Link href="/" className="block">
             <h2 className="text-xs font-bold">Bikroy<span className="text-[#EC008C]">-Mart</span>-BD</h2>
-            <p className="text-[9px] text-white/50">Admin Panel</p>
+            <p className="text-[9px] text-white/50">{t.adminPanel}</p>
           </Link>
           <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-white/60 hover:text-white p-1">
             <X size={16} />

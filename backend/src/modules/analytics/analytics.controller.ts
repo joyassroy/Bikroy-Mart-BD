@@ -183,3 +183,82 @@ export const getRecentOrders = async (req: Request, res: Response) => {
     return sendError(res, error.message);
   }
 };
+
+export const getProductsByZila = async (req: Request, res: Response) => {
+  try {
+    const orderItems = await prisma.orderItem.findMany({
+      where: {
+        order: { paymentStatus: "PAID" },
+      },
+      include: {
+        product: { select: { id: true, name: true, nameBn: true, slug: true } },
+        order: { select: { deliveryDistrict: true } },
+      },
+    });
+
+    const zilaProductMap: Record<string, Record<string, { name: string; nameBn: string | null; slug: string; quantity: number; revenue: number }>> = {};
+
+    for (const item of orderItems) {
+      const zila = item.order.deliveryDistrict;
+      const productId = item.productId;
+      if (!zilaProductMap[zila]) zilaProductMap[zila] = {};
+      if (!zilaProductMap[zila][productId]) {
+        zilaProductMap[zila][productId] = {
+          name: item.product.name,
+          nameBn: item.product.nameBn,
+          slug: item.product.slug,
+          quantity: 0,
+          revenue: 0,
+        };
+      }
+      zilaProductMap[zila][productId].quantity += item.quantity;
+      zilaProductMap[zila][productId].revenue += item.totalPrice;
+    }
+
+    const result = Object.entries(zilaProductMap).map(([zila, products]) => {
+      const productList = Object.values(products).sort((a, b) => b.revenue - a.revenue);
+      const totalRevenue = productList.reduce((sum, p) => sum + p.revenue, 0);
+      const totalQuantity = productList.reduce((sum, p) => sum + p.quantity, 0);
+      return {
+        zila,
+        totalRevenue,
+        totalQuantity,
+        totalProducts: productList.length,
+        topProducts: productList.slice(0, 5),
+      };
+    }).sort((a, b) => b.totalRevenue - a.totalRevenue);
+
+    return sendSuccess(res, "Products by zila fetched", result);
+  } catch (error: any) {
+    return sendError(res, error.message);
+  }
+};
+
+export const getOrdersByZila = async (req: Request, res: Response) => {
+  try {
+    const orders = await prisma.order.groupBy({
+      by: ["deliveryDistrict", "orderStatus"],
+      _count: true,
+      _sum: { total: true },
+      where: { paymentStatus: "PAID" },
+    });
+
+    const zilaMap: Record<string, { zila: string; totalOrders: number; totalRevenue: number; statuses: Record<string, number> }> = {};
+
+    for (const o of orders) {
+      const zila = o.deliveryDistrict;
+      if (!zilaMap[zila]) {
+        zilaMap[zila] = { zila, totalOrders: 0, totalRevenue: 0, statuses: {} };
+      }
+      zilaMap[zila].totalOrders += o._count;
+      zilaMap[zila].totalRevenue += o._sum?.total || 0;
+      zilaMap[zila].statuses[o.orderStatus] = (zilaMap[zila].statuses[o.orderStatus] || 0) + o._count;
+    }
+
+    const result = Object.values(zilaMap).sort((a, b) => b.totalRevenue - a.totalRevenue);
+
+    return sendSuccess(res, "Orders by zila fetched", result);
+  } catch (error: any) {
+    return sendError(res, error.message);
+  }
+};

@@ -54,22 +54,18 @@ export const getAllProducts = async (req: Request, res: Response) => {
           include: { items: { select: { productId: true } } },
         });
         const productIds = [...new Set(promoOffers.flatMap((o) => o.items.map((i) => i.productId)))];
-        if (productIds.length > 0) {
-          where.id = { in: productIds };
-        }
+        where.id = productIds.length > 0 ? { in: productIds } : { in: [] };
       } else {
         const flashDeals = await prisma.flashDeal.findMany({
           where: { type: offerStr, isActive: true, startsAt: { lte: now }, endsAt: { gte: now } },
           select: { productId: true },
         });
         const productIds = flashDeals.map((d) => d.productId);
-        if (productIds.length > 0) {
-          where.id = { in: productIds };
-        }
+        where.id = productIds.length > 0 ? { in: productIds } : { in: [] };
       }
     }
 
-    if (district) {
+    if (district && !offer) {
       const managers = await prisma.managerProfile.findMany({
         where: { assignedDistrict: String(district) },
         select: { id: true },

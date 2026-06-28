@@ -3,25 +3,40 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
-import { Search, ShoppingCart, User, MapPin, Menu, X, ChevronDown, ChevronRight, Globe, ClipboardList, Loader2, LayoutDashboard, ChevronUp } from "lucide-react";
+import { Search, ShoppingCart, User, MapPin, Menu, X, ChevronDown, ChevronRight, Globe, ClipboardList, Loader2, LayoutDashboard, ChevronUp, Wheat, Apple, Beef, Egg, Coffee, Cookie, Droplets, ChefHat, Cake, Sparkles, SprayCan, Baby, Package } from "lucide-react";
 import { useSelector } from "react-redux";
 import LocationSelector from "./LocationSelector";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useAuthChecked } from "@/helper/AuthInit";
 import api from "@/lib/axios";
 
+const CATEGORY_ICON_MAP = {
+  Wheat, Apple, Beef, Egg, Coffee, Cookie, Droplets, ChefHat, Cake, Sparkles, SprayCan, Baby,
+  Package,
+};
+
 const FALLBACK_CATEGORIES = [
-  { name: "food", slug: "food", icon: "🍞", subcategories: [] },
-  { name: "fruitsVegetables", slug: "fruits-vegetables", icon: "🥬", subcategories: [] },
-  { name: "meatFish", slug: "meat-fish", icon: "🥩", subcategories: [] },
-  { name: "dairyEggs", slug: "dairy-eggs", icon: "🥛", subcategories: [] },
-  { name: "drinks", slug: "drinks-beverages", icon: "☕", subcategories: [] },
-  { name: "snacks", slug: "snacks-frozen", icon: "🍪", subcategories: [] },
-  { name: "cooking", slug: "cooking-essentials", icon: "🍳", subcategories: [] },
-  { name: "beauty", slug: "beauty-health", icon: "✨", subcategories: [] },
-  { name: "homeCleaning", slug: "home-cleaning", icon: "🧹", subcategories: [] },
-  { name: "baby", slug: "baby-care", icon: "👶", subcategories: [] },
+  { name: "Rice & Grains", slug: "rice-grains", icon: "Wheat", subcategories: [] },
+  { name: "Fruits & Vegetables", slug: "fruits-vegetables", icon: "Apple", subcategories: [] },
+  { name: "Meat & Fish", slug: "meat-fish", icon: "Beef", subcategories: [] },
+  { name: "Dairy & Eggs", slug: "dairy-eggs", icon: "Egg", subcategories: [] },
+  { name: "Drinks & Beverages", slug: "drinks-beverages", icon: "Coffee", subcategories: [] },
+  { name: "Snacks & Chips", slug: "snacks-chips", icon: "Cookie", subcategories: [] },
+  { name: "Oil & Ghee", slug: "oil-ghee", icon: "Droplets", subcategories: [] },
+  { name: "Spices & Condiments", slug: "spices-condiments", icon: "ChefHat", subcategories: [] },
+  { name: "Bakery & Biscuits", slug: "bakery-biscuits", icon: "Cake", subcategories: [] },
+  { name: "Beauty & Health", slug: "beauty-health", icon: "Sparkles", subcategories: [] },
+  { name: "Home Cleaning", slug: "home-cleaning", icon: "SprayCan", subcategories: [] },
+  { name: "Baby Care", slug: "baby-care", icon: "Baby", subcategories: [] },
 ];
+
+function CategoryIcon({ icon, size = 22, className = "" }) {
+  if (!icon) return <Package size={size} className={className} />;
+  const IconComp = CATEGORY_ICON_MAP[icon];
+  if (IconComp) return <IconComp size={size} className={className} />;
+  if (icon.length <= 2) return <span className={`text-lg leading-none ${className}`}>{icon}</span>;
+  return <Package size={size} className={className} />;
+}
 
 export default function Header() {
   const router = useRouter();
@@ -77,6 +92,14 @@ export default function Header() {
       })
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === "Escape" && drawerOpen) setDrawerOpen(false);
+    };
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [drawerOpen]);
 
   useEffect(() => {
     document.body.style.overflow = drawerOpen ? "hidden" : "";
@@ -228,10 +251,10 @@ export default function Header() {
                 </button>
 
                 {megaMenuOpen && (
-                  <div className="absolute top-full left-0 bg-white border border-[#E5E7EB] rounded-b-lg shadow-[0_8px_30px_rgba(0,0,0,0.12)] z-50 flex overflow-hidden" style={{ minWidth: 580, maxHeight: 460 }}>
+                  <div className="absolute top-full left-0 bg-white border border-[#E5E7EB] rounded-b-lg shadow-[0_8px_30px_rgba(0,0,0,0.12)] z-50 flex overflow-hidden" style={{ minWidth: 640, maxHeight: 520 }}>
                     {/* Left: Category List */}
-                    <div className="w-[240px] border-r border-[#E5E7EB] overflow-y-auto flex-shrink-0" style={{ background: "linear-gradient(180deg, #F9FAFB 0%, #FFFFFF 100%)" }}>
-                      <div className="p-2">
+                    <div className="w-[280px] border-r border-[#E5E7EB] overflow-y-auto flex-shrink-0" style={{ background: "linear-gradient(180deg, #F9FAFB 0%, #FFFFFF 100%)" }}>
+                      <div className="p-2.5">
                         {categories.map((cat, idx) => {
                           const isActive = hoveredCatSlug === cat.slug;
                           const hasSubs = cat.subcategories && cat.subcategories.length > 0;
@@ -239,19 +262,19 @@ export default function Header() {
                             <div
                               key={cat.slug}
                               onMouseEnter={() => setHoveredCatSlug(cat.slug)}
-                              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[12px] cursor-pointer transition-all duration-150 ${
+                              className={`flex items-center gap-3 px-3 py-3 rounded-xl text-[13px] cursor-pointer transition-all duration-150 ${
                                 isActive
                                   ? "bg-[#FCE8F3] text-[#EC008C] shadow-sm"
                                   : "text-[#364152] hover:bg-white hover:shadow-sm"
                               }`}
                               style={{ animationDelay: `${idx * 20}ms` }}
                             >
-                              <span className={`text-lg flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${isActive ? "bg-[#EC008C]/10" : "bg-[#F4F7FB]"}`}>
-                                {cat.icon}
+                              <span className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${isActive ? "bg-[#EC008C]/10 text-[#EC008C]" : "bg-[#F4F7FB] text-[#00215B]"}`}>
+                                <CategoryIcon icon={cat.icon} size={22} />
                               </span>
-                              <span className="flex-1 font-medium truncate">{cat.name}</span>
+                              <span className="flex-1 font-semibold truncate">{cat.name}</span>
                               {hasSubs && (
-                                <ChevronRight size={13} className={`flex-shrink-0 transition-transform ${isActive ? "text-[#EC008C] translate-x-0.5" : "text-gray-300"}`} />
+                                <ChevronRight size={14} className={`flex-shrink-0 transition-transform ${isActive ? "text-[#EC008C] translate-x-0.5" : "text-gray-300"}`} />
                               )}
                             </div>
                           );
@@ -260,69 +283,75 @@ export default function Header() {
                     </div>
 
                     {/* Right: Subcategory Panel */}
-                    <div className="flex-1 overflow-y-auto" style={{ minWidth: 300 }}>
+                    <div className="flex-1 overflow-y-auto" style={{ minWidth: 360 }}>
                       {hoveredCatSlug && (() => {
                         const hovered = categories.find((c) => c.slug === hoveredCatSlug);
                         if (!hovered) return (
-                          <div className="flex flex-col items-center justify-center h-full p-6 text-center">
-                            <span className="text-4xl mb-3">{hovered?.icon || "📦"}</span>
-                            <p className="text-sm font-semibold text-[#364152]">{hovered?.name}</p>
+                          <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+                            <span className="w-16 h-16 rounded-2xl bg-[#F4F7FB] flex items-center justify-center mb-4 text-[#00215B]">
+                              <CategoryIcon icon={hovered?.icon} size={32} />
+                            </span>
+                            <p className="text-base font-bold text-[#364152]">{hovered?.name}</p>
                             <Link
                               href={`/shop?category=${hoveredCatSlug}`}
                               onClick={() => { setMegaMenuOpen(false); setHoveredCatSlug(null); }}
-                              className="mt-3 text-[11px] font-semibold text-[#EC008C] hover:underline"
+                              className="mt-3 text-[12px] font-semibold text-[#EC008C] hover:underline"
                             >
                               View All Products →
                             </Link>
                           </div>
                         );
                         if (!hovered.subcategories || hovered.subcategories.length === 0) return (
-                          <div className="flex flex-col items-center justify-center h-full p-6 text-center">
-                            <span className="text-4xl mb-3">{hovered.icon}</span>
-                            <p className="text-sm font-semibold text-[#364152] mb-1">{hovered.name}</p>
-                            <p className="text-[11px] text-[#667085] mb-3">No subcategories yet</p>
+                          <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+                            <span className="w-16 h-16 rounded-2xl bg-[#FCE8F3] flex items-center justify-center mb-4 text-[#EC008C]">
+                              <CategoryIcon icon={hovered.icon} size={32} />
+                            </span>
+                            <p className="text-base font-bold text-[#364152] mb-1">{hovered.name}</p>
+                            <p className="text-[12px] text-[#667085] mb-4">No subcategories yet</p>
                             <Link
                               href={`/shop?category=${hoveredCatSlug}`}
                               onClick={() => { setMegaMenuOpen(false); setHoveredCatSlug(null); }}
-                              className="bg-[#EC008C] text-white text-[11px] font-semibold px-4 py-2 rounded-lg hover:bg-[#D60071] transition"
+                              className="bg-[#EC008C] text-white text-[12px] font-semibold px-5 py-2.5 rounded-lg hover:bg-[#D60071] transition"
                             >
                               Browse {hovered.name}
                             </Link>
                           </div>
                         );
                         return (
-                          <div className="p-4">
-                            <div className="flex items-center gap-3 mb-4 pb-3 border-b border-[#E5E7EB]">
-                              <span className="text-2xl w-10 h-10 rounded-xl bg-[#FCE8F3] flex items-center justify-center">{hovered.icon}</span>
+                          <div className="p-5">
+                            <div className="flex items-center gap-4 mb-5 pb-4 border-b border-[#E5E7EB]">
+                              <span className="w-12 h-12 rounded-xl bg-[#FCE8F3] flex items-center justify-center text-[#EC008C]">
+                                <CategoryIcon icon={hovered.icon} size={26} />
+                              </span>
                               <div>
-                                <p className="text-[13px] font-bold text-[#00215B]">{hovered.name}</p>
-                                <p className="text-[10px] text-[#667085]">{hovered.subcategories.length} subcategories</p>
+                                <p className="text-[14px] font-bold text-[#00215B]">{hovered.name}</p>
+                                <p className="text-[11px] text-[#667085]">{hovered.subcategories.length} subcategories</p>
                               </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-1.5">
+                            <div className="grid grid-cols-2 gap-2">
                               {hovered.subcategories.map((sub) => (
                                 <Link
                                   key={sub.slug}
                                   href={`/shop?category=${hoveredCatSlug}&subcategory=${sub.slug}`}
                                   onClick={() => { setMegaMenuOpen(false); setHoveredCatSlug(null); }}
-                                  className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[11px] text-[#364152] hover:bg-[#FCE8F3] hover:text-[#EC008C] transition-all duration-150 group"
+                                  className="flex items-center gap-3 px-3 py-3 rounded-xl text-[12px] text-[#364152] hover:bg-[#FCE8F3] hover:text-[#EC008C] transition-all duration-150 group"
                                 >
                                   {sub.image ? (
-                                    <img src={sub.image} alt={sub.name} className="w-7 h-7 rounded-md object-contain flex-shrink-0 bg-[#F4F7FB] p-0.5" />
+                                    <img src={sub.image} alt={sub.name} className="w-9 h-9 rounded-lg object-contain flex-shrink-0 bg-[#F4F7FB] p-0.5" />
                                   ) : (
-                                    <span className="w-7 h-7 rounded-md bg-[#F4F7FB] flex items-center justify-center text-[10px] font-bold text-[#00215B] flex-shrink-0 group-hover:bg-[#EC008C]/10 group-hover:text-[#EC008C] transition-colors">
+                                    <span className="w-9 h-9 rounded-lg bg-[#F4F7FB] flex items-center justify-center text-[11px] font-bold text-[#00215B] flex-shrink-0 group-hover:bg-[#EC008C]/10 group-hover:text-[#EC008C] transition-colors">
                                       {sub.name.charAt(0)}
                                     </span>
                                   )}
-                                  <span className="truncate font-medium">{sub.name}</span>
+                                  <span className="truncate font-semibold">{sub.name}</span>
                                 </Link>
                               ))}
                             </div>
-                            <div className="mt-3 pt-3 border-t border-[#E5E7EB]">
+                            <div className="mt-4 pt-4 border-t border-[#E5E7EB]">
                               <Link
                                 href={`/shop?category=${hoveredCatSlug}`}
                                 onClick={() => { setMegaMenuOpen(false); setHoveredCatSlug(null); }}
-                                className="flex items-center justify-center gap-1.5 w-full py-2 text-[11px] font-semibold text-[#EC008C] hover:bg-[#FCE8F3] rounded-lg transition"
+                                className="flex items-center justify-center gap-1.5 w-full py-2.5 text-[12px] font-semibold text-[#EC008C] hover:bg-[#FCE8F3] rounded-lg transition"
                               >
                                 View All {hovered.name} →
                               </Link>
@@ -353,27 +382,28 @@ export default function Header() {
       </header>
 
       {/* ====== MOBILE ONLY (entire block hidden on lg+) ====== */}
-      <div className="fixed inset-0 pointer-events-none lg:hidden" style={{ zIndex: 0 }}>
+      <div className="fixed inset-0 pointer-events-none lg:hidden" style={{ zIndex: 60 }}>
         {/* Drawer overlay */}
         <div
-          className={`fixed inset-0 bg-black/40 transition-opacity pointer-events-auto ${drawerOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+          className={`fixed inset-0 transition-opacity duration-200 pointer-events-auto ${drawerOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
           onClick={() => setDrawerOpen(false)}
         />
 
         {/* Drawer panel */}
         <div
-          className={`fixed top-0 left-0 h-full w-72 bg-white shadow-xl transition-transform duration-200 ease-out pointer-events-auto ${drawerOpen ? "translate-x-0" : "-translate-x-full"}`}
+          className={`fixed top-0 left-0 h-full w-[280px] bg-white shadow-2xl transition-transform duration-250 ease-in-out pointer-events-auto ${drawerOpen ? "translate-x-0" : "-translate-x-full"}`}
         >
-          <div className="flex items-center justify-between p-3 border-b border-[#E5E7EB]">
+          <div className="flex items-center justify-between p-4 border-b border-[#E5E7EB]">
             <Link href="/" onClick={() => setDrawerOpen(false)}>
-              <span className="text-base font-bold text-[#00215B]">Bikroy<span className="text-[#EC008C]">-Mart</span>-BD</span>
+              <span className="text-lg font-bold text-[#00215B]">Bikroy<span className="text-[#EC008C]">-Mart</span>-BD</span>
             </Link>
-            <button onClick={() => setDrawerOpen(false)} className="p-1.5 rounded-md hover:bg-[#F3F4F6] transition text-[#364152]" aria-label="Close menu">
-              <X size={20} />
+            <button onClick={() => setDrawerOpen(false)} className="p-2 rounded-full hover:bg-[#F3F4F6] transition text-[#364152]" aria-label="Close menu">
+              <X size={22} />
             </button>
           </div>
 
-          <div className="overflow-y-auto h-[calc(100%-56px)] pb-20">
+          <div className="overflow-y-auto h-[calc(100%-64px)] pb-24 overscroll-contain">
             <div className="p-3 border-b border-[#E5E7EB]">
               <Link href={authChecked ? (user ? "/account" : "/signin") : "#"} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center ${user ? "bg-[#FCE8F3]" : "bg-[#F4F7FB]"}`}>
@@ -423,10 +453,12 @@ export default function Header() {
                         <Link
                           href={`/shop?category=${cat.slug}`}
                           onClick={() => setDrawerOpen(false)}
-                          className="flex items-center gap-2.5 px-2 py-2.5 hover:bg-[#F4F7FB] rounded-lg transition flex-1"
+                          className="flex items-center gap-3 px-2 py-3 hover:bg-[#F4F7FB] rounded-lg transition flex-1"
                         >
-                          <span className="w-8 h-8 rounded-lg bg-[#F4F7FB] flex items-center justify-center text-base flex-shrink-0">{cat.icon}</span>
-                          <span className="text-[12px] font-medium text-[#364152] flex-1">{cat.name}</span>
+                          <span className="w-10 h-10 rounded-xl bg-[#F4F7FB] flex items-center justify-center text-[#00215B] flex-shrink-0">
+                            <CategoryIcon icon={cat.icon} size={20} />
+                          </span>
+                          <span className="text-[13px] font-semibold text-[#364152] flex-1">{cat.name}</span>
                           {hasSubs && (
                             <span className="text-[9px] bg-[#F4F7FB] text-[#667085] px-1.5 py-0.5 rounded-full">{cat.subcategories.length}</span>
                           )}
@@ -483,7 +515,7 @@ export default function Header() {
         </div>
 
         {/* Bottom Nav */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#E5E7EB] shadow-[0_-2px_8px_rgba(0,0,0,0.08)] pb-[max(6px,env(safe-area-inset-bottom))] pointer-events-auto">
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#E5E7EB] shadow-[0_-2px_12px_rgba(0,0,0,0.1)] pb-[max(6px,env(safe-area-inset-bottom))] pointer-events-auto" style={{ zIndex: 70 }}>
           <div className="flex items-center justify-around py-1.5">
             <Link href="/" className={`flex flex-col items-center gap-0.5 min-w-[50px] ${pathname === "/" ? "text-[#EC008C]" : "text-[#667085]"}`}>
               <div className={`w-8 h-8 rounded-full flex items-center justify-center transition ${pathname === "/" ? "bg-[#FCE8F3]" : "bg-[#F4F7FB]"}`}>
