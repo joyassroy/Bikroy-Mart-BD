@@ -10,6 +10,7 @@ import Link from "next/link";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { signIn } from "next-auth/react";
 import { ALL_DISTRICTS } from "@/lib/constants";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -19,6 +20,7 @@ export default function SignupPage() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", password: "", district: detectedDistrict });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -121,11 +123,17 @@ export default function SignupPage() {
           </div>
           <div>
             <label className="block text-[11px] sm:text-xs font-semibold text-[#364152] mb-1">{t.password}</label>
-            <input
-              type="password" placeholder="Min 6 characters" required minLength={6}
-              value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })}
-              className="input-field"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"} placeholder="Min 6 characters" required minLength={6}
+                value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })}
+                className="input-field pr-10"
+              />
+              <button type="button" onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#667085] hover:text-[#364152] transition">
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
           </div>
           <button type="submit" disabled={loading} className="btn-primary w-full mt-1">
             {loading ? t.loading : t.signUp}

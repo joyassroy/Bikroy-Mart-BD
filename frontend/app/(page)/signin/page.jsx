@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import Link from "next/link";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { signIn, useSession } from "next-auth/react";
+import { Eye, EyeOff } from "lucide-react";
 
 function applyUserDistrict(dispatch, user) {
   if (user.managerProfile?.assignedDistrict) {
@@ -28,6 +29,7 @@ export default function SigninPage() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (status === "authenticated" && session?.user) {
@@ -119,11 +121,17 @@ export default function SigninPage() {
           </div>
           <div>
             <label className="block text-[11px] sm:text-xs font-semibold text-[#364152] mb-1">{t.password}</label>
-            <input
-              type="password" placeholder="Enter your password" required
-              value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })}
-              className="input-field"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"} placeholder="Enter your password" required
+                value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })}
+                className="input-field pr-10"
+              />
+              <button type="button" onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#667085] hover:text-[#364152] transition">
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
           </div>
           <button type="submit" disabled={loading} className="btn-primary w-full mt-1">
             {loading ? t.loading : t.signIn}

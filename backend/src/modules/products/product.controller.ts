@@ -52,11 +52,15 @@ export const getAllProducts = async (req: Request, res: Response) => {
     if (subcategory) where.subcategory = { slug: subcategory };
     if (managerId) where.managerId = managerId;
     if (featured === "true") where.isFeatured = true;
+    let searchFilter: any = null;
     if (search) {
-      where.OR = [
-        { name: { contains: search as string, mode: "insensitive" } },
-        { nameBn: { contains: search as string, mode: "insensitive" } },
-      ];
+      searchFilter = {
+        OR: [
+          { name: { contains: search as string, mode: "insensitive" } },
+          { nameBn: { contains: search as string, mode: "insensitive" } },
+          { description: { contains: search as string, mode: "insensitive" } },
+        ],
+      };
     }
     if (minPrice || maxPrice) {
       where.price = {};
@@ -85,17 +89,27 @@ export const getAllProducts = async (req: Request, res: Response) => {
       }
     }
 
+    let districtFilter: any = null;
     if (district) {
       const managers = await prisma.managerProfile.findMany({
         where: { assignedDistrict: String(district) },
         select: { id: true },
       });
       const managerIds = managers.map((m) => m.id);
-      where.OR = [
-        ...(where.OR || []),
-        { managerId: { in: managerIds } },
-        { managerId: null },
-      ];
+      districtFilter = {
+        OR: [
+          { managerId: { in: managerIds } },
+          { managerId: null },
+        ],
+      };
+    }
+
+    if (searchFilter && districtFilter) {
+      where.AND = [searchFilter, districtFilter];
+    } else if (searchFilter) {
+      Object.assign(where, searchFilter);
+    } else if (districtFilter) {
+      Object.assign(where, districtFilter);
     }
 
     const orderBy: any = {};
