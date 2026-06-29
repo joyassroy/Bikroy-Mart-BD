@@ -10,6 +10,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { useAuthChecked } from "@/helper/AuthInit";
 import { DELIVERY_AREAS } from "@/lib/constants";
 import { ClipboardList, Upload, X, MapPin, Loader2, CheckCircle, Clock, Eye, Truck, XCircle } from "lucide-react";
+import DeliveryMapPicker from "@/components/checkout/DeliveryMapPicker";
 
 const STATUS_CONFIG = {
   PENDING: { color: "bg-yellow-100 text-yellow-800", icon: Clock },
@@ -49,6 +50,7 @@ export default function CustomRequestPage() {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [detectingLocation, setDetectingLocation] = useState(false);
   const [locationDetected, setLocationDetected] = useState(false);
+  const [coords, setCoords] = useState(null);
 
   const [form, setForm] = useState({
     productName: "",
@@ -151,6 +153,7 @@ export default function CustomRequestPage() {
         const res = await fetch("https://ipapi.co/json/");
         const data = await res.json();
         if (data && data.latitude && data.longitude) {
+          setCoords({ latitude: data.latitude, longitude: data.longitude });
           return await tryReverseGeocode(data.latitude, data.longitude);
         }
       } catch {}
@@ -162,6 +165,7 @@ export default function CustomRequestPage() {
         navigator.geolocation.getCurrentPosition(
           async (position) => {
             const { latitude, longitude } = position.coords;
+            setCoords({ latitude, longitude });
             const ok = await tryReverseGeocode(latitude, longitude);
             if (!ok) await tryIPGeolocation();
             setDetectingLocation(false);
@@ -245,6 +249,8 @@ export default function CustomRequestPage() {
         deliveryDivision: form.division,
         deliveryDistrict: form.district,
         deliveryUpazila: form.upazila || form.district,
+        deliveryLatitude: coords?.latitude || null,
+        deliveryLongitude: coords?.longitude || null,
         customerNotes: form.customerNotes,
       });
 
@@ -256,6 +262,7 @@ export default function CustomRequestPage() {
       setSelectedFiles([]);
       setPreviews([]);
       setLocationDetected(false);
+      setCoords(null);
       fetchMyRequests();
     } catch (error) {
       const msg = error?.response?.data?.message || error.message || t.requestSubmitError;
@@ -423,6 +430,7 @@ export default function CustomRequestPage() {
                       <MapPin size={14} /> Detect my location automatically
                     </button>
                   )}
+                  <DeliveryMapPicker coords={coords} onCoordsChange={setCoords} />
                 </div>
               </div>
 
