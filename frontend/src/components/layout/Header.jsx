@@ -121,7 +121,7 @@ export default function Header() {
         </div>
 
         {/* Main header */}
-        <div className="bg-white border-b border-[#E5E7EB]">
+        <div className="bg-white">
           <div className="max-w-[1200px] mx-auto px-3 sm:px-4 md:px-6 lg:px-10">
             <div className="flex items-center gap-2 sm:gap-3 py-2 md:py-2.5">
               {/* Hamburger - mobile & tablet */}
@@ -234,7 +234,7 @@ export default function Header() {
         </div>
 
         {/* Category nav - desktop only */}
-        <nav className="hidden lg:block bg-white border-b border-[#E5E7EB]">
+        <nav className="hidden lg:block bg-white">
           <div className="max-w-[1200px] mx-auto px-10">
             <div className="flex items-center">
               {/* Mega Menu Trigger */}

@@ -19,6 +19,7 @@ export default function Home() {
         <HeroBanner />
         <MiddleBanner />
         <CategoryGrid />
+        <SponsorsMarquee />
         <TrustBadges />
         <FlashDeals />
         <OfferSection
@@ -50,7 +51,6 @@ export default function Home() {
           badgeColor="bg-[#00AFCC]"
         />
         <ProductTabs />
-        <SponsorsMarquee />
       </main>
       <Footer />
     </div>
