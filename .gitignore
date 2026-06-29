@@ -39,6 +39,7 @@ backend/public/uploads/
 
 # Testing
 coverage/
+test-rider-movement.sh
 
 # AGENTS.md - local only, not tracked
 AGENTS.md
