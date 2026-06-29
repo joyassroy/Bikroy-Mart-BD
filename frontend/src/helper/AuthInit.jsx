@@ -2,6 +2,7 @@
 import { useEffect, useRef, createContext, useContext, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setUser, clearUser } from "@/redux/userSlice";
+import { setLocation } from "@/redux/locationSlice";
 import api from "@/lib/axios";
 import { detectLocationFromIP } from "@/lib/ipLocation";
 
@@ -29,7 +30,28 @@ export default function AuthInit({ children }) {
     api.get("/auth/me")
       .then((res) => {
         if (res.data?.data) {
-          dispatch(setUser({ user: res.data.data, accessToken: token }));
+          const user = res.data.data;
+          dispatch(setUser({ user, accessToken: token }));
+
+          if (user.managerProfile?.assignedDistrict) {
+            dispatch(setLocation({
+              division: "",
+              district: user.managerProfile.assignedDistrict,
+              upazila: "",
+            }));
+          } else if (user.riderProfile?.assignedZila) {
+            dispatch(setLocation({
+              division: "",
+              district: user.riderProfile.assignedZila,
+              upazila: "",
+            }));
+          } else if (user.district) {
+            dispatch(setLocation({
+              division: "",
+              district: user.district,
+              upazila: "",
+            }));
+          }
         }
       })
       .catch(() => {

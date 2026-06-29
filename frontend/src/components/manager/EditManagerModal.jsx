@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import api from "@/lib/axios";
-import { DELIVERY_AREAS } from "@/lib/constants";
+import { ALL_DISTRICTS } from "@/lib/constants";
 import toast from "react-hot-toast";
 import { X, Loader2 } from "lucide-react";
 
@@ -60,9 +60,7 @@ export default function EditManagerModal({ manager, onClose, onUpdated }) {
             <label className="block text-[11px] font-semibold text-[#364152] mb-1">Assigned District *</label>
             <select required value={form.assignedDistrict} onChange={(e) => setForm({ ...form, assignedDistrict: e.target.value })}
               className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#E5E7EB]">
-              {DELIVERY_AREAS.map((area) =>
-                area.districts.map((d) => <option key={d} value={d}>{d} ({area.division})</option>)
-              )}
+              {ALL_DISTRICTS.map((d) => <option key={d.name} value={d.name}>{d.name}</option>)}
             </select>
           </div>
           <div>

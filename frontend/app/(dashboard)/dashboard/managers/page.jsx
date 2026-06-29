@@ -1,8 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import api from "@/lib/axios";
-import { DELIVERY_AREAS } from "@/lib/constants";
-import { Plus, Trash2, X, Pencil } from "lucide-react";
+import { ALL_DISTRICTS } from "@/lib/constants";
+import { Plus, Trash2, X, Pencil, Search } from "lucide-react";
 import toast from "react-hot-toast";
 import EditManagerModal from "@/components/manager/EditManagerModal";
 
@@ -11,16 +11,18 @@ export default function ManagersPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editManager, setEditManager] = useState(null);
+  const [search, setSearch] = useState("");
   const [form, setForm] = useState({
     name: "", email: "", phone: "", password: "",
     assignedDistrict: "Dhaka", assignedZila: "",
   });
 
-  useEffect(() => { fetchManagers(); }, []);
+  useEffect(() => { fetchManagers(); }, [search]);
 
   const fetchManagers = async () => {
     try {
-      const res = await api.get("/managers");
+      const params = search ? `?search=${encodeURIComponent(search)}` : "";
+      const res = await api.get(`/managers${params}`);
       setManagers(res.data.data || []);
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
@@ -54,8 +56,6 @@ export default function ManagersPage() {
     }
   };
 
-  const selectedDistrict = DELIVERY_AREAS.find((a) => a.districts.includes(form.assignedDistrict));
-
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -63,6 +63,17 @@ export default function ManagersPage() {
         <button onClick={() => setShowForm(!showForm)} className="bg-[#EC008C] text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-[#D60071] transition flex items-center gap-2">
           <Plus size={14} /> Add Manager
         </button>
+      </div>
+
+      <div className="relative mb-4">
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <input
+          type="text"
+          placeholder="Search managers by name, email, or phone..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full pl-9 pr-3 py-2 border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:border-[#EC008C] transition"
+        />
       </div>
 
       {showForm && (
@@ -98,9 +109,7 @@ export default function ManagersPage() {
               <label className="block text-xs font-medium text-gray-600 mb-1">Assigned District *</label>
               <select required value={form.assignedDistrict} onChange={(e) => setForm({ ...form, assignedDistrict: e.target.value })}
                 className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none">
-                {DELIVERY_AREAS.map((area) =>
-                  area.districts.map((d) => <option key={d} value={d}>{d} ({area.division})</option>)
-                )}
+                {ALL_DISTRICTS.map((d) => <option key={d.name} value={d.name}>{d.name}</option>)}
               </select>
             </div>
             <div>

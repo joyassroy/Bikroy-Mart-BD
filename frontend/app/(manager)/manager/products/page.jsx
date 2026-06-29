@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import api from "@/lib/axios";
-import { Plus, Edit, X, Trash2 } from "lucide-react";
+import { Plus, Edit, X, Trash2, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
 
@@ -22,6 +22,10 @@ export default function ManagerProductsPage() {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const user = useSelector((state) => state.user?.data);
+  const [districtPrice, setDistrictPrice] = useState("");
+  const [districtDiscountPrice, setDistrictDiscountPrice] = useState("");
+  const [existingDistrictPrice, setExistingDistrictPrice] = useState(null);
+  const [savingDistrict, setSavingDistrict] = useState(false);
 
   useEffect(() => {
     fetchProducts();
@@ -64,7 +68,55 @@ export default function ManagerProductsPage() {
       isFeatured: p.isFeatured || false, deliveryTime: p.deliveryTime || "",
     });
     setSelectedFiles([]);
+    setDistrictPrice("");
+    setDistrictDiscountPrice("");
+    setExistingDistrictPrice(null);
+
+    if (user?.assignedDistrict) {
+      api.get(`/products/${p.id}/district-prices`).then((res) => {
+        const all = res.data.data || [];
+        const myDistrict = all.find((dp) => dp.district === user.assignedDistrict);
+        if (myDistrict) {
+          setExistingDistrictPrice(myDistrict);
+          setDistrictPrice(myDistrict.price?.toString() || "");
+          setDistrictDiscountPrice(myDistrict.discountPrice?.toString() || "");
+        }
+      }).catch(() => {});
+    }
+
     setShowModal(true);
+  };
+
+  const handleDistrictPriceSave = async () => {
+    if (!districtPrice) { toast.error("Enter a price"); return; }
+    setSavingDistrict(true);
+    try {
+      await api.post(`/products/${editId}/district-prices`, {
+        district: user.assignedDistrict,
+        price: parseFloat(districtPrice),
+        discountPrice: districtDiscountPrice ? parseFloat(districtDiscountPrice) : null,
+      });
+      toast.success(`Price set for ${user.assignedDistrict}`);
+      const res = await api.get(`/products/${editId}/district-prices`);
+      const all = res.data.data || [];
+      setExistingDistrictPrice(all.find((dp) => dp.district === user.assignedDistrict) || null);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to save");
+    } finally {
+      setSavingDistrict(false);
+    }
+  };
+
+  const handleDistrictPriceDelete = async () => {
+    try {
+      await api.delete(`/products/${editId}/district-prices/${user.assignedDistrict}`);
+      setExistingDistrictPrice(null);
+      setDistrictPrice("");
+      setDistrictDiscountPrice("");
+      toast.success("District price removed");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to remove");
+    }
   };
 
   const handleChange = (e) => {
@@ -266,6 +318,39 @@ export default function ManagerProductsPage() {
                 <input type="checkbox" name="isFeatured" checked={form.isFeatured} onChange={handleChange} className="rounded" />
                 Featured Product
               </label>
+
+              {editId && user?.assignedDistrict && (
+                <div className="border-t border-[#E5E7EB] pt-3 mt-2">
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">
+                    Price for {user.assignedDistrict}
+                  </label>
+                  <p className="text-[10px] text-gray-400 mb-2">Set your district-specific price (overrides base price for your district)</p>
+                  <div className="flex gap-2 items-end">
+                    <div className="flex-1">
+                      <input type="number" step="0.01" placeholder="District Price" value={districtPrice}
+                        onChange={(e) => setDistrictPrice(e.target.value)}
+                        className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:border-[#EC008C]" />
+                    </div>
+                    <div className="flex-1">
+                      <input type="number" step="0.01" placeholder="Discount Price" value={districtDiscountPrice}
+                        onChange={(e) => setDistrictDiscountPrice(e.target.value)}
+                        className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:border-[#EC008C]" />
+                    </div>
+                    <button type="button" onClick={handleDistrictPriceSave} disabled={savingDistrict}
+                      className="px-3 py-2 bg-[#00AFCC] text-white rounded-lg text-xs font-semibold hover:bg-[#009BB5] disabled:opacity-50 transition flex items-center gap-1">
+                      {savingDistrict ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
+                      Save
+                    </button>
+                    {existingDistrictPrice && (
+                      <button type="button" onClick={handleDistrictPriceDelete}
+                        className="px-3 py-2 bg-red-500 text-white rounded-lg text-xs font-semibold hover:bg-red-600 transition flex items-center gap-1">
+                        <Trash2 size={12} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <button type="submit" disabled={submitting}
                 className="w-full bg-[#EC008C] text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-[#D60071] transition disabled:opacity-50">
                 {submitting ? "Saving..." : editId ? "Update Product" : "Create Product"}

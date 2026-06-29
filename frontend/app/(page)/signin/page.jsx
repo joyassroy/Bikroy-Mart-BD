@@ -3,11 +3,22 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { setUser } from "@/redux/userSlice";
+import { setLocation } from "@/redux/locationSlice";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
 import Link from "next/link";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { signIn, useSession } from "next-auth/react";
+
+function applyUserDistrict(dispatch, user) {
+  if (user.managerProfile?.assignedDistrict) {
+    dispatch(setLocation({ division: "", district: user.managerProfile.assignedDistrict, upazila: "" }));
+  } else if (user.riderProfile?.assignedZila) {
+    dispatch(setLocation({ division: "", district: user.riderProfile.assignedZila, upazila: "" }));
+  } else if (user.district) {
+    dispatch(setLocation({ division: "", district: user.district, upazila: "" }));
+  }
+}
 
 export default function SigninPage() {
   const router = useRouter();
@@ -25,6 +36,7 @@ export default function SigninPage() {
       if (backendUser && backendToken) {
         localStorage.setItem("bm-token", backendToken);
         dispatch(setUser({ user: backendUser, accessToken: backendToken }));
+        applyUserDistrict(dispatch, backendUser);
         if (backendUser.role === "ADMIN") router.push("/dashboard");
         else if (backendUser.role === "MANAGER") router.push("/manager");
         else if (backendUser.role === "RIDER") router.push("/rider");
@@ -42,6 +54,7 @@ export default function SigninPage() {
       const { user, accessToken } = res.data.data;
       localStorage.setItem("bm-token", accessToken);
       dispatch(setUser({ user, accessToken }));
+      applyUserDistrict(dispatch, user);
       if (user.role === "ADMIN") router.push("/dashboard");
       else if (user.role === "MANAGER") router.push("/manager");
       else if (user.role === "RIDER") router.push("/rider");

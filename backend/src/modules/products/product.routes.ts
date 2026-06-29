@@ -3,8 +3,11 @@ import * as productController from "./product.controller";
 import { authenticate } from "../../middlewares/auth.middleware";
 import { authorize } from "../../middlewares/role.middleware";
 import { upload } from "../../middlewares/upload.middleware";
+import districtPriceRoutes from "./districtPrice.routes";
 
 const router = Router();
+
+router.use("/:id/district-prices", districtPriceRoutes);
 
 router.get("/", productController.getAllProducts);
 router.get("/featured", productController.getFeaturedProducts);

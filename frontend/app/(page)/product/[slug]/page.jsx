@@ -38,13 +38,14 @@ export default function ProductDetailPage() {
   const fetchProduct = async () => {
     try {
       setLoading(true);
-      const res = await api.get(`/products/slug/${slug}`);
+      const districtParam = district ? `?district=${encodeURIComponent(district)}` : "";
+      const res = await api.get(`/products/slug/${slug}${districtParam}`);
       const data = res.data.data;
       setProduct(data);
 
       if (data?.category?.slug) {
-        const districtParam = district ? `&district=${encodeURIComponent(district)}` : "";
-        const relatedRes = await api.get(`/products?category=${data.category.slug}&limit=8${districtParam}`);
+        const relatedDistrictParam = district ? `&district=${encodeURIComponent(district)}` : "";
+        const relatedRes = await api.get(`/products?category=${data.category.slug}&limit=8${relatedDistrictParam}`);
         setRelatedProducts((relatedRes.data.data || []).filter((p) => p.id !== data.id).slice(0, 4));
       }
     } catch (err) {
@@ -56,11 +57,12 @@ export default function ProductDetailPage() {
   };
 
   const handleAddToCart = () => {
+    const cartPrice = product.effectiveDiscountPrice || product.discountPrice || product.effectivePrice || product.price;
     for (let i = 0; i < quantity; i++) {
       dispatch(addToCart({
         productId: product.id,
         name: product.name,
-        price: product.discountPrice || product.price,
+        price: cartPrice,
         image: product.images?.[0],
         quantity: 1,
       }));
@@ -69,6 +71,7 @@ export default function ProductDetailPage() {
   };
 
   const handleWishlist = () => {
+    const wishlistPrice = product.effectiveDiscountPrice || product.discountPrice || product.effectivePrice || product.price;
     if (isInWishlist) {
       dispatch(removeFromWishlist(product.id));
       toast.success(t.removeFromWishlist);
@@ -76,7 +79,7 @@ export default function ProductDetailPage() {
       dispatch(addToWishlist({
         productId: product.id,
         name: product.name,
-        price: product.discountPrice || product.price,
+        price: wishlistPrice,
         image: product.images?.[0],
       }));
       toast.success(t.addToWishlist);
@@ -222,16 +225,16 @@ export default function ProductDetailPage() {
 
               {/* Price */}
               <div className="flex items-center gap-2 mb-3">
-                {product.discountPrice ? (
+                {product.effectiveDiscountPrice || product.discountPrice ? (
                   <>
-                    <span className="text-xl sm:text-2xl font-bold text-[#000000]">৳{product.discountPrice}</span>
-                    <span className="text-sm text-[#667085] line-through">৳{product.price}</span>
+                    <span className="text-xl sm:text-2xl font-bold text-[#000000]">৳{product.effectiveDiscountPrice || product.discountPrice}</span>
+                    <span className="text-sm text-[#667085] line-through">৳{product.effectivePrice || product.price}</span>
                     <span className="bg-[#FF6B6B] text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
-                      {Math.round(((product.price - product.discountPrice) / product.price) * 100)}% OFF
+                      {Math.round((((product.effectivePrice || product.price) - (product.effectiveDiscountPrice || product.discountPrice)) / (product.effectivePrice || product.price)) * 100)}% OFF
                     </span>
                   </>
                 ) : (
-                  <span className="text-xl sm:text-2xl font-bold text-[#000000]">৳{product.price}</span>
+                  <span className="text-xl sm:text-2xl font-bold text-[#000000]">৳{product.effectivePrice || product.price}</span>
                 )}
               </div>
 
@@ -280,7 +283,7 @@ export default function ProductDetailPage() {
                   </button>
                 </div>
                 <span className="text-[11px] text-[#667085]">
-                  {t.subtotal}: <span className="font-semibold text-[#000000]">৳{((product.discountPrice || product.price) * quantity).toLocaleString()}</span>
+                  {t.subtotal}: <span className="font-semibold text-[#000000]">৳{((product.effectiveDiscountPrice || product.discountPrice || product.effectivePrice || product.price) * quantity).toLocaleString()}</span>
                 </span>
               </div>
 

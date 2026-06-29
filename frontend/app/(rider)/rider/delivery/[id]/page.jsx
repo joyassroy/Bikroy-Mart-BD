@@ -39,7 +39,16 @@ export default function DeliveryPage() {
   const [delivering, setDelivering] = useState(false);
 
   useEffect(() => {
-    api.get(`/orders/${params.id}`).then((res) => setOrder(res.data.data)).catch(console.error).finally(() => setLoading(false));
+    let pollTimer;
+    const fetchOrder = () => {
+      api.get(`/orders/${params.id}`)
+        .then((res) => setOrder(res.data.data))
+        .catch(console.error)
+        .finally(() => setLoading(false));
+    };
+    fetchOrder();
+    pollTimer = setInterval(fetchOrder, 10000);
+    return () => clearInterval(pollTimer);
   }, [params.id]);
 
   const handleDeliver = async () => {
@@ -243,8 +252,8 @@ export default function DeliveryPage() {
             <div className="h-[300px] lg:h-[calc(100vh-200px)]">
               {order.deliveryLatitude && order.deliveryLongitude ? (
                 <LiveRiderMap
-                  riderLat={order.rider?.currentLat}
-                  riderLng={order.rider?.currentLng}
+                  riderLat={order.rider?.currentLat || undefined}
+                  riderLng={order.rider?.currentLng || undefined}
                   destinationLat={order.deliveryLatitude}
                   destinationLng={order.deliveryLongitude}
                 />

@@ -1,8 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
 import api from "@/lib/axios";
+import { ALL_DISTRICTS } from "@/lib/constants";
 import toast from "react-hot-toast";
-import { X, Image as ImageIcon, Loader2 } from "lucide-react";
+import { X, Image as ImageIcon, Loader2, Plus, Trash2 } from "lucide-react";
 
 export default function EditProductModal({ productId, onClose, onUpdated }) {
   const [form, setForm] = useState({
@@ -17,11 +18,18 @@ export default function EditProductModal({ productId, onClose, onUpdated }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  const [districtPrices, setDistrictPrices] = useState([]);
+  const [newDistrict, setNewDistrict] = useState("");
+  const [newDistrictPrice, setNewDistrictPrice] = useState("");
+  const [newDistrictDiscount, setNewDistrictDiscount] = useState("");
+  const [savingDistrict, setSavingDistrict] = useState(false);
+
   useEffect(() => {
     Promise.all([
       api.get(`/products/${productId}`),
       api.get("/categories"),
-    ]).then(([prodRes, catRes]) => {
+      api.get(`/products/${productId}/district-prices`),
+    ]).then(([prodRes, catRes, distRes]) => {
       const p = prodRes.data.data;
       setForm({
         name: p.name || "", nameBn: p.nameBn || "", description: p.description || "",
@@ -33,6 +41,7 @@ export default function EditProductModal({ productId, onClose, onUpdated }) {
         isFeatured: p.isFeatured || false, isActive: p.isActive ?? true,
       });
       setExistingImages(p.images || []);
+      setDistrictPrices(distRes.data.data || []);
       setCategories(catRes.data.data || []);
       if (p.categoryId) {
         api.get(`/subcategories?categoryId=${p.categoryId}`).then((res) => {
@@ -65,6 +74,41 @@ export default function EditProductModal({ productId, onClose, onUpdated }) {
 
   const removeNewImage = (idx) => {
     setNewImageFiles((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleAddDistrictPrice = async () => {
+    if (!newDistrict || !newDistrictPrice) {
+      toast.error("Select district and enter price");
+      return;
+    }
+    setSavingDistrict(true);
+    try {
+      await api.post(`/products/${productId}/district-prices`, {
+        district: newDistrict,
+        price: parseFloat(newDistrictPrice),
+        discountPrice: newDistrictDiscount ? parseFloat(newDistrictDiscount) : null,
+      });
+      const res = await api.get(`/products/${productId}/district-prices`);
+      setDistrictPrices(res.data.data || []);
+      setNewDistrict("");
+      setNewDistrictPrice("");
+      setNewDistrictDiscount("");
+      toast.success("District price saved");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to save district price");
+    } finally {
+      setSavingDistrict(false);
+    }
+  };
+
+  const handleDeleteDistrictPrice = async (district) => {
+    try {
+      await api.delete(`/products/${productId}/district-prices/${district}`);
+      setDistrictPrices((prev) => prev.filter((dp) => dp.district !== district));
+      toast.success("District price removed");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to delete district price");
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -248,6 +292,56 @@ export default function EditProductModal({ productId, onClose, onUpdated }) {
                   className="rounded border-[#E5E7EB] text-[#EC008C] focus:ring-[#EC008C]" />
                 <span className="text-[11px] text-[#364152] font-medium">Active</span>
               </label>
+            </div>
+
+            <div className="md:col-span-2 border-t border-[#E5E7EB] pt-4 mt-2">
+              <label className="block text-[11px] font-semibold text-[#364152] mb-2">District Prices</label>
+              <p className="text-[10px] text-[#667085] mb-3">Set different prices for specific districts. Leave empty to use base price.</p>
+              
+              {districtPrices.length > 0 && (
+                <div className="space-y-2 mb-3">
+                  {districtPrices.map((dp) => (
+                    <div key={dp.district} className="flex items-center gap-2 bg-[#F4F7FB] rounded-lg px-3 py-2">
+                      <span className="text-xs font-medium text-[#364152] flex-1">{dp.district}</span>
+                      <span className="text-xs text-[#364152]">৳{dp.price}</span>
+                      {dp.discountPrice && (
+                        <span className="text-xs text-[#EC008C]">→ ৳{dp.discountPrice}</span>
+                      )}
+                      <button type="button" onClick={() => handleDeleteDistrictPrice(dp.district)}
+                        className="p-1 rounded hover:bg-red-100 text-red-500 transition">
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex gap-2 items-end">
+                <div className="flex-1">
+                  <select value={newDistrict} onChange={(e) => setNewDistrict(e.target.value)}
+                    className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#EC008C]">
+                    <option value="">Select District</option>
+                    {ALL_DISTRICTS.filter((d) => !districtPrices.find((dp) => dp.district === d)).map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="w-24">
+                  <input type="number" step="0.01" placeholder="Price" value={newDistrictPrice}
+                    onChange={(e) => setNewDistrictPrice(e.target.value)}
+                    className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#EC008C]" />
+                </div>
+                <div className="w-24">
+                  <input type="number" step="0.01" placeholder="Discount" value={newDistrictDiscount}
+                    onChange={(e) => setNewDistrictDiscount(e.target.value)}
+                    className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#EC008C]" />
+                </div>
+                <button type="button" onClick={handleAddDistrictPrice} disabled={savingDistrict}
+                  className="px-3 py-2 bg-[#00AFCC] text-white rounded-lg text-xs font-semibold hover:bg-[#009BB5] disabled:opacity-50 transition flex items-center gap-1">
+                  {savingDistrict ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
+                  Add
+                </button>
+              </div>
             </div>
           </div>
 

@@ -7,10 +7,11 @@ import Footer from "@/components/layout/Footer";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { MessageSquare, CheckCircle, Copy, ExternalLink, Home } from "lucide-react";
+import { MessageSquare, CheckCircle, Copy, ExternalLink, Home, MapPin } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useAuthChecked } from "@/helper/AuthInit";
 import { BANGLADESH_LOCATIONS, getUpazilas } from "@/lib/constants";
+import DeliveryMapPicker from "@/components/checkout/DeliveryMapPicker";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -33,6 +34,7 @@ export default function CheckoutPage() {
   });
   const [districts, setDistricts] = useState([]);
   const [upazilas, setUpazilas] = useState([]);
+  const [deliveryCoords, setDeliveryCoords] = useState({ latitude: null, longitude: null });
 
   useEffect(() => {
     const div = BANGLADESH_LOCATIONS.find((d) => d.division === form.division);
@@ -107,6 +109,8 @@ export default function CheckoutPage() {
         deliveryDivision: form.division,
         deliveryDistrict: form.district,
         deliveryUpazila: form.upazila,
+        deliveryLatitude: deliveryCoords.latitude || undefined,
+        deliveryLongitude: deliveryCoords.longitude || undefined,
         customRequirement: customRequirement || undefined,
       };
       const res = await api.post("/orders", orderData);
@@ -205,6 +209,7 @@ export default function CheckoutPage() {
                 <label className="block text-[10px] sm:text-[11px] font-semibold text-[#364152] mb-1">{t.apartment}</label>
                 <textarea placeholder={t.apartment} required rows={3} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="input-field !h-auto min-h-[70px]" />
               </div>
+              <DeliveryMapPicker coords={deliveryCoords} onCoordsChange={setDeliveryCoords} />
             </div>
 
             <div className="bg-white rounded-lg p-3 sm:p-4 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">

@@ -44,10 +44,16 @@ export default function ManagerOrdersPage() {
 
   useEffect(() => { fetchOrders(); fetchRiders(); }, []);
 
+  useEffect(() => {
+    const debounce = setTimeout(() => { fetchOrders(); }, 300);
+    return () => clearTimeout(debounce);
+  }, [search]);
+
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const res = await api.get("/orders/manager/local");
+      const params = search ? `?search=${encodeURIComponent(search)}` : "";
+      const res = await api.get(`/orders/manager/local${params}`);
       setOrders(res.data.data || []);
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
@@ -82,14 +88,7 @@ export default function ManagerOrdersPage() {
     }
   };
 
-  const filtered = orders.filter((o) => {
-    const matchesFilter = filter === "ALL" || o.orderStatus === filter;
-    const matchesSearch = search === "" ||
-      o.orderNumber?.toLowerCase().includes(search.toLowerCase()) ||
-      o.user?.name?.toLowerCase().includes(search.toLowerCase()) ||
-      o.user?.phone?.includes(search);
-    return matchesFilter && matchesSearch;
-  });
+  const filtered = orders.filter((o) => filter === "ALL" || o.orderStatus === filter);
 
   const stats = {
     total: orders.length,

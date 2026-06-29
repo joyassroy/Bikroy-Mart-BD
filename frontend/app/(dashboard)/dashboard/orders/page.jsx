@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import api from "@/lib/axios";
+import { ALL_DISTRICTS } from "@/lib/constants";
 import { Search, Eye, ChevronDown } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -18,14 +19,20 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("");
+  const [districtFilter, setDistrictFilter] = useState("");
+  const [search, setSearch] = useState("");
   const [selectedOrder, setSelectedOrder] = useState(null);
 
-  useEffect(() => { fetchOrders(); }, [statusFilter]);
+  useEffect(() => { fetchOrders(); }, [statusFilter, districtFilter, search]);
 
   const fetchOrders = async () => {
     try {
-      const params = statusFilter ? `?status=${statusFilter}` : "";
-      const res = await api.get(`/orders/admin/all${params}`);
+      const params = new URLSearchParams();
+      if (statusFilter) params.set("status", statusFilter);
+      if (districtFilter) params.set("district", districtFilter);
+      if (search) params.set("search", search);
+      const query = params.toString() ? `?${params.toString()}` : "";
+      const res = await api.get(`/orders/admin/all${query}`);
       setOrders(res.data.data || []);
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
@@ -43,7 +50,25 @@ export default function OrdersPage() {
     <div>
       <h1 className="text-2xl font-bold text-gray-800 mb-6">Orders</h1>
 
-      <div className="flex gap-3 mb-4">
+      <div className="flex flex-wrap gap-3 mb-4">
+        <div className="relative flex-1 min-w-[200px] max-w-xs">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search by order #, customer name, or phone..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-9 pr-3 py-2 border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:border-[#EC008C] transition"
+          />
+        </div>
+        <select
+          value={districtFilter}
+          onChange={(e) => setDistrictFilter(e.target.value)}
+          className="px-3 py-2 border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:border-[#EC008C] transition"
+        >
+          <option value="">All Districts</option>
+          {ALL_DISTRICTS.map((d) => <option key={d.name} value={d.name}>{d.name}</option>)}
+        </select>
         {["", "PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED"].map((s) => (
           <button key={s} onClick={() => setStatusFilter(s)}
             className={`px-3 py-1.5 rounded-lg text-sm ${statusFilter === s ? "bg-primary-600 text-white" : "bg-white border text-gray-600 hover:bg-gray-50"}`}>

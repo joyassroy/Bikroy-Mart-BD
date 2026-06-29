@@ -1,8 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import api from "@/lib/axios";
-import { DELIVERY_AREAS } from "@/lib/constants";
-import { Plus, Trash2, X, Pencil } from "lucide-react";
+import { ALL_DISTRICTS } from "@/lib/constants";
+import { Plus, Trash2, X, Pencil, Search } from "lucide-react";
 import toast from "react-hot-toast";
 import EditRiderModal from "@/components/rider/EditRiderModal";
 
@@ -11,16 +11,18 @@ export default function RidersPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editRider, setEditRider] = useState(null);
+  const [search, setSearch] = useState("");
   const [form, setForm] = useState({
     name: "", email: "", phone: "", password: "",
     vehicleType: "Bike", vehicleNumber: "", licenseNumber: "", assignedZila: "",
   });
 
-  useEffect(() => { fetchRiders(); }, []);
+  useEffect(() => { fetchRiders(); }, [search]);
 
   const fetchRiders = async () => {
     try {
-      const res = await api.get("/riders");
+      const params = search ? `?search=${encodeURIComponent(search)}` : "";
+      const res = await api.get(`/riders${params}`);
       setRiders(res.data.data || []);
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
@@ -61,6 +63,17 @@ export default function RidersPage() {
         <button onClick={() => setShowForm(!showForm)} className="bg-[#EC008C] text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-[#D60071] transition flex items-center gap-2">
           <Plus size={14} /> Add Rider
         </button>
+      </div>
+
+      <div className="relative mb-4">
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <input
+          type="text"
+          placeholder="Search riders by name, email, or phone..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full pl-9 pr-3 py-2 border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:border-[#EC008C] transition"
+        />
       </div>
 
       {showForm && (
@@ -118,9 +131,7 @@ export default function RidersPage() {
               <select value={form.assignedZila} onChange={(e) => setForm({ ...form, assignedZila: e.target.value })}
                 className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none">
                 <option value="">Select zila</option>
-                {DELIVERY_AREAS.map((area) =>
-                  area.districts.map((d) => <option key={d} value={d}>{d} ({area.division})</option>)
-                )}
+                {ALL_DISTRICTS.map((d) => <option key={d.name} value={d.name}>{d.name}</option>)}
               </select>
             </div>
           </div>

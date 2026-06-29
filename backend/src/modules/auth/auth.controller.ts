@@ -5,8 +5,8 @@ import { sendSuccess, sendError } from "../../utils/apiResponse";
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const { name, email, phone, password } = req.body;
-    const result = await authService.register({ name, email, phone, password });
+    const { name, email, phone, password, district } = req.body;
+    const result = await authService.register({ name, email, phone, password, district });
     return sendSuccess(res, "Registration successful", result, 201);
   } catch (error: any) {
     return sendError(res, error.message, 400);

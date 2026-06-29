@@ -106,6 +106,10 @@ export const DELIVERY_AREAS = BANGLADESH_LOCATIONS.map((d) => ({
   districts: d.districts.map((dist) => dist.name),
 }));
 
+export const ALL_DISTRICTS = BANGLADESH_LOCATIONS.flatMap((d) =>
+  d.districts.map((dist) => ({ name: dist.name, division: d.division }))
+);
+
 export const ORDER_STATUSES = [
   { value: "PENDING", label: "Pending", color: "text-yellow-600 bg-yellow-50" },
   { value: "CONFIRMED", label: "Confirmed", color: "text-blue-600 bg-blue-50" },

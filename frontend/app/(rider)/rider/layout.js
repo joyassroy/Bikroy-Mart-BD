@@ -7,6 +7,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { clearUser } from "@/redux/userSlice";
 import { useAuthChecked } from "@/helper/AuthInit";
 import { useLanguage } from "@/i18n/LanguageContext";
+import useRiderGPS from "@/helper/useRiderGPS";
 
 const menu = [
   { labelKey: "myDeliveries", href: "/rider", icon: LayoutDashboard },
@@ -23,6 +24,7 @@ export default function RiderLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const user = useSelector((state) => state.user?.data);
   const { authChecked } = useAuthChecked();
+  useRiderGPS();
 
   useEffect(() => {
     if (authChecked && (!user || user.role !== "RIDER")) {

@@ -6,6 +6,7 @@ import { hashPassword } from "../../utils/bcrypt";
 
 export const getAllRiders = async (req: AuthRequest, res: Response) => {
   try {
+    const { search } = req.query;
     let where: any = {};
 
     if (req.user?.role === "MANAGER") {
@@ -13,8 +14,19 @@ export const getAllRiders = async (req: AuthRequest, res: Response) => {
         where: { userId: req.user.userId },
       });
       if (manager) {
-        where.assignedZila = manager.assignedZila;
+        where.assignedZila = manager.assignedDistrict;
       }
+    }
+
+    if (search && typeof search === "string" && search.trim()) {
+      const q = search.trim();
+      where.user = {
+        OR: [
+          { name: { contains: q, mode: "insensitive" } },
+          { email: { contains: q, mode: "insensitive" } },
+          { phone: { contains: q } },
+        ],
+      };
     }
 
     const riders = await prisma.riderProfile.findMany({
@@ -192,13 +204,27 @@ export const deliverOrder = async (req: AuthRequest, res: Response) => {
 
 export const getDeliveryHistory = async (req: AuthRequest, res: Response) => {
   try {
+    const { search } = req.query;
     const rider = await prisma.riderProfile.findUnique({
       where: { userId: req.user!.userId },
     });
     if (!rider) return sendError(res, "Rider profile not found", 404);
 
+    const where: any = {
+      riderId: rider.id,
+      orderStatus: "DELIVERED",
+    };
+
+    if (search && typeof search === "string" && search.trim()) {
+      const q = search.trim();
+      where.OR = [
+        { orderNumber: { contains: q, mode: "insensitive" } },
+        { user: { name: { contains: q, mode: "insensitive" } } },
+      ];
+    }
+
     const orders = await prisma.order.findMany({
-      where: { riderId: rider.id, orderStatus: "DELIVERED" },
+      where,
       include: {
         items: { include: { product: { select: { id: true, name: true } } } },
         user: { select: { id: true, name: true } },

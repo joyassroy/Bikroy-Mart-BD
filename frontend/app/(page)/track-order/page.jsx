@@ -3,6 +3,7 @@ import { Suspense, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import LiveRiderMap from "@/components/tracking/LiveRiderMap";
 import api from "@/lib/axios";
 import { Search, Package, Truck, CheckCircle, Clock, MapPin } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -76,6 +77,12 @@ function TrackOrderContent() {
               <div>
                 <h2 className="font-semibold text-[#000000] text-xs sm:text-sm">Order #{order.orderNumber}</h2>
                 <p className="text-[10px] sm:text-[11px] text-[#667085] mt-0.5">Placed on {new Date(order.createdAt).toLocaleDateString("bn-BD")}</p>
+                {order.deliveryDistrict && (
+                  <p className="text-[10px] sm:text-[11px] text-[#667085] mt-0.5">
+                    <MapPin size={10} className="inline mr-0.5" />
+                    {order.deliveryDistrict}{order.deliveryUpazila ? `, ${order.deliveryUpazila}` : ""}
+                  </p>
+                )}
               </div>
               <span className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md text-[9px] sm:text-[10px] font-semibold ${
                 order.orderStatus === "DELIVERED" ? "bg-green-50 text-green-700" :
@@ -117,6 +124,29 @@ function TrackOrderContent() {
                     {t.viewOnMap}
                   </a>
                 )}
+              </div>
+            )}
+
+            {order.manager && (
+              <div className="p-2.5 bg-[#FCE8F3] rounded-lg mb-3">
+                <h3 className="font-medium text-[#000000] mb-0.5 text-[11px] sm:text-xs">Zila Manager</h3>
+                <p className="text-[10px] sm:text-[11px] text-[#5A6C91]">Name: {order.manager.user?.name}</p>
+                <p className="text-[10px] sm:text-[11px] text-[#5A6C91]">Phone: {order.manager.user?.phone}</p>
+                <p className="text-[10px] sm:text-[11px] text-[#5A6C91]">District: {order.manager.assignedDistrict}</p>
+                {order.manager.assignedZila && (
+                  <p className="text-[10px] sm:text-[11px] text-[#5A6C91]">Zila: {order.manager.assignedZila}</p>
+                )}
+              </div>
+            )}
+
+            {order.deliveryLatitude && order.deliveryLongitude && (
+              <div className="rounded-lg overflow-hidden mb-3 border border-[#E5E7EB]" style={{ height: "250px" }}>
+                <LiveRiderMap
+                  riderLat={order.rider?.currentLat || null}
+                  riderLng={order.rider?.currentLng || null}
+                  destinationLat={order.deliveryLatitude}
+                  destinationLng={order.deliveryLongitude}
+                />
               </div>
             )}
 

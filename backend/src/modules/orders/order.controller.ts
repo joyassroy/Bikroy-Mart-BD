@@ -87,12 +87,22 @@ export const getOrderById = async (req: AuthRequest, res: Response) => {
 
 export const getAllOrders = async (req: Request, res: Response) => {
   try {
-    const { page = "1", limit = "20", status } = req.query;
+    const { page = "1", limit = "20", status, search, district } = req.query;
     const pageNum = parseInt(page as string, 10);
     const limitNum = parseInt(limit as string, 10);
 
     const where: any = {};
     if (status) where.orderStatus = status;
+    if (district) where.deliveryDistrict = String(district);
+
+    if (search && typeof search === "string" && search.trim()) {
+      const q = search.trim();
+      where.OR = [
+        { orderNumber: { contains: q, mode: "insensitive" } },
+        { user: { name: { contains: q, mode: "insensitive" } } },
+        { user: { phone: { contains: q } } },
+      ];
+    }
 
     const [orders, total] = await Promise.all([
       prisma.order.findMany({
@@ -136,11 +146,27 @@ export const updateOrderStatus = async (req: AuthRequest, res: Response) => {
 export const assignRider = async (req: AuthRequest, res: Response) => {
   try {
     const { riderId } = req.body;
-    const order = await prisma.order.update({
+    const order = await prisma.order.findUnique({
+      where: { id: String(req.params.id) },
+      select: { id: true, deliveryDistrict: true, riderId: true },
+    });
+    if (!order) return sendError(res, "Order not found", 404);
+
+    const rider = await prisma.riderProfile.findUnique({
+      where: { id: riderId },
+      select: { id: true, assignedZila: true },
+    });
+    if (!rider) return sendError(res, "Rider not found", 404);
+
+    if (order.deliveryDistrict && rider.assignedZila && order.deliveryDistrict !== rider.assignedZila) {
+      return sendError(res, `Rider is assigned to ${rider.assignedZila} but order is for ${order.deliveryDistrict}`, 400);
+    }
+
+    const updated = await prisma.order.update({
       where: { id: String(req.params.id) },
       data: { riderId, orderStatus: "OUT_FOR_DELIVERY" },
     });
-    return sendSuccess(res, "Rider assigned", order);
+    return sendSuccess(res, "Rider assigned", updated);
   } catch (error: any) {
     return sendError(res, error.message, 400);
   }
@@ -148,16 +174,28 @@ export const assignRider = async (req: AuthRequest, res: Response) => {
 
 export const getLocalOrders = async (req: AuthRequest, res: Response) => {
   try {
+    const { search } = req.query;
     const manager = await prisma.managerProfile.findUnique({
       where: { userId: req.user!.userId },
     });
     if (!manager) return sendError(res, "Manager profile not found", 404);
 
+    const where: any = {
+      deliveryDistrict: manager.assignedDistrict,
+      orderStatus: { notIn: ["DELIVERED", "CANCELLED"] },
+    };
+
+    if (search && typeof search === "string" && search.trim()) {
+      const q = search.trim();
+      where.OR = [
+        { orderNumber: { contains: q, mode: "insensitive" } },
+        { user: { name: { contains: q, mode: "insensitive" } } },
+        { user: { phone: { contains: q } } },
+      ];
+    }
+
     const orders = await prisma.order.findMany({
-      where: {
-        deliveryDistrict: manager.assignedDistrict,
-        orderStatus: { notIn: ["DELIVERED", "CANCELLED"] },
-      },
+      where,
       include: {
         user: { select: { id: true, name: true, phone: true } },
         items: { include: { product: true } },

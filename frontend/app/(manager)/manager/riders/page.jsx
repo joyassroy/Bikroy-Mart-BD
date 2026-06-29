@@ -17,10 +17,16 @@ export default function ManagerRidersPage() {
 
   useEffect(() => { fetchRiders(); }, []);
 
+  useEffect(() => {
+    const debounce = setTimeout(() => { fetchRiders(); }, 300);
+    return () => clearTimeout(debounce);
+  }, [search]);
+
   const fetchRiders = async () => {
     try {
       setLoading(true);
-      const res = await api.get("/riders");
+      const params = search ? `?search=${encodeURIComponent(search)}` : "";
+      const res = await api.get(`/riders${params}`);
       setRiders(res.data.data || []);
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
@@ -44,12 +50,6 @@ export default function ManagerRidersPage() {
       setCreating(false);
     }
   };
-
-  const filtered = riders.filter((r) => {
-    if (!search) return true;
-    const q = search.toLowerCase();
-    return r.user?.name?.toLowerCase().includes(q) || r.user?.email?.toLowerCase().includes(q) || r.user?.phone?.includes(q);
-  });
 
   const onlineCount = riders.filter((r) => r.isAvailable).length;
 
@@ -87,13 +87,13 @@ export default function ManagerRidersPage() {
           [...Array(3)].map((_, i) => (
             <div key={i} className="bg-white rounded-lg h-40 animate-pulse border border-[#E5E7EB]"></div>
           ))
-        ) : filtered.length === 0 ? (
+        ) : riders.length === 0 ? (
           <div className="bg-white rounded-lg p-8 text-center text-gray-400 col-span-3 border border-[#E5E7EB]">
             <Truck size={24} className="mx-auto mb-2 text-gray-300" />
             <p className="text-xs">{search ? "No riders match your search" : "No riders in your district"}</p>
           </div>
-        ) : (
-          filtered.map((rider) => (
+          ) : (
+            riders.map((rider) => (
             <div key={rider.id} className="bg-white rounded-lg p-3 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB] hover:shadow-md transition">
               <div className="flex items-start justify-between mb-2">
                 <div className="flex items-center gap-2.5">

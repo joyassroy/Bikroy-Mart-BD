@@ -11,14 +11,22 @@ export default function RiderHistoryPage() {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    api.get("/riders/history").then((res) => setOrders(res.data.data || [])).catch(console.error).finally(() => setLoading(false));
+    fetchHistory();
   }, []);
 
-  const filtered = orders.filter((o) => {
-    if (!search) return true;
-    const q = search.toLowerCase();
-    return o.orderNumber?.toLowerCase().includes(q) || o.user?.name?.toLowerCase().includes(q);
-  });
+  useEffect(() => {
+    const debounce = setTimeout(() => { fetchHistory(); }, 300);
+    return () => clearTimeout(debounce);
+  }, [search]);
+
+  const fetchHistory = async () => {
+    try {
+      const params = search ? `?search=${encodeURIComponent(search)}` : "";
+      const res = await api.get(`/riders/history${params}`);
+      setOrders(res.data.data || []);
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
+  };
 
   const totalRevenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
   const thisMonth = orders.filter((o) => {
@@ -108,7 +116,7 @@ export default function RiderHistoryPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F4F7FB]">
-              {filtered.length === 0 ? (
+              {orders.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-5 py-12 text-center">
                     <div className="w-14 h-14 rounded-2xl bg-[#F4F7FB] flex items-center justify-center mx-auto mb-3">
@@ -119,7 +127,7 @@ export default function RiderHistoryPage() {
                   </td>
                 </tr>
               ) : (
-                filtered.map((order) => (
+                orders.map((order) => (
                   <tr key={order.id} className="hover:bg-[#F9FAFB] transition-colors">
                     <td className="px-5 py-3.5">
                       <span className="text-xs font-semibold text-[#EC008C]">{order.orderNumber}</span>

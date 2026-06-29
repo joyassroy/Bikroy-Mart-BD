@@ -47,10 +47,11 @@ export default function ProductCard({ product, showActions, onDelete, onProductU
   const handleAddToCart = useCallback((e) => {
     e.preventDefault();
     e.stopPropagation();
+    const cartPrice = product.effectiveDiscountPrice || product.discountPrice || product.effectivePrice || product.price;
     dispatch(addToCart({
       productId: product.id,
       name: product.name,
-      price: product.discountPrice || product.price,
+      price: cartPrice,
       image: product.images?.[0],
       quantity: 1,
     }));
@@ -130,13 +131,13 @@ export default function ProductCard({ product, showActions, onDelete, onProductU
           </div>
 
           <div className="flex items-center gap-1 mb-1.5 sm:mb-2">
-            {product.discountPrice ? (
+            {product.effectiveDiscountPrice || product.discountPrice ? (
               <>
-                <span className="text-[#000000] font-bold text-xs sm:text-sm">৳{product.discountPrice}</span>
-                <span className="text-[#667085] text-[10px] sm:text-xs line-through">৳{product.price}</span>
+                <span className="text-[#000000] font-bold text-xs sm:text-sm">৳{product.effectiveDiscountPrice || product.discountPrice}</span>
+                <span className="text-[#667085] text-[10px] sm:text-xs line-through">৳{product.effectivePrice || product.price}</span>
               </>
             ) : (
-              <span className="text-[#000000] font-bold text-xs sm:text-sm">৳{product.price}</span>
+              <span className="text-[#000000] font-bold text-xs sm:text-sm">৳{product.effectivePrice || product.price}</span>
             )}
           </div>
 

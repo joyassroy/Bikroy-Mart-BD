@@ -2,6 +2,26 @@ import { Request, Response } from "express";
 import prisma from "../../config/db";
 import { sendSuccess, sendError } from "../../utils/apiResponse";
 
+function resolveDistrictPrice(product: any, district?: string) {
+  if (!district || !product.districtPrices?.length) {
+    return {
+      effectivePrice: product.price,
+      effectiveDiscountPrice: product.discountPrice,
+    };
+  }
+  const dp = product.districtPrices.find((d: any) => d.district === district);
+  if (dp) {
+    return {
+      effectivePrice: dp.price,
+      effectiveDiscountPrice: dp.discountPrice,
+    };
+  }
+  return {
+    effectivePrice: product.price,
+    effectiveDiscountPrice: product.discountPrice,
+  };
+}
+
 export const getAllProducts = async (req: Request, res: Response) => {
   try {
     const {
@@ -65,7 +85,7 @@ export const getAllProducts = async (req: Request, res: Response) => {
       }
     }
 
-    if (district && !offer) {
+    if (district) {
       const managers = await prisma.managerProfile.findMany({
         where: { assignedDistrict: String(district) },
         select: { id: true },
@@ -92,6 +112,7 @@ export const getAllProducts = async (req: Request, res: Response) => {
         include: {
           category: { select: { id: true, name: true, slug: true } },
           subcategory: { select: { id: true, name: true, slug: true } },
+          districtPrices: district ? { where: { district: String(district) } } : false,
           _count: { select: { reviews: true } },
         },
         orderBy,
@@ -101,7 +122,13 @@ export const getAllProducts = async (req: Request, res: Response) => {
       prisma.product.count({ where }),
     ]);
 
-    return sendSuccess(res, "Products fetched", products, 200, {
+    const resolved = products.map((p) => {
+      const { effectivePrice, effectiveDiscountPrice } = resolveDistrictPrice(p, district as string);
+      const { districtPrices, ...rest } = p;
+      return { ...rest, effectivePrice, effectiveDiscountPrice };
+    });
+
+    return sendSuccess(res, "Products fetched", resolved, 200, {
       page: pageNum,
       limit: limitNum,
       total,
@@ -114,11 +141,13 @@ export const getAllProducts = async (req: Request, res: Response) => {
 
 export const getProductBySlug = async (req: Request, res: Response) => {
   try {
+    const { district } = req.query;
     const product = await prisma.product.findUnique({
       where: { slug: String(req.params.slug) },
       include: {
         category: true,
         subcategory: true,
+        districtPrices: district ? { where: { district: String(district) } } : true,
         reviews: {
           include: { user: { select: { id: true, name: true, avatar: true } } },
           orderBy: { createdAt: "desc" },
@@ -128,7 +157,9 @@ export const getProductBySlug = async (req: Request, res: Response) => {
       },
     });
     if (!product) return sendError(res, "Product not found", 404);
-    return sendSuccess(res, "Product fetched", product);
+
+    const { effectivePrice, effectiveDiscountPrice } = resolveDistrictPrice(product, district as string);
+    return sendSuccess(res, "Product fetched", { ...product, effectivePrice, effectiveDiscountPrice });
   } catch (error: any) {
     return sendError(res, error.message);
   }
@@ -136,11 +167,13 @@ export const getProductBySlug = async (req: Request, res: Response) => {
 
 export const getProductById = async (req: Request, res: Response) => {
   try {
+    const { district } = req.query;
     const product = await prisma.product.findUnique({
       where: { id: String(req.params.id) },
       include: {
         category: true,
         subcategory: true,
+        districtPrices: district ? { where: { district: String(district) } } : true,
         reviews: {
           include: { user: { select: { id: true, name: true, avatar: true } } },
           orderBy: { createdAt: "desc" },
@@ -150,7 +183,9 @@ export const getProductById = async (req: Request, res: Response) => {
       },
     });
     if (!product) return sendError(res, "Product not found", 404);
-    return sendSuccess(res, "Product fetched", product);
+
+    const { effectivePrice, effectiveDiscountPrice } = resolveDistrictPrice(product, district as string);
+    return sendSuccess(res, "Product fetched", { ...product, effectivePrice, effectiveDiscountPrice });
   } catch (error: any) {
     return sendError(res, error.message);
   }
@@ -177,12 +212,20 @@ export const getFeaturedProducts = async (req: Request, res: Response) => {
       where,
       include: {
         category: { select: { id: true, name: true, slug: true } },
+        districtPrices: district ? { where: { district: String(district) } } : false,
         _count: { select: { reviews: true } },
       },
       orderBy: { createdAt: "desc" },
       take: 12,
     });
-    return sendSuccess(res, "Featured products fetched", products);
+
+    const resolved = products.map((p) => {
+      const { effectivePrice, effectiveDiscountPrice } = resolveDistrictPrice(p, district as string);
+      const { districtPrices, ...rest } = p;
+      return { ...rest, effectivePrice, effectiveDiscountPrice };
+    });
+
+    return sendSuccess(res, "Featured products fetched", resolved);
   } catch (error: any) {
     return sendError(res, error.message);
   }

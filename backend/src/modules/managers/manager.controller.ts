@@ -6,7 +6,22 @@ import { hashPassword } from "../../utils/bcrypt";
 
 export const getAllManagers = async (req: Request, res: Response) => {
   try {
+    const { search } = req.query;
+
+    const where: any = {};
+    if (search && typeof search === "string" && search.trim()) {
+      const q = search.trim();
+      where.user = {
+        OR: [
+          { name: { contains: q, mode: "insensitive" } },
+          { email: { contains: q, mode: "insensitive" } },
+          { phone: { contains: q } },
+        ],
+      };
+    }
+
     const managers = await prisma.managerProfile.findMany({
+      where,
       include: {
         user: { select: { id: true, name: true, email: true, phone: true } },
         _count: { select: { products: true } },
@@ -59,8 +74,13 @@ export const createManager = async (req: Request, res: Response) => {
 
 export const getManagerProducts = async (req: AuthRequest, res: Response) => {
   try {
+    const manager = await prisma.managerProfile.findUnique({
+      where: { userId: req.user!.userId },
+    });
+    if (!manager) return sendError(res, "Manager profile not found", 404);
+
     const products = await prisma.product.findMany({
-      where: { managerId: req.user!.userId },
+      where: { managerId: manager.id },
       include: {
         category: { select: { id: true, name: true } },
         subcategory: { select: { id: true, name: true } },

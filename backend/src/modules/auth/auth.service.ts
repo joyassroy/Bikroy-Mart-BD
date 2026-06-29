@@ -12,6 +12,7 @@ interface RegisterInput {
   email: string;
   phone?: string;
   password: string;
+  district?: string;
 }
 
 interface LoginInput {
@@ -40,6 +41,7 @@ export const register = async (input: RegisterInput) => {
       email: input.email,
       phone: input.phone,
       password: hashedPassword,
+      district: input.district || null,
     },
   });
 
@@ -107,9 +109,12 @@ export const getMe = async (userId: string) => {
       phone: true,
       role: true,
       avatar: true,
+      district: true,
       isBlocked: true,
       createdAt: true,
       addresses: true,
+      managerProfile: true,
+      riderProfile: true,
     },
   });
 

@@ -20,7 +20,27 @@ export const getOrderTracking = async (req: Request, res: Response) => {
       },
     });
     if (!order) return sendError(res, "Order not found", 404);
-    return sendSuccess(res, "Tracking fetched", order);
+
+    let manager = null;
+    if (order.deliveryDistrict) {
+      const managerProfile = await prisma.managerProfile.findFirst({
+        where: { assignedDistrict: order.deliveryDistrict },
+        select: {
+          id: true,
+          assignedZila: true,
+          assignedDistrict: true,
+          user: { select: { id: true, name: true, phone: true, email: true } },
+        },
+      });
+      manager = managerProfile;
+    }
+
+    return sendSuccess(res, "Tracking fetched", {
+      ...order,
+      deliveryLatitude: order.deliveryLatitude,
+      deliveryLongitude: order.deliveryLongitude,
+      manager,
+    });
   } catch (error: any) {
     return sendError(res, error.message);
   }

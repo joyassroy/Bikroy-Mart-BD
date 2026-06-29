@@ -1,19 +1,22 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "@/redux/userSlice";
+import { setLocation } from "@/redux/locationSlice";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
 import Link from "next/link";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { signIn } from "next-auth/react";
+import { ALL_DISTRICTS } from "@/lib/constants";
 
 export default function SignupPage() {
   const router = useRouter();
   const dispatch = useDispatch();
   const { t } = useLanguage();
-  const [form, setForm] = useState({ name: "", email: "", phone: "", password: "" });
+  const detectedDistrict = useSelector((state) => state.location?.district || "");
+  const [form, setForm] = useState({ name: "", email: "", phone: "", password: "", district: detectedDistrict });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -26,6 +29,9 @@ export default function SignupPage() {
       const { user, accessToken } = res.data.data;
       localStorage.setItem("bm-token", accessToken);
       dispatch(setUser({ user, accessToken }));
+      if (form.district) {
+        dispatch(setLocation({ division: "", district: form.district, upazila: "" }));
+      }
       toast.success("Registration successful!");
       router.push("/");
     } catch (err) {
@@ -100,6 +106,18 @@ export default function SignupPage() {
               value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })}
               className="input-field"
             />
+          </div>
+          <div>
+            <label className="block text-[11px] sm:text-xs font-semibold text-[#364152] mb-1">District (Zila) *</label>
+            <select
+              required value={form.district} onChange={(e) => setForm({ ...form, district: e.target.value })}
+              className="input-field"
+            >
+              <option value="">Select your district</option>
+              {ALL_DISTRICTS.map((d) => (
+                <option key={d.name} value={d.name}>{d.name}</option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="block text-[11px] sm:text-xs font-semibold text-[#364152] mb-1">{t.password}</label>

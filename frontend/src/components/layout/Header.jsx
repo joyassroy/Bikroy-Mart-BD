@@ -197,7 +197,7 @@ export default function Header() {
 
               {/* Actions */}
               <div className="flex items-center gap-0.5 flex-shrink-0">
-                {authChecked && user && (
+                {authChecked && user && (user.role === "ADMIN" || user.role === "MANAGER" || user.role === "RIDER") && (
                   <Link href={getDashboardHref()} className="hidden sm:flex items-center gap-1 text-[#364152] hover:bg-[#F3F4F6] p-1.5 rounded-md transition text-[11px] font-semibold" aria-label="Dashboard">
                     <LayoutDashboard size={16} className="text-[#EC008C]" />
                     <span className="hidden md:inline">{user.role === "ADMIN" ? "Admin" : user.role === "MANAGER" ? "Manager" : "Rider"}</span>
@@ -433,7 +433,7 @@ export default function Header() {
               <Link href="/custom-request" onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 py-2 text-xs text-[#364152] font-medium hover:text-[#EC008C] transition">
                 <ClipboardList size={16} className="text-[#EC008C]" />{t.customRequest}
               </Link>
-              {authChecked && user && (
+              {authChecked && user && (user.role === "ADMIN" || user.role === "MANAGER" || user.role === "RIDER") && (
                 <Link href={getDashboardHref()} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 py-2 text-xs text-[#364152] font-medium hover:text-[#EC008C] transition">
                   <LayoutDashboard size={16} className="text-[#EC008C]" />
                   {user.role === "ADMIN" ? "Admin Dashboard" : user.role === "MANAGER" ? "Manager Panel" : "Rider Dashboard"}

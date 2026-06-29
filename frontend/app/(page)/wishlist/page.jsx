@@ -59,10 +59,11 @@ export default function WishlistPage() {
   };
 
   const handleAddToCart = (product) => {
+    const cartPrice = product.effectiveDiscountPrice || product.discountPrice || product.effectivePrice || product.price;
     dispatch(addToCart({
       productId: product.id,
       name: product.name,
-      price: product.discountPrice || product.price,
+      price: cartPrice,
       image: product.images?.[0],
       quantity: 1,
     }));
@@ -142,14 +143,14 @@ export default function WishlistPage() {
                     </div>
 
                     <div className="flex items-center gap-1 mb-2">
-                      {product.discountPrice ? (
-                        <>
-                          <span className="text-[#000000] font-bold text-xs sm:text-sm">৳{product.discountPrice}</span>
-                          <span className="text-[#667085] text-[10px] line-through">৳{product.price}</span>
-                        </>
-                      ) : (
-                        <span className="text-[#000000] font-bold text-xs sm:text-sm">৳{product.price}</span>
-                      )}
+                        {product.effectiveDiscountPrice || product.discountPrice ? (
+                          <>
+                            <span className="text-[#000000] font-bold text-xs sm:text-sm">৳{product.effectiveDiscountPrice || product.discountPrice}</span>
+                            <span className="text-[#667085] text-[10px] line-through">৳{product.effectivePrice || product.price}</span>
+                          </>
+                        ) : (
+                          <span className="text-[#000000] font-bold text-xs sm:text-sm">৳{product.effectivePrice || product.price}</span>
+                        )}
                     </div>
 
                     {isOutOfStock ? (
