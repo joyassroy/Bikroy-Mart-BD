@@ -243,6 +243,8 @@ export default function DeliveryPage() {
             <div className="h-[300px] lg:h-[calc(100vh-200px)]">
               {order.deliveryLatitude && order.deliveryLongitude ? (
                 <LiveRiderMap
+                  riderLat={order.rider?.currentLat}
+                  riderLng={order.rider?.currentLng}
                   destinationLat={order.deliveryLatitude}
                   destinationLng={order.deliveryLongitude}
                 />

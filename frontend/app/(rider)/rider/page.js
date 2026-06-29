@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Package, Truck, CheckCircle, MapPin, Phone, Clock, Star, ChevronRight, Navigation, Zap, TrendingUp, RotateCcw } from "lucide-react";
+import { Package, Truck, CheckCircle, MapPin, Phone, Clock, Star, ChevronRight, Navigation, Zap, TrendingUp, RotateCcw, User } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useSelector } from "react-redux";
 import api from "@/lib/axios";
@@ -257,6 +257,8 @@ export default function RiderDashboard() {
               {activeDelivery.deliveryLatitude && activeDelivery.deliveryLongitude && (
                 <div className="lg:col-span-2 rounded-xl overflow-hidden border border-[#E5E7EB] h-52 lg:h-auto">
                   <LiveRiderMap
+                    riderLat={activeDelivery.riderLat}
+                    riderLng={activeDelivery.riderLng}
                     destinationLat={activeDelivery.deliveryLatitude}
                     destinationLng={activeDelivery.deliveryLongitude}
                   />

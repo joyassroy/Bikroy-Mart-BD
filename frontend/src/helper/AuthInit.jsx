@@ -21,6 +21,7 @@ export default function AuthInit({ children }) {
 
     const token = localStorage.getItem("bm-token");
     if (!token) {
+      dispatch(clearUser());
       setAuthChecked(true);
       return;
     }

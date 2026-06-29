@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { LayoutDashboard, Package, Clock, User, Menu, X, ClipboardList, Loader2, LogOut, Bike } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { clearUser } from "@/redux/userSlice";
 import { useAuthChecked } from "@/helper/AuthInit";
 import { useLanguage } from "@/i18n/LanguageContext";
 
@@ -35,7 +36,7 @@ export default function RiderLayout({ children }) {
 
   const handleLogout = () => {
     localStorage.removeItem("bm-token");
-    dispatch({ type: "user/logout" });
+    dispatch(clearUser());
     router.push("/signin");
   };
 

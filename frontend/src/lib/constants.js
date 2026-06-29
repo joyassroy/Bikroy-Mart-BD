@@ -21,6 +21,12 @@ export const BANGLADESH_LOCATIONS = [
       { name: "Bandarban", upazilas: ["Alikadam", "Bandarban Sadar", "Lama", "Naikhongchhari", "Rowangchhari", "Ruma", "Thanchi"] },
       { name: "Khagrachhari", upazilas: ["Dighinala", "Khagrachhari Sadar", "Lakshmichhari", "Mahalchhari", "Manikchhari", "Matiranga", "Panchhari", "Ramgarh"] },
       { name: "Rangamati", upazilas: ["Baghaichhari", "Barkal", "Juraichhari", "Kalampati", "Kaptai", "Langadu", "Naniarchar", "Rajasthali", "Rangamati Sadar"] },
+      { name: "Feni", upazilas: ["Chhagalnaiya", "Daganbhuiyan", "Feni Sadar", "Fulgazi", "Parshuram", "Sonagazi"] },
+      { name: "Comilla", upazilas: ["Barura", "Brahmanpara", "Burichang", "Chandina", "Chauddagram", "Comilla Sadar", "Daudkandi", "Debidwar", "Homna", "Laksam", "Langalkot", "Meghna", "Monohorganj", "Muradnagar", "Nangalkot", "Titas"] },
+      { name: "Brahmanbaria", upazilas: ["Akhaura", "Ashuganj", "Brahmanbaria Sadar", "Bancharampur", "Karimganj", "Kasba", "Nabinagar", "Nasirnagar", "Sarail"] },
+      { name: "Chandpur", upazilas: ["Chandpur Sadar", "Faridganj", "Haimchar", "Haziganj", "Kachua", "Matlab Dakshin", "Matlab Uttar", "Shahrasti"] },
+      { name: "Lakshmipur", upazilas: ["Kamalnagar", "Lakshmipur Sadar", "Raipura", "Ramganj", "Ramgati"] },
+      { name: "Noakhali", upazilas: ["Begumganj", "Chatkhil", "Companiganj", "Hatiya", "Kabirhat", "Noakhali Sadar", "Senbagh", "Sonaimuri", "Subarnachar"] },
     ],
   },
   {
@@ -41,6 +47,11 @@ export const BANGLADESH_LOCATIONS = [
       { name: "Naogaon", upazilas: ["Atrai", "Badalgachi", "Dhamoirhat", "Manda", "Mahadevpur", "Naogaon Sadar", "Niamatpur", "Patnitala", "Porsha", "Raninagar", "Sapahar"] },
       { name: "Chapainawabganj", upazilas: ["Bholahat", "Gomastapur", "Nachol", "Chapainawabganj Sadar", "Shibganj"] },
       { name: "Joypurhat", upazilas: ["Akkelpur", "Kalai", "Khetlal", "Panchbibi", "Joypurhat Sadar"] },
+      { name: "Sirajganj", upazilas: ["Belkuchi", "Chauhali", "Kamarkhand", "Kazipur", "Raiganj", "Shahjadpur", "Sirajganj Sadar", "Tarash", "Ullahpara"] },
+      { name: "Pabna", upazilas: ["Atgharia", "Bera", "Bhangura", "Chatmohar", "Ishwardi", "Pabna Sadar", "Santhia", "Sujanagar"] },
+      { name: "Kushtia", upazilas: ["Bheramara", "Daulatpur", "Khoksa", "Kumarkhali", "Kushtia Sadar", "Mirpur"] },
+      { name: "Meherpur", upazilas: ["Gangni", "Meherpur Sadar", "Mujibnagar"] },
+      { name: "Chuadanga", upazilas: ["Alamdanga", "Chuadanga Sadar", "Damurhuda", "Jibannagar"] },
     ],
   },
   {
@@ -75,6 +86,8 @@ export const BANGLADESH_LOCATIONS = [
       { name: "Lalmonirhat", upazilas: ["Aditmari", "Hativanga", "Kaliganj", "Lalmonirhat Sadar", "Patgram"] },
       { name: "Kurigram", upazilas: ["Bhurungamari", "Char Rajibpur", "Chilmari", "Kurigram Sadar", "Nageshwari", "Phulbari", "Rajarhat", "Raomari", "Ulipur"] },
       { name: "Gaibandha", upazilas: ["Fulchhari", "Gaibandha Sadar", "Gobindaganj", "Palashbari", "Sadullapur", "Sundarganj"] },
+      { name: "Nilphamari", upazilas: ["Dimla", "Domar", "Jaldhaka", "Kishoreganj", "Nilphamari Sadar", "Sadar", "Syedpur"] },
+      { name: "Panchagarh", upazilas: ["Atwari", "Boda", "Debiganj", "Panchagarh Sadar", "Tetulia"] },
     ],
   },
   {

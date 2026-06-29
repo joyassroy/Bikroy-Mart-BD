@@ -1,4 +1,6 @@
 import axios from "axios";
+import store from "@/redux/store";
+import { clearUser } from "@/redux/userSlice";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5004/api";
 
@@ -26,16 +28,15 @@ api.interceptors.response.use(
     if (typeof window !== "undefined") {
       if (status === 401) {
         localStorage.removeItem("bm-token");
+        store.dispatch(clearUser());
         if (!window.location.pathname.includes("/signin")) {
           window.location.href = "/signin";
         }
       } else if (status === 403) {
         const pathname = window.location.pathname;
-        if (pathname.startsWith("/dashboard")) {
-          window.location.href = "/signin";
-        } else if (pathname.startsWith("/manager")) {
-          window.location.href = "/signin";
-        } else if (pathname.startsWith("/rider")) {
+        if (pathname.startsWith("/dashboard") || pathname.startsWith("/manager") || pathname.startsWith("/rider")) {
+          localStorage.removeItem("bm-token");
+          store.dispatch(clearUser());
           window.location.href = "/signin";
         }
       }

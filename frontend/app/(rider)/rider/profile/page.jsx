@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { User, Truck, Star, Package, MapPin, Phone, Mail, ToggleLeft, ToggleRight, Loader2, LogOut, Award, TrendingUp, Clock } from "lucide-react";
 import api from "@/lib/axios";
 import { useSelector, useDispatch } from "react-redux";
+import { clearUser } from "@/redux/userSlice";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/i18n/LanguageContext";
 
@@ -32,7 +33,7 @@ export default function RiderProfilePage() {
 
   const handleLogout = () => {
     localStorage.removeItem("bm-token");
-    dispatch({ type: "user/logout" });
+    dispatch(clearUser());
     router.push("/signin");
   };
 

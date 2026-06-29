@@ -1,18 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const getInitialState = () => {
-  if (typeof window !== "undefined") {
-    try {
-      const saved = localStorage.getItem("bm-location");
-      if (saved) return JSON.parse(saved);
-    } catch {}
-  }
-  return { division: "Dhaka", district: "Dhaka", upazila: "" };
-};
+const DEFAULT_LOCATION = { division: "Dhaka", district: "Dhaka", upazila: "" };
 
 const locationSlice = createSlice({
   name: "location",
-  initialState: getInitialState(),
+  initialState: DEFAULT_LOCATION,
   reducers: {
     setLocation: (state, action) => {
       state.division = action.payload.division;
@@ -26,8 +18,15 @@ const locationSlice = createSlice({
         }));
       }
     },
+    hydrateLocation: (state, action) => {
+      if (action.payload) {
+        state.division = action.payload.division;
+        state.district = action.payload.district;
+        state.upazila = action.payload.upazila || "";
+      }
+    },
   },
 });
 
-export const { setLocation } = locationSlice.actions;
+export const { setLocation, hydrateLocation } = locationSlice.actions;
 export default locationSlice.reducer;

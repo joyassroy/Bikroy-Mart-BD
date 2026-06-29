@@ -36,7 +36,7 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" data-scroll-behavior="smooth">
-      <body className={`${nunito.variable} antialiased`}>
+      <body className={`${nunito.variable} antialiased`} suppressHydrationWarning>
         <Providers>
           <LanguageProvider>
             {children}

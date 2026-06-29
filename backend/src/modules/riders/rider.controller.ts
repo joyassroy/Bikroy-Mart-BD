@@ -135,7 +135,12 @@ export const getActiveDelivery = async (req: AuthRequest, res: Response) => {
         user: { select: { id: true, name: true, phone: true } },
       },
     });
-    return sendSuccess(res, "Active delivery fetched", order);
+
+    const orderData = order
+      ? { ...order, riderLat: rider.currentLat, riderLng: rider.currentLng }
+      : null;
+
+    return sendSuccess(res, "Active delivery fetched", orderData);
   } catch (error: any) {
     return sendError(res, error.message);
   }

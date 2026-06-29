@@ -8,11 +8,13 @@ import FlashDeals from "@/components/home/FlashDeals";
 import OfferSection from "@/components/home/OfferSection";
 import ProductTabs from "@/components/home/ProductTabs";
 import SponsorsMarquee from "@/components/home/SponsorsMarquee";
+import FloatingCartButton from "@/components/home/FloatingCartButton";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       <Header />
+      <FloatingCartButton />
       <main>
         <HeroBanner />
         <MiddleBanner />
