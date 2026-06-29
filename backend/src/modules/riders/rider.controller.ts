@@ -50,6 +50,21 @@ export const updateLocation = async (req: AuthRequest, res: Response) => {
       where: { userId: req.user!.userId },
       data: { currentLat: latitude, currentLng: longitude },
     });
+
+    try {
+      const { getIO } = await import("../../socket/socketHandler");
+      const io = getIO();
+      const activeOrders = await prisma.order.findMany({
+        where: { riderId: rider.id, orderStatus: { in: ["CONFIRMED", "PROCESSING", "SHIPPED", "OUT_FOR_DELIVERY"] } },
+        select: { id: true },
+      });
+      for (const order of activeOrders) {
+        io.to(`order-${order.id}`).emit("rider-location", {
+          latitude, longitude, timestamp: new Date().toISOString(),
+        });
+      }
+    } catch {}
+
     return sendSuccess(res, "Location updated", rider);
   } catch (error: any) {
     return sendError(res, error.message, 400);

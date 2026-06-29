@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import api from "@/lib/axios";
 import { useParams, useRouter } from "next/navigation";
 import LiveRiderMap from "@/components/tracking/LiveRiderMap";
+import useSocket from "@/helper/useSocket";
 import { Package, MapPin, Phone, CheckCircle, ArrowLeft, Navigation, CreditCard, FileText, User, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -37,6 +38,7 @@ export default function DeliveryPage() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [delivering, setDelivering] = useState(false);
+  const { liveRiderLocation, connected } = useSocket(order?.id);
 
   useEffect(() => {
     let pollTimer;
@@ -248,12 +250,18 @@ export default function DeliveryPage() {
             <div className="px-5 py-3 border-b border-[#F4F7FB] flex items-center gap-2">
               <MapPin size={14} className="text-[#EC008C]" />
               <h3 className="font-semibold text-sm text-[#000000]">{t.deliveryLocation || "Delivery Location"}</h3>
+              {connected && (
+                <div className="ml-auto flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                  <span className="text-[9px] font-semibold text-emerald-600">Live</span>
+                </div>
+              )}
             </div>
             <div className="h-[300px] lg:h-[calc(100vh-200px)]">
               {order.deliveryLatitude && order.deliveryLongitude ? (
                 <LiveRiderMap
-                  riderLat={order.rider?.currentLat || undefined}
-                  riderLng={order.rider?.currentLng || undefined}
+                  riderLat={liveRiderLocation?.lat || order.rider?.currentLat || undefined}
+                  riderLng={liveRiderLocation?.lng || order.rider?.currentLng || undefined}
                   destinationLat={order.deliveryLatitude}
                   destinationLng={order.deliveryLongitude}
                 />

@@ -24,10 +24,10 @@ export const createBanner = async (req: Request, res: Response) => {
 
     if (req.files && Array.isArray(req.files)) {
       const imgFile = req.files.find((f: any) => f.fieldname === 'image');
-      if (imgFile) image = `/uploads/${imgFile.filename}`;
+      if (imgFile) image = imgFile.path || imgFile.filename;
       
       const mImgFile = req.files.find((f: any) => f.fieldname === 'mobileImage');
-      if (mImgFile) mobileImage = `/uploads/${mImgFile.filename}`;
+      if (mImgFile) mobileImage = mImgFile.path || mImgFile.filename;
     }
 
     const banner = await prisma.banner.create({
@@ -47,10 +47,10 @@ export const updateBanner = async (req: Request, res: Response) => {
 
     if (req.files && Array.isArray(req.files)) {
       const imgFile = req.files.find((f: any) => f.fieldname === 'image');
-      if (imgFile) dataToUpdate.image = `/uploads/${imgFile.filename}`;
+      if (imgFile) dataToUpdate.image = imgFile.path || imgFile.filename;
       
       const mImgFile = req.files.find((f: any) => f.fieldname === 'mobileImage');
-      if (mImgFile) dataToUpdate.mobileImage = `/uploads/${mImgFile.filename}`;
+      if (mImgFile) dataToUpdate.mobileImage = mImgFile.path || mImgFile.filename;
     }
 
     const banner = await prisma.banner.update({ 

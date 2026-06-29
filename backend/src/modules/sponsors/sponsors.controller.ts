@@ -31,7 +31,7 @@ export const createSponsor = async (req: Request, res: Response) => {
     let logo = req.body.logo;
 
     if (req.file) {
-      logo = `/uploads/${req.file.filename}`;
+      logo = req.file.path || req.file.filename;
     }
 
     if (!name || !logo) {
@@ -59,7 +59,7 @@ export const updateSponsor = async (req: Request, res: Response) => {
     let logo = req.body.logo;
 
     if (req.file) {
-      logo = `/uploads/${req.file.filename}`;
+      logo = req.file.path || req.file.filename;
     }
 
     const data: any = {};

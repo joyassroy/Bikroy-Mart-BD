@@ -19,7 +19,7 @@ export const createBlog = async (req: Request, res: Response) => {
     let image = req.body.image;
     
     if (req.file) {
-      image = `/uploads/${req.file.filename}`;
+      image = req.file.path || req.file.filename;
     }
 
     const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -46,7 +46,7 @@ export const updateBlog = async (req: Request, res: Response) => {
     let image = req.body.image;
     
     if (req.file) {
-      image = `/uploads/${req.file.filename}`;
+      image = req.file.path || req.file.filename;
     }
 
     const updateData: any = {};

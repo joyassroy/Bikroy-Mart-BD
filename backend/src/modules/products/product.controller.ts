@@ -259,7 +259,7 @@ export const createProduct = async (req: Request, res: Response) => {
     }
 
     if (req.files && Array.isArray(req.files)) {
-      const paths = req.files.map((f: any) => `/uploads/${f.filename}`);
+      const paths = req.files.map((f: any) => f.path || f.filename);
       images = [...images, ...paths];
     }
 
@@ -293,7 +293,7 @@ export const updateProduct = async (req: Request, res: Response) => {
     }
 
     if (req.files && Array.isArray(req.files)) {
-      const paths = req.files.map((f: any) => `/uploads/${f.filename}`);
+      const paths = req.files.map((f: any) => f.path || f.filename);
       images = [...images, ...paths];
     }
 

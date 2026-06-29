@@ -58,7 +58,7 @@ export const uploadImages = async (req: AuthRequest, res: Response) => {
     if (!files || files.length === 0) {
       return sendError(res, "No images uploaded", 400);
     }
-    const urls = files.map((file) => `/uploads/${file.filename}`);
+    const urls = files.map((file) => file.path || file.filename);
     return sendSuccess(res, "Images uploaded successfully", { urls });
   } catch (error: any) {
     return sendError(res, error.message, 400);

@@ -1,8 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "../../../config/db";
 import { sendSuccess, sendError } from "../../../utils/apiResponse";
-import fs from "fs";
-import path from "path";
+import { deleteFromCloudinary } from "../../../utils/cloudinary";
 
 export const getMedia = async (req: Request, res: Response) => {
   try {
@@ -21,12 +20,12 @@ export const uploadMedia = async (req: Request, res: Response) => {
       return sendError(res, "No file uploaded", 400);
     }
 
-    const { filename, mimetype, size } = req.file;
-    const url = `/uploads/${filename}`;
+    const { originalname, mimetype, size } = req.file;
+    const url = req.file.path || req.file.filename;
 
     const media = await prisma.mediaLibrary.create({
       data: {
-        filename,
+        filename: originalname,
         url,
         fileType: mimetype,
         size,
@@ -49,10 +48,11 @@ export const deleteMedia = async (req: Request, res: Response) => {
       return sendError(res, "Media not found", 404);
     }
 
-    // Delete file from filesystem
-    const filePath = path.join(__dirname, "../../../../../public", media.url);
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
+    if (media.url && media.url.includes("cloudinary.com")) {
+      const parts = media.url.split("/");
+      const folderAndFile = parts.slice(parts.indexOf("upload") + 1).join("/");
+      const publicId = folderAndFile.replace(/\.[^.]+$/, "");
+      await deleteFromCloudinary(publicId);
     }
 
     await prisma.mediaLibrary.delete({

@@ -4,8 +4,9 @@ import { useSearchParams } from "next/navigation";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import LiveRiderMap from "@/components/tracking/LiveRiderMap";
+import useSocket from "@/helper/useSocket";
 import api from "@/lib/axios";
-import { Search, Package, Truck, CheckCircle, Clock, MapPin } from "lucide-react";
+import { Search, Package, Truck, CheckCircle, Clock, MapPin, Radio } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 
 function TrackOrderContent() {
@@ -16,6 +17,7 @@ function TrackOrderContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const { t } = useLanguage();
+  const { liveRiderLocation, connected } = useSocket(order?.id);
 
   const statusSteps = [
     { key: "PENDING", label: t.orderPlaced, icon: Package },
@@ -140,13 +142,21 @@ function TrackOrderContent() {
             )}
 
             {order.deliveryLatitude && order.deliveryLongitude && (
-              <div className="rounded-lg overflow-hidden mb-3 border border-[#E5E7EB]" style={{ height: "250px" }}>
-                <LiveRiderMap
-                  riderLat={order.rider?.currentLat || null}
-                  riderLng={order.rider?.currentLng || null}
-                  destinationLat={order.deliveryLatitude}
-                  destinationLng={order.deliveryLongitude}
-                />
+              <div className="mb-3">
+                {connected && (
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                    <span className="text-[10px] font-semibold text-emerald-600">Live Tracking</span>
+                  </div>
+                )}
+                <div className="rounded-lg overflow-hidden border border-[#E5E7EB]" style={{ height: "250px" }}>
+                  <LiveRiderMap
+                    riderLat={liveRiderLocation?.lat || order.rider?.currentLat || null}
+                    riderLng={liveRiderLocation?.lng || order.rider?.currentLng || null}
+                    destinationLat={order.deliveryLatitude}
+                    destinationLng={order.deliveryLongitude}
+                  />
+                </div>
               </div>
             )}
 

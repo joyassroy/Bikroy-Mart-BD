@@ -6,6 +6,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { useSelector } from "react-redux";
 import api from "@/lib/axios";
 import LiveRiderMap from "@/components/tracking/LiveRiderMap";
+import useSocket from "@/helper/useSocket";
 
 const statusConfig = {
   PENDING: { color: "bg-yellow-50 text-yellow-700 border-yellow-200", dot: "bg-yellow-500", label: "Pending" },
@@ -26,6 +27,7 @@ export default function RiderDashboard() {
   const [pendingOrders, setPendingOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [togglingAvailability, setTogglingAvailability] = useState(false);
+  const { liveRiderLocation, connected } = useSocket(activeDelivery?.id);
 
   const fetchDashboard = async () => {
     try {
@@ -255,10 +257,16 @@ export default function RiderDashboard() {
                 </div>
               </div>
               {activeDelivery.deliveryLatitude && activeDelivery.deliveryLongitude && (
-                <div className="lg:col-span-2 rounded-xl overflow-hidden border border-[#E5E7EB] h-52 lg:h-auto">
+                <div className="lg:col-span-2 rounded-xl overflow-hidden border border-[#E5E7EB] h-52 lg:h-auto relative">
+                  {connected && (
+                    <div className="absolute top-2 left-2 z-[1000] flex items-center gap-1.5 bg-white/95 backdrop-blur rounded-lg px-2 py-1 shadow border border-[#E5E7EB]">
+                      <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                      <span className="text-[9px] font-semibold text-emerald-600">Live</span>
+                    </div>
+                  )}
                   <LiveRiderMap
-                    riderLat={activeDelivery.riderLat}
-                    riderLng={activeDelivery.riderLng}
+                    riderLat={liveRiderLocation?.lat || activeDelivery.riderLat}
+                    riderLng={liveRiderLocation?.lng || activeDelivery.riderLng}
                     destinationLat={activeDelivery.deliveryLatitude}
                     destinationLng={activeDelivery.deliveryLongitude}
                   />
