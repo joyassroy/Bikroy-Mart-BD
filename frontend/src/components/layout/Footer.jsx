@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { FaWhatsapp } from "react-icons/fa";
 
 export default function Footer() {
   const { t } = useLanguage();
@@ -21,6 +22,9 @@ export default function Footer() {
               <a href="#" className="w-7 h-7 sm:w-8 sm:h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#EC008C] transition text-[10px] sm:text-xs font-semibold" aria-label="Facebook">f</a>
               <a href="#" className="w-7 h-7 sm:w-8 sm:h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#EC008C] transition text-[10px] sm:text-xs font-semibold" aria-label="LinkedIn">in</a>
               <a href="#" className="w-7 h-7 sm:w-8 sm:h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#EC008C] transition text-[10px] sm:text-xs font-semibold" aria-label="YouTube">yt</a>
+              <a href="https://wa.me/8801XXXXXXXXX" target="_blank" rel="noopener noreferrer" className="w-7 h-7 sm:w-8 sm:h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#EC008C] transition" aria-label="WhatsApp">
+                <FaWhatsapp className="text-sm sm:text-base" />
+              </a>
             </div>
           </div>
 
@@ -53,6 +57,16 @@ export default function Footer() {
               <li className="flex items-center gap-1.5">📞 16469 (8am-10pm)</li>
               <li className="flex items-center gap-1.5">📧 info@bikroymart.com</li>
               <li className="flex items-center gap-1.5">📍 Dhaka, Bangladesh</li>
+              <li>
+                <a
+                  href="https://wa.me/8801XXXXXXXXX"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 hover:text-[#EC008C] transition"
+                >
+                  <FaWhatsapp className="text-sm" /> WhatsApp: +880 1XX-XXXXXXX
+                </a>
+              </li>
             </ul>
           </div>
         </div>

@@ -11,6 +11,7 @@ import { useAuthChecked } from "@/helper/AuthInit";
 import { DELIVERY_AREAS } from "@/lib/constants";
 import { ClipboardList, Upload, X, MapPin, Loader2, CheckCircle, Clock, Eye, Truck, XCircle } from "lucide-react";
 import DeliveryMapPicker from "@/components/checkout/DeliveryMapPicker";
+import FloatingWhatsAppButton from "@/components/layout/FloatingWhatsAppButton";
 
 const STATUS_CONFIG = {
   PENDING: { color: "bg-yellow-100 text-yellow-800", icon: Clock },
@@ -535,6 +536,7 @@ export default function CustomRequestPage() {
           </div>
         </div>
       </main>
+      <FloatingWhatsAppButton />
       <Footer />
     </div>
   );

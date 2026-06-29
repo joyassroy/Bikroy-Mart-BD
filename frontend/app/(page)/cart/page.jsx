@@ -6,6 +6,7 @@ import Footer from "@/components/layout/Footer";
 import { Trash2, Plus, Minus, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from "@/i18n/LanguageContext";
+import FloatingWhatsAppButton from "@/components/layout/FloatingWhatsAppButton";
 
 export default function CartPage() {
   const dispatch = useDispatch();
@@ -90,6 +91,7 @@ export default function CartPage() {
           </div>
         )}
       </main>
+      <FloatingWhatsAppButton />
       <Footer />
     </div>
   );

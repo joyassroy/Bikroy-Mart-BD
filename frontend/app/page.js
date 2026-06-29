@@ -9,12 +9,14 @@ import OfferSection from "@/components/home/OfferSection";
 import ProductTabs from "@/components/home/ProductTabs";
 import SponsorsMarquee from "@/components/home/SponsorsMarquee";
 import FloatingCartButton from "@/components/home/FloatingCartButton";
+import FloatingWhatsAppButton from "@/components/layout/FloatingWhatsAppButton";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       <Header />
       <FloatingCartButton />
+      <FloatingWhatsAppButton />
       <main>
         <HeroBanner />
         <MiddleBanner />

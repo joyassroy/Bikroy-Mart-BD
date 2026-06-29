@@ -12,6 +12,7 @@ import { useAuthChecked } from "@/helper/AuthInit";
 import { disconnectSocket } from "@/lib/socket";
 import { BANGLADESH_LOCATIONS, getUpazilas } from "@/lib/constants";
 import toast from "react-hot-toast";
+import FloatingWhatsAppButton from "@/components/layout/FloatingWhatsAppButton";
 
 const statusSteps = ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED"];
 
@@ -433,6 +434,7 @@ export default function AccountPage() {
         </div>
       )}
 
+      <FloatingWhatsAppButton />
       <Footer />
     </div>
   );
