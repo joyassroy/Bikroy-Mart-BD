@@ -7,6 +7,6 @@ const router = Router({ mergeParams: true });
 
 router.get("/", authenticate, authorize("ADMIN", "MANAGER"), getDistrictPrices);
 router.post("/", authenticate, authorize("ADMIN", "MANAGER"), upsertDistrictPrice);
-router.delete("/:district", authenticate, authorize("ADMIN"), deleteDistrictPrice);
+router.delete("/:district", authenticate, authorize("ADMIN", "MANAGER"), deleteDistrictPrice);
 
 export default router;

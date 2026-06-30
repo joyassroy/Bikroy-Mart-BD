@@ -87,7 +87,7 @@ export const getManagerProducts = async (req: AuthRequest, res: Response) => {
       },
       orderBy: { createdAt: "desc" },
     });
-    return sendSuccess(res, "Manager products fetched", products);
+    return res.status(200).json({ success: true, message: "Manager products fetched", data: products, managerProfile: manager });
   } catch (error: any) {
     return sendError(res, error.message);
   }
@@ -101,8 +101,8 @@ export const getManagerStats = async (req: AuthRequest, res: Response) => {
     if (!manager) return sendError(res, "Manager profile not found", 404);
 
     const [totalProducts, activeProducts, totalOrders, pendingOrders] = await Promise.all([
-      prisma.product.count({ where: { managerId: req.user!.userId } }),
-      prisma.product.count({ where: { managerId: req.user!.userId, isActive: true } }),
+      prisma.product.count({ where: { managerId: manager.id } }),
+      prisma.product.count({ where: { managerId: manager.id, isActive: true } }),
       prisma.order.count({ where: { deliveryDistrict: manager.assignedDistrict } }),
       prisma.order.count({
         where: { deliveryDistrict: manager.assignedDistrict, orderStatus: "PENDING" },

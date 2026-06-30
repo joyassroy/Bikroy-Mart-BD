@@ -125,12 +125,7 @@ export default function ProductCard({ product, showActions, onDelete, onProductU
             </div>
           )}
 
-          <div className="text-[9px] sm:text-[10px] text-[#00AFCC] mb-1 sm:mb-1.5 flex items-center gap-1">
-            <span className="w-1 h-1 bg-[#00AFCC] rounded-full flex-shrink-0"></span>
-            <span className="truncate">{t.fastDelivery} {product.deliveryTime || "1-2 hours"}</span>
-          </div>
-
-          <div className="flex items-center gap-1 mb-1.5 sm:mb-2">
+          <div className="flex items-center gap-1 mb-1 sm:mb-1.5">
             {product.effectiveDiscountPrice || product.discountPrice ? (
               <>
                 <span className="text-[#000000] font-bold text-xs sm:text-sm">৳{product.effectiveDiscountPrice || product.discountPrice}</span>
@@ -138,6 +133,21 @@ export default function ProductCard({ product, showActions, onDelete, onProductU
               </>
             ) : (
               <span className="text-[#000000] font-bold text-xs sm:text-sm">৳{product.effectivePrice || product.price}</span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 text-[9px] sm:text-[10px] text-[#667085] mb-1.5 sm:mb-2">
+            {product.stock !== undefined && (
+              <span className="flex items-center gap-0.5">
+                <span className="w-1 h-1 bg-green-500 rounded-full"></span>
+                Stock: {product.stock}
+              </span>
+            )}
+            {product._count?.reviews > 0 && (
+              <span className="flex items-center gap-0.5">
+                <Star size={8} className="fill-yellow-400 text-yellow-400" />
+                {product._count.reviews} reviews
+              </span>
             )}
           </div>
 

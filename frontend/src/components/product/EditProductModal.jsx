@@ -321,8 +321,8 @@ export default function EditProductModal({ productId, onClose, onUpdated }) {
                   <select value={newDistrict} onChange={(e) => setNewDistrict(e.target.value)}
                     className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#EC008C]">
                     <option value="">Select District</option>
-                    {ALL_DISTRICTS.filter((d) => !districtPrices.find((dp) => dp.district === d)).map((d) => (
-                      <option key={d} value={d}>{d}</option>
+                    {ALL_DISTRICTS.filter((d) => !districtPrices.find((dp) => dp.district === d.name)).map((d) => (
+                      <option key={d.name} value={d.name}>{d.name}</option>
                     ))}
                   </select>
                 </div>

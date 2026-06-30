@@ -4,11 +4,16 @@ import { sendSuccess, sendError } from "../../utils/apiResponse";
 
 export const getAllCategories = async (req: Request, res: Response) => {
   try {
+    const { all } = req.query;
+    const where: any = {};
+    if (all !== "true") {
+      where.isActive = true;
+    }
     const categories = await prisma.category.findMany({
-      where: { isActive: true },
+      where,
       include: {
         subcategories: {
-          where: { isActive: true },
+          where: all === "true" ? {} : { isActive: true },
           select: { id: true, name: true, nameBn: true, slug: true, image: true },
         },
         _count: { select: { products: true } },

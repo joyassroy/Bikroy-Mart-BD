@@ -20,7 +20,7 @@ model User {
   addresses       Address[]
   orders          Order[]
   customRequests  CustomRequest[]
-  wishlist        Wishlist[]
+  productRequests ProductRequest[]
   reviews         Review[]
   riderProfile    RiderProfile?
   managerProfile  ManagerProfile?
@@ -106,7 +106,7 @@ model Product {
   badges        String[]
   reviews       Review[]
   orderItems    OrderItem[]
-  wishlist      Wishlist[]
+  productRequests ProductRequest[]
   flashDeals    FlashDeal[]
   promoOfferItems PromoOfferItem[]
   districtPrices DistrictPrice[]
@@ -236,7 +236,7 @@ model ManagerProfile {
   createdAt        DateTime  @default(now())
 }
 
-model Wishlist {
+model ProductRequest {
   id        String   @id @default(uuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id])

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "../../config/db";
 import { sendSuccess, sendError } from "../../utils/apiResponse";
+import { AuthRequest } from "../../middlewares/auth.middleware";
 
 function resolveDistrictPrice(product: any, district?: string) {
   if (!district || !product.districtPrices?.length) {
@@ -245,12 +246,12 @@ export const getFeaturedProducts = async (req: Request, res: Response) => {
   }
 };
 
-export const createProduct = async (req: Request, res: Response) => {
+export const createProduct = async (req: AuthRequest, res: Response) => {
   try {
     const {
       name, nameBn, description, descriptionBn, price, discountPrice,
       unit, minQuantity, stock, sku, barcode, categoryId,
-      subcategoryId, isFeatured, deliveryTime, badges, managerId,
+      subcategoryId, isFeatured, deliveryTime, badges,
     } = req.body;
 
     let images = req.body.images || [];
@@ -263,14 +264,29 @@ export const createProduct = async (req: Request, res: Response) => {
       images = [...images, ...paths];
     }
 
-    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    let slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    let finalSlug = slug;
+    let counter = 1;
+    while (await prisma.product.findUnique({ where: { slug: finalSlug } })) {
+      finalSlug = `${slug}-${counter}`;
+      counter++;
+    }
+
+    // Resolve managerId from authenticated MANAGER user's profile
+    let resolvedManagerId: string | null = null;
+    if (req.user?.role === "MANAGER") {
+      const profile = await prisma.managerProfile.findUnique({ where: { userId: req.user.userId } });
+      if (profile) resolvedManagerId = profile.id;
+    } else if (req.body.managerId) {
+      resolvedManagerId = req.body.managerId;
+    }
 
     const product = await prisma.product.create({
       data: {
-        name, nameBn, slug, description, descriptionBn, price: parseFloat(price), discountPrice: discountPrice ? parseFloat(discountPrice) : null,
+        name, nameBn, slug: finalSlug, description, descriptionBn, price: parseFloat(price), discountPrice: discountPrice ? parseFloat(discountPrice) : null,
         unit, minQuantity: parseFloat(minQuantity) || 1, stock: parseInt(stock, 10) || 0, sku, barcode, images,
         categoryId, subcategoryId, isFeatured: isFeatured === 'true' || isFeatured === true, deliveryTime, badges: badges ? (Array.isArray(badges) ? badges : [badges]) : [],
-        managerId,
+        managerId: resolvedManagerId,
       },
     });
     return sendSuccess(res, "Product created", product, 201);
@@ -279,22 +295,35 @@ export const createProduct = async (req: Request, res: Response) => {
   }
 };
 
-export const updateProduct = async (req: Request, res: Response) => {
+export const updateProduct = async (req: AuthRequest, res: Response) => {
   try {
     const {
       name, nameBn, description, descriptionBn, price, discountPrice,
       unit, minQuantity, stock, sku, barcode, categoryId,
-      subcategoryId, isFeatured, deliveryTime, badges, managerId, isActive
+      subcategoryId, isFeatured, deliveryTime, badges, isActive
     } = req.body;
 
-    let images = req.body.images || [];
-    if (typeof images === 'string') {
-      images = [images];
+    // Check ownership for managers
+    if (req.user?.role === "MANAGER") {
+      const existing = await prisma.product.findUnique({ where: { id: String(req.params.id) } });
+      if (!existing) return sendError(res, "Product not found", 404);
+      const profile = await prisma.managerProfile.findUnique({ where: { userId: req.user.userId } });
+      if (!profile || existing.managerId !== profile.id) {
+        return sendError(res, "You can only edit your own products", 403);
+      }
     }
 
-    if (req.files && Array.isArray(req.files)) {
+    // Handle images: if 'existingImages' array is sent, use it as base; otherwise keep current
+    let finalImages: string[] | undefined;
+    const existingImagesRaw = req.body.existingImages;
+    if (existingImagesRaw !== undefined) {
+      // Client sent the list of images to keep
+      finalImages = Array.isArray(existingImagesRaw) ? existingImagesRaw : [existingImagesRaw];
+    }
+
+    if (req.files && Array.isArray(req.files) && req.files.length > 0) {
       const paths = req.files.map((f: any) => f.path || f.filename);
-      images = [...images, ...paths];
+      finalImages = [...(finalImages || []), ...paths];
     }
 
     const updateData: any = {};
@@ -315,9 +344,7 @@ export const updateProduct = async (req: Request, res: Response) => {
     if (isActive !== undefined) updateData.isActive = isActive === 'true' || isActive === true;
     if (deliveryTime) updateData.deliveryTime = deliveryTime;
     if (badges) updateData.badges = Array.isArray(badges) ? badges : [badges];
-    if (managerId) updateData.managerId = managerId;
-    if (images.length > 0) updateData.images = images; // only update images if new ones are provided, otherwise keep existing
-    // if client wants to clear images or keep existing but we received empty, we might need a specific flag, but this is simple
+    if (finalImages !== undefined) updateData.images = finalImages;
 
     const product = await prisma.product.update({
       where: { id: String(req.params.id) },

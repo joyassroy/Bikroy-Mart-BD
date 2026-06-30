@@ -5,8 +5,13 @@ import { sendSuccess, sendError } from "../../utils/apiResponse";
 export const getActiveFlashDeals = async (req: Request, res: Response) => {
   try {
     const now = new Date();
-    const { type } = req.query;
-    const where: any = { isActive: true, startsAt: { lte: now }, endsAt: { gte: now } };
+    const { type, all } = req.query;
+    const where: any = {};
+    if (all !== "true") {
+      where.isActive = true;
+      where.startsAt = { lte: now };
+      where.endsAt = { gte: now };
+    }
     if (type) where.type = String(type);
     const deals = await prisma.flashDeal.findMany({
       where,

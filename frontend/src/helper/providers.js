@@ -5,7 +5,7 @@ import { SessionProvider } from "next-auth/react";
 import store from "@/redux/store";
 import { hydrateLocation } from "@/redux/locationSlice";
 import { hydrateCart } from "@/redux/cartSlice";
-import { hydrateWishlist } from "@/redux/wishlistSlice";
+import { hydrateProductRequests } from "@/redux/productRequestSlice";
 import AuthInit from "./AuthInit";
 
 function StoreHydrator() {
@@ -20,8 +20,8 @@ function StoreHydrator() {
       if (savedCart) dispatch(hydrateCart({ items: JSON.parse(savedCart) }));
     } catch {}
     try {
-      const savedWishlist = localStorage.getItem("bm-wishlist");
-      if (savedWishlist) dispatch(hydrateWishlist({ items: JSON.parse(savedWishlist) }));
+      const savedProductRequests = localStorage.getItem("bm-product-requests");
+      if (savedProductRequests) dispatch(hydrateProductRequests({ items: JSON.parse(savedProductRequests) }));
     } catch {}
   }, [dispatch]);
   return null;

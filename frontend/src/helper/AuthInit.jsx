@@ -31,7 +31,12 @@ export default function AuthInit({ children }) {
       .then((res) => {
         if (res.data?.data) {
           const user = res.data.data;
-          dispatch(setUser({ user, accessToken: token }));
+          if (user.role === "CUSTOMER" || user.role === "ADMIN" || user.role === "MANAGER" || user.role === "RIDER") {
+            dispatch(setUser({ user, accessToken: token }));
+          } else {
+            dispatch(clearUser());
+            localStorage.removeItem("bm-token");
+          }
 
           if (user.managerProfile?.assignedDistrict) {
             dispatch(setLocation({

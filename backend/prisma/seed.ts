@@ -539,7 +539,7 @@ async function clearDatabase() {
   // Delete in reverse dependency order
   await prisma.flashDeal.deleteMany();
   await prisma.review.deleteMany();
-  await prisma.wishlist.deleteMany();
+  await prisma.productRequest.deleteMany();
   await prisma.orderItem.deleteMany();
   await prisma.order.deleteMany();
   await prisma.customRequest.deleteMany();

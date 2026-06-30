@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Link from "next/link";
-import { removeFromWishlist } from "@/redux/wishlistSlice";
+import { removeProductRequest } from "@/redux/productRequestSlice";
 import { addToCart } from "@/redux/cartSlice";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -11,19 +11,19 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { Heart, ShoppingCart, Trash2, ShoppingBag } from "lucide-react";
 import toast from "react-hot-toast";
 
-export default function WishlistPage() {
+export default function ProductRequestPage() {
   const dispatch = useDispatch();
   const { t } = useLanguage();
-  const wishlistItems = useSelector((state) => state.wishlist.items);
+  const productRequestItems = useSelector((state) => state.productRequests.items);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchWishlistProducts();
-  }, [wishlistItems]);
+    fetchProducts();
+  }, [productRequestItems]);
 
-  const fetchWishlistProducts = async () => {
-    if (wishlistItems.length === 0) {
+  const fetchProducts = async () => {
+    if (productRequestItems.length === 0) {
       setProducts([]);
       setLoading(false);
       return;
@@ -31,7 +31,7 @@ export default function WishlistPage() {
 
     try {
       setLoading(true);
-      const productIds = wishlistItems.map((item) => item.productId);
+      const productIds = productRequestItems.map((item) => item.productId);
       const fetchedProducts = [];
 
       for (const id of productIds) {
@@ -54,7 +54,7 @@ export default function WishlistPage() {
   };
 
   const handleRemove = (productId) => {
-    dispatch(removeFromWishlist(productId));
+    dispatch(removeProductRequest(productId));
     toast.success(t.removeFromWishlist);
   };
 
@@ -76,11 +76,11 @@ export default function WishlistPage() {
       <main className="max-w-[1200px] mx-auto px-3 sm:px-4 md:px-6 lg:px-10 py-3 sm:py-4">
         <div className="flex items-center gap-2 mb-4">
           <Heart size={18} className="text-[#EC008C]" />
-          <h1 className="text-base sm:text-lg md:text-xl font-semibold text-[#00215B]">{t.wishlist}</h1>
-          <span className="text-[11px] text-[#667085]">({wishlistItems.length})</span>
+          <h1 className="text-base sm:text-lg md:text-xl font-semibold text-[#00215B]">{t.customRequest}</h1>
+          <span className="text-[11px] text-[#667085]">({productRequestItems.length})</span>
         </div>
 
-        {wishlistItems.length === 0 ? (
+        {productRequestItems.length === 0 ? (
           <div className="bg-white rounded-lg border border-[#E5E7EB] shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] p-8 sm:p-12 text-center">
             <Heart size={48} className="mx-auto text-[#E5E7EB] mb-3" />
             <p className="text-sm font-medium text-[#000000] mb-1">{t.wishlistEmpty}</p>

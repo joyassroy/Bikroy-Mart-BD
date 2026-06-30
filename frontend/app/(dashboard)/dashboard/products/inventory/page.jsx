@@ -16,7 +16,7 @@ export default function InventoryPage() {
 
   const fetchProducts = async () => {
     try {
-      const res = await api.get("/products?all=true");
+      const res = await api.get("/products?includeInactive=true");
       setProducts(res.data.data || []);
     } catch (err) {
       toast.error("Failed to fetch products");

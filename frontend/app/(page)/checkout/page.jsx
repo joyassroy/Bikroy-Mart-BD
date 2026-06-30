@@ -12,7 +12,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { useAuthChecked } from "@/helper/AuthInit";
 import { BANGLADESH_LOCATIONS, getUpazilas } from "@/lib/constants";
 import DeliveryMapPicker from "@/components/checkout/DeliveryMapPicker";
-import FloatingWhatsAppButton from "@/components/layout/FloatingWhatsAppButton";
+import FloatingChatButton from "@/components/layout/FloatingChatButton";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -298,7 +298,7 @@ export default function CheckoutPage() {
         </div>
       )}
 
-      <FloatingWhatsAppButton />
+      <FloatingChatButton />
       <Footer />
     </div>
   );

@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import api from "@/lib/axios";
-import { Plus, Edit, X, Trash2, Loader2 } from "lucide-react";
+import { Plus, Edit, X, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
 
@@ -26,8 +26,11 @@ export default function ManagerProductsPage() {
   const [districtDiscountPrice, setDistrictDiscountPrice] = useState("");
   const [existingDistrictPrice, setExistingDistrictPrice] = useState(null);
   const [savingDistrict, setSavingDistrict] = useState(false);
+  const [managerProfile, setManagerProfile] = useState(null);
+  const [existingImages, setExistingImages] = useState([]);
 
   useEffect(() => {
+    fetchManagerProfile();
     fetchProducts();
     fetchCategories();
   }, []);
@@ -39,6 +42,13 @@ export default function ManagerProductsPage() {
       setSubcategories([]);
     }
   }, [form.categoryId]);
+
+  const fetchManagerProfile = async () => {
+    try {
+      const res = await api.get("/managers/products", { params: { _profile: true } });
+      if (res.data.managerProfile) setManagerProfile(res.data.managerProfile);
+    } catch {}
+  };
 
   const fetchProducts = async () => {
     try { const res = await api.get("/managers/products"); setProducts(res.data.data || []); }
@@ -68,6 +78,7 @@ export default function ManagerProductsPage() {
       isFeatured: p.isFeatured || false, deliveryTime: p.deliveryTime || "",
     });
     setSelectedFiles([]);
+    setExistingImages(p.images || []);
     setDistrictPrice("");
     setDistrictDiscountPrice("");
     setExistingDistrictPrice(null);
@@ -136,7 +147,9 @@ export default function ManagerProductsPage() {
       Object.entries(form).forEach(([k, v]) => {
         if (v !== "" && v !== null && v !== undefined) fd.append(k, v);
       });
-      if (user?.id) fd.append("managerId", user.id);
+      if (editId) {
+        existingImages.forEach((img) => fd.append("existingImages", img));
+      }
       selectedFiles.forEach((file) => fd.append("images", file));
 
       if (editId) {
@@ -153,12 +166,6 @@ export default function ManagerProductsPage() {
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const handleDelete = async (id) => {
-    if (!confirm("Delete this product?")) return;
-    try { await api.delete(`/products/${id}`); toast.success("Deleted"); fetchProducts(); }
-    catch (err) { toast.error("Failed to delete"); }
   };
 
   return (
@@ -205,10 +212,6 @@ export default function ManagerProductsPage() {
                         <button onClick={() => openEdit(p)} title="Edit"
                           className="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition">
                           <Edit size={14} />
-                        </button>
-                        <button onClick={() => handleDelete(p.id)} title="Delete"
-                          className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition">
-                          <Trash2 size={14} />
                         </button>
                       </div>
                     </td>

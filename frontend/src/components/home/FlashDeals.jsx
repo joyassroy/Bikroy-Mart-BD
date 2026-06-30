@@ -1,7 +1,7 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Clock } from "lucide-react";
+import { Clock, ChevronLeft, ChevronRight } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import api from "@/lib/axios";
 
@@ -29,8 +29,8 @@ function CountdownTimer({ endsAt }) {
   const pad = (n) => String(n).padStart(2, "0");
 
   return (
-    <div className="flex items-center gap-1 text-[#FF6B6B] font-mono font-bold text-[11px] sm:text-xs">
-      <Clock size={14} />
+    <div className="flex items-center gap-1 text-[#FF6B6B] font-mono font-bold text-[11px] sm:text-xs bg-[#FFF0F0] px-2 py-1 rounded-full">
+      <Clock size={12} />
       <span>{pad(time.hours)}</span>:<span>{pad(time.minutes)}</span>:<span>{pad(time.seconds)}</span>
     </div>
   );
@@ -50,10 +50,36 @@ export default function FlashDeals() {
   const [deals, setDeals] = useState([]);
   const [loading, setLoading] = useState(true);
   const { t } = useLanguage();
+  const scrollRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
 
   useEffect(() => {
     fetchDeals();
   }, []);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const check = () => {
+      setCanScrollLeft(el.scrollLeft > 10);
+      setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 10);
+    };
+    check();
+    el.addEventListener("scroll", check, { passive: true });
+    window.addEventListener("resize", check);
+    return () => {
+      el.removeEventListener("scroll", check);
+      window.removeEventListener("resize", check);
+    };
+  }, [deals]);
+
+  const scroll = (dir) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const amount = el.clientWidth * 0.6;
+    el.scrollBy({ left: dir === "left" ? -amount : amount, behavior: "smooth" });
+  };
 
   const fetchDeals = async () => {
     try {
@@ -90,9 +116,9 @@ export default function FlashDeals() {
             <div className="h-5 w-28 bg-[#E5E7EB] rounded animate-pulse"></div>
           </div>
         </div>
-        <div className="flex gap-2 overflow-x-auto pb-2">
+        <div className="flex gap-2 overflow-hidden pb-2">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="bg-[#E5E7EB] rounded-lg h-52 w-[170px] sm:w-auto sm:flex-1 animate-pulse flex-shrink-0"></div>
+            <div key={i} className="bg-[#E5E7EB] rounded-xl h-52 w-[170px] sm:w-auto sm:flex-1 animate-pulse flex-shrink-0"></div>
           ))}
         </div>
       </section>
@@ -108,33 +134,69 @@ export default function FlashDeals() {
           <h2 className="text-base sm:text-lg md:text-xl font-semibold text-[#181717]">{t.flashDeals}</h2>
           <p className="text-[10px] sm:text-[11px] text-[#667085] mt-0.5">{t.viewAllDeals}</p>
         </div>
-        <CountdownTimer endsAt={deals[0]?.endsAt || new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString()} />
+        <div className="flex items-center gap-2">
+          <CountdownTimer endsAt={deals[0]?.endsAt || new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString()} />
+          <div className="flex gap-1 hidden sm:flex">
+            <button
+              onClick={() => scroll("left")}
+              disabled={!canScrollLeft}
+              className="w-7 h-7 rounded-full border border-[#E5E7EB] bg-white flex items-center justify-center text-[#364152] hover:bg-[#F4F7FB] transition disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft size={14} />
+            </button>
+            <button
+              onClick={() => scroll("right")}
+              disabled={!canScrollRight}
+              className="w-7 h-7 rounded-full border border-[#E5E7EB] bg-white flex items-center justify-center text-[#364152] hover:bg-[#F4F7FB] transition disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <ChevronRight size={14} />
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-2 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:gap-3 md:gap-4 sm:overflow-visible snap-x snap-mandatory">
-        {deals.map((deal) => (
-          <Link
-            key={deal.id}
-            href={deal.slug ? `/product/${deal.slug}` : "#"}
-            className="bg-white border border-[#E5E7EB] rounded-xl overflow-hidden hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all duration-200 flex-shrink-0 w-[170px] sm:w-auto snap-start group"
-          >
-            <div className="relative bg-[#F9FAFB] flex items-center justify-center h-36 sm:h-44 md:h-52">
-              <span className="absolute top-2 left-2 bg-[#FF6B6B] text-white text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded z-10">{deal.badge}</span>
-              <ProductImage src={deal.image} alt={deal.name} />
-            </div>
-            <div className="p-3 sm:p-3.5">
-              <h3 className="text-xs sm:text-[13px] md:text-sm font-medium text-[#181717] line-clamp-2 mb-1.5 min-h-[36px] sm:min-h-[40px] leading-tight">{deal.name}</h3>
-              <div className="text-[10px] sm:text-[11px] text-[#00AFCC] mb-1.5 flex items-center gap-1">
-                <span className="w-1 h-1 bg-[#00AFCC] rounded-full flex-shrink-0"></span>
-                <span className="truncate">{deal.deliveryTime}</span>
+      <div className="relative">
+        {canScrollLeft && (
+          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
+        )}
+        {canScrollRight && (
+          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
+        )}
+
+        <div
+          ref={scrollRef}
+          className="flex gap-2.5 overflow-x-auto scroll-smooth snap-x snap-mandatory px-0.5 pb-2 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:gap-3 md:gap-4 sm:overflow-visible"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch" }}
+        >
+          {deals.map((deal) => (
+            <Link
+              key={deal.id}
+              href={deal.slug ? `/product/${deal.slug}` : "#"}
+              className="bg-white border border-[#E5E7EB] rounded-2xl overflow-hidden hover:shadow-[0_4px_16px_rgba(0,0,0,0.1)] transition-all duration-200 flex-shrink-0 w-[160px] sm:w-auto snap-start group"
+            >
+              <div className="relative bg-[#F9FAFB] flex items-center justify-center h-36 sm:h-44 md:h-52">
+                <span className="absolute top-2 left-2 bg-[#FF6B6B] text-white text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full z-10">{deal.badge}</span>
+                {deal.stock <= 5 && deal.stock > 0 && (
+                  <span className="absolute top-2 right-2 bg-yellow-400 text-yellow-900 text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full z-10">
+                    Only {deal.stock} left
+                  </span>
+                )}
+                <ProductImage src={deal.image} alt={deal.name} />
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[#181717] font-bold text-sm sm:text-[15px] md:text-base">৳{deal.dealPrice}</span>
-                <span className="text-[#667085] text-[11px] sm:text-xs line-through">৳{deal.price}</span>
+              <div className="p-3 sm:p-3.5">
+                <h3 className="text-xs sm:text-[13px] md:text-sm font-medium text-[#181717] line-clamp-2 mb-1.5 min-h-[36px] sm:min-h-[40px] leading-tight">{deal.name}</h3>
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <span className="text-[#EC008C] font-bold text-sm sm:text-[15px] md:text-base">৳{deal.dealPrice}</span>
+                  <span className="text-[#667085] text-[11px] sm:text-xs line-through">৳{deal.price}</span>
+                </div>
+                <div className="text-[10px] sm:text-[11px] text-[#00AFCC] flex items-center gap-1">
+                  <span className="w-1 h-1 bg-[#00AFCC] rounded-full flex-shrink-0"></span>
+                  <span className="truncate">{deal.deliveryTime}</span>
+                </div>
               </div>
-            </div>
-          </Link>
-        ))}
+            </Link>
+          ))}
+        </div>
       </div>
     </section>
   );

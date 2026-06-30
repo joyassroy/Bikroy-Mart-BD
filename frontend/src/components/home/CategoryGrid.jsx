@@ -1,6 +1,7 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import api from "@/lib/axios";
 
@@ -8,10 +9,36 @@ export default function CategoryGrid() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const { t } = useLanguage();
+  const scrollRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
 
   useEffect(() => {
     fetchCategories();
   }, []);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const check = () => {
+      setCanScrollLeft(el.scrollLeft > 10);
+      setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 10);
+    };
+    check();
+    el.addEventListener("scroll", check, { passive: true });
+    window.addEventListener("resize", check);
+    return () => {
+      el.removeEventListener("scroll", check);
+      window.removeEventListener("resize", check);
+    };
+  }, [categories]);
+
+  const scroll = (dir) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const amount = el.clientWidth * 0.6;
+    el.scrollBy({ left: dir === "left" ? -amount : amount, behavior: "smooth" });
+  };
 
   const fetchCategories = async () => {
     try {
@@ -26,29 +53,11 @@ export default function CategoryGrid() {
           count: cat._count?.products || 0,
         })));
       } else {
-        setCategories([
-          { name: t.food, slug: "food", icon: "🍞" },
-          { name: t.fruitsVegetables, slug: "fruits-vegetables", icon: "🥬" },
-          { name: t.meatFish, slug: "meat-fish", icon: "🥩" },
-          { name: t.dairyEggs, slug: "dairy-eggs", icon: "🥛" },
-          { name: t.drinks, slug: "drinks-beverages", icon: "☕" },
-          { name: t.snacks, slug: "snacks-frozen", icon: "🍪" },
-          { name: t.cooking, slug: "cooking-essentials", icon: "🍳" },
-          { name: t.beauty, slug: "beauty-health", icon: "✨" },
-        ]);
+        setCategories(fallbackCategories(t));
       }
     } catch (err) {
       console.error(err);
-      setCategories([
-        { name: t.food, slug: "food", icon: "🍞" },
-        { name: t.fruitsVegetables, slug: "fruits-vegetables", icon: "🥬" },
-        { name: t.meatFish, slug: "meat-fish", icon: "🥩" },
-        { name: t.dairyEggs, slug: "dairy-eggs", icon: "🥛" },
-        { name: t.drinks, slug: "drinks-beverages", icon: "☕" },
-        { name: t.snacks, slug: "snacks-frozen", icon: "🍪" },
-        { name: t.cooking, slug: "cooking-essentials", icon: "🍳" },
-        { name: t.beauty, slug: "beauty-health", icon: "✨" },
-      ]);
+      setCategories(fallbackCategories(t));
     } finally {
       setLoading(false);
     }
@@ -58,9 +67,9 @@ export default function CategoryGrid() {
     return (
       <section className="max-w-[1200px] mx-auto mt-2 md:mt-4">
         <div className="h-5 w-32 bg-[#E5E7EB] rounded animate-pulse mb-2 md:mb-3"></div>
-        <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-3 md:gap-4 px-1 sm:px-0">
+        <div className="flex gap-3 overflow-hidden px-1 sm:px-0">
           {[...Array(7)].map((_, i) => (
-            <div key={i} className="bg-[#E5E7EB] rounded-lg h-32 sm:h-36 md:h-40 animate-pulse"></div>
+            <div key={i} className="bg-[#E5E7EB] rounded-full w-20 h-20 sm:w-24 sm:h-24 animate-pulse flex-shrink-0"></div>
           ))}
         </div>
       </section>
@@ -69,27 +78,77 @@ export default function CategoryGrid() {
 
   return (
     <section className="max-w-[1200px] mx-auto mt-2 md:mt-4">
-      <h2 className="pl-2 text-base sm:text-lg md:text-xl font-semibold text-[#181717] mb-2 md:mb-3">
-        {t.shop} {t.home === "হোম" ? "শাকসবজি" : "by Category"}
-      </h2>
-      <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-3 md:gap-4 px-1 sm:px-0">
-        {categories.map((cat) => (
-          <Link
-            key={cat.slug}
-            href={`/shop?category=${cat.slug}`}
-            className="flex flex-col items-center bg-white border border-[#E5E7EB] rounded-lg p-4 md:p-5 hover:shadow-[rgba(0,0,0,0.1)_0px_4px_12px_0px] hover:scale-[1.02] transition-all duration-200"
+      <div className="flex items-center justify-between pl-2 pr-1 sm:pr-0 mb-2 md:mb-3">
+        <h2 className="text-base sm:text-lg md:text-xl font-semibold text-[#181717]">
+          {t.shop} {t.home === "হোম" ? "শাকসবজি" : "by Category"}
+        </h2>
+        <div className="flex gap-1">
+          <button
+            onClick={() => scroll("left")}
+            disabled={!canScrollLeft}
+            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-[#E5E7EB] bg-white flex items-center justify-center text-[#364152] hover:bg-[#F4F7FB] transition disabled:opacity-30 disabled:cursor-not-allowed"
           >
-            {cat.image ? (
-              <img src={cat.image} alt={cat.name} className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 object-contain mb-2 md:mb-3" />
-            ) : (
-              <span className="text-4xl sm:text-5xl md:text-6xl mb-2 md:mb-3">{cat.icon}</span>
-            )}
-            <span className="text-[11px] sm:text-xs md:text-sm font-semibold text-[#364152] text-center px-1 line-clamp-2 leading-tight">
-              {cat.name}
-            </span>
-          </Link>
-        ))}
+            <ChevronLeft size={16} />
+          </button>
+          <button
+            onClick={() => scroll("right")}
+            disabled={!canScrollRight}
+            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-[#E5E7EB] bg-white flex items-center justify-center text-[#364152] hover:bg-[#F4F7FB] transition disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            <ChevronRight size={16} />
+          </button>
+        </div>
+      </div>
+
+      <div className="relative">
+        {canScrollLeft && (
+          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
+        )}
+        {canScrollRight && (
+          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
+        )}
+
+        <div
+          ref={scrollRef}
+          className="flex gap-3 overflow-x-auto scroll-smooth snap-x snap-mandatory px-1 sm:px-0 pb-1 scrollbar-hide"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch" }}
+        >
+          {categories.map((cat) => (
+            <Link
+              key={cat.slug}
+              href={`/shop?category=${cat.slug}`}
+              className="flex flex-col items-center justify-center bg-white border border-[#E5E7EB] rounded-2xl p-3 sm:p-4 hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] hover:border-[#EC008C]/30 hover:scale-[1.03] transition-all duration-200 flex-shrink-0 w-[100px] sm:w-[120px] md:w-[130px] snap-start group"
+            >
+              <div className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-xl bg-[#F4F7FB] group-hover:bg-[#FCE8F3] flex items-center justify-center transition-colors duration-200 mb-2 sm:mb-2.5">
+                {cat.image ? (
+                  <img src={cat.image} alt={cat.name} className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 object-contain group-hover:scale-110 transition-transform duration-200" />
+                ) : (
+                  <span className="text-2xl sm:text-3xl md:text-4xl group-hover:scale-110 transition-transform duration-200">{cat.icon}</span>
+                )}
+              </div>
+              <span className="text-[10px] sm:text-[11px] md:text-xs font-semibold text-[#364152] text-center leading-tight line-clamp-2">
+                {cat.name}
+              </span>
+              {cat.count > 0 && (
+                <span className="text-[8px] sm:text-[9px] text-[#667085] mt-0.5">{cat.count} items</span>
+              )}
+            </Link>
+          ))}
+        </div>
       </div>
     </section>
   );
+}
+
+function fallbackCategories(t) {
+  return [
+    { name: t.food, slug: "food", icon: "🍞" },
+    { name: t.fruitsVegetables, slug: "fruits-vegetables", icon: "🥬" },
+    { name: t.meatFish, slug: "meat-fish", icon: "🥩" },
+    { name: t.dairyEggs, slug: "dairy-eggs", icon: "🥛" },
+    { name: t.drinks, slug: "drinks-beverages", icon: "☕" },
+    { name: t.snacks, slug: "snacks-frozen", icon: "🍪" },
+    { name: t.cooking, slug: "cooking-essentials", icon: "🍳" },
+    { name: t.beauty, slug: "beauty-health", icon: "✨" },
+  ];
 }

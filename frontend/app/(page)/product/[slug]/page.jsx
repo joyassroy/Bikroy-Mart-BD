@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "@/redux/cartSlice";
-import { addToWishlist, removeFromWishlist } from "@/redux/wishlistSlice";
+import { addToProductRequest, removeProductRequest } from "@/redux/productRequestSlice";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import ProductCard from "@/components/product/ProductCard";
@@ -19,7 +19,7 @@ export default function ProductDetailPage() {
   const dispatch = useDispatch();
   const { t } = useLanguage();
   const district = useDistrict();
-  const wishlistItems = useSelector((state) => state.wishlist.items);
+  const productRequestItems = useSelector((state) => state.productRequests.items);
 
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
@@ -29,7 +29,7 @@ export default function ProductDetailPage() {
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: "" });
   const [submittingReview, setSubmittingReview] = useState(false);
 
-  const isInWishlist = wishlistItems.some((i) => i.productId === product?.id);
+  const isInProductRequests = productRequestItems.some((i) => i.productId === product?.id);
 
   useEffect(() => {
     if (slug) fetchProduct();
@@ -70,16 +70,16 @@ export default function ProductDetailPage() {
     toast.success(`${quantity} x ${product.name} added to cart`);
   };
 
-  const handleWishlist = () => {
-    const wishlistPrice = product.effectiveDiscountPrice || product.discountPrice || product.effectivePrice || product.price;
-    if (isInWishlist) {
-      dispatch(removeFromWishlist(product.id));
+  const handleProductRequest = () => {
+    const requestPrice = product.effectiveDiscountPrice || product.discountPrice || product.effectivePrice || product.price;
+    if (isInProductRequests) {
+      dispatch(removeProductRequest(product.id));
       toast.success(t.removeFromWishlist);
     } else {
-      dispatch(addToWishlist({
+      dispatch(addProductRequest({
         productId: product.id,
         name: product.name,
-        price: wishlistPrice,
+        price: requestPrice,
         image: product.images?.[0],
       }));
       toast.success(t.addToWishlist);
@@ -241,12 +241,6 @@ export default function ProductDetailPage() {
               {/* Unit */}
               <p className="text-[11px] text-[#667085] mb-3">per {product.unit || "piece"}</p>
 
-              {/* Delivery */}
-              <div className="flex items-center gap-2 mb-3 text-[11px] text-[#00AFCC]">
-                <Truck size={14} />
-                <span>{t.fastDelivery}: {product.deliveryTime || "1-2 hours"}</span>
-              </div>
-
               {/* Stock */}
               <div className="flex items-center gap-2 mb-4">
                 <span className="text-[11px] text-[#667085]">{t.stock}:</span>
@@ -297,14 +291,14 @@ export default function ProductDetailPage() {
                   {t.addToCart}
                 </button>
                 <button
-                  onClick={handleWishlist}
+                  onClick={handleProductRequest}
                   className={`p-2.5 rounded-md border transition ${
-                    isInWishlist
+                    isInProductRequests
                       ? "bg-[#FFF0F0] border-[#EC008C] text-[#EC008C]"
                       : "border-[#E5E7EB] text-[#667085] hover:border-[#EC008C] hover:text-[#EC008C]"
                   }`}
                 >
-                  {isInWishlist ? <Heart size={16} className="fill-current" /> : <Heart size={16} />}
+                  {isInProductRequests ? <Heart size={16} className="fill-current" /> : <Heart size={16} />}
                 </button>
               </div>
 

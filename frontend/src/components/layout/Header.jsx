@@ -197,13 +197,13 @@ export default function Header() {
 
               {/* Actions */}
               <div className="flex items-center gap-0.5 flex-shrink-0">
-                {authChecked && user && (user.role === "ADMIN" || user.role === "MANAGER" || user.role === "RIDER") && (
+                {authChecked && user && user.role && user.role !== "CUSTOMER" && (user.role === "ADMIN" || user.role === "MANAGER" || user.role === "RIDER") && (
                   <Link href={getDashboardHref()} className="hidden sm:flex items-center gap-1 text-[#364152] hover:bg-[#F3F4F6] p-1.5 rounded-md transition text-[11px] font-semibold" aria-label="Dashboard">
                     <LayoutDashboard size={16} className="text-[#EC008C]" />
                     <span className="hidden md:inline">{user.role === "ADMIN" ? "Admin" : user.role === "MANAGER" ? "Manager" : "Rider"}</span>
                   </Link>
                 )}
-                <Link href="/wishlist" className="hidden sm:flex text-[#364152] hover:bg-[#F3F4F6] p-1.5 rounded-md transition" aria-label={t.wishlist}>
+                <Link href="/product-request" className="hidden sm:flex text-[#364152] hover:bg-[#F3F4F6] p-1.5 rounded-md transition" aria-label={t.customRequest}>
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
                 </Link>
                 <Link href="/cart" className="relative text-[#364152] hover:bg-[#F3F4F6] p-1.5 rounded-md transition" aria-label={`${t.cart}, ${cartCount} items`}>
@@ -426,14 +426,14 @@ export default function Header() {
               <Link href="/track-order" onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 py-2 text-xs text-[#364152] font-medium hover:text-[#EC008C] transition">
                 <MapPin size={16} className="text-[#EC008C]" />{t.trackOrder}
               </Link>
-              <Link href="/wishlist" onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 py-2 text-xs text-[#364152] font-medium hover:text-[#EC008C] transition">
+              <Link href="/product-request" onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 py-2 text-xs text-[#364152] font-medium hover:text-[#EC008C] transition">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-                {t.wishlist}
+                {t.customRequest}
               </Link>
               <Link href="/custom-request" onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 py-2 text-xs text-[#364152] font-medium hover:text-[#EC008C] transition">
                 <ClipboardList size={16} className="text-[#EC008C]" />{t.customRequest}
               </Link>
-              {authChecked && user && (user.role === "ADMIN" || user.role === "MANAGER" || user.role === "RIDER") && (
+              {authChecked && user && user.role && user.role !== "CUSTOMER" && (user.role === "ADMIN" || user.role === "MANAGER" || user.role === "RIDER") && (
                 <Link href={getDashboardHref()} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 py-2 text-xs text-[#364152] font-medium hover:text-[#EC008C] transition">
                   <LayoutDashboard size={16} className="text-[#EC008C]" />
                   {user.role === "ADMIN" ? "Admin Dashboard" : user.role === "MANAGER" ? "Manager Panel" : "Rider Dashboard"}
@@ -546,7 +546,7 @@ export default function Header() {
               </div>
               <span className="text-[9px] font-semibold">{authChecked ? (user ? t.myAccount : t.signIn) : "..."}</span>
             </Link>
-            {authChecked && user && (user.role === "ADMIN" || user.role === "MANAGER" || user.role === "RIDER") && (
+            {authChecked && user && user.role && user.role !== "CUSTOMER" && (user.role === "ADMIN" || user.role === "MANAGER" || user.role === "RIDER") && (
               <Link href={getDashboardHref()} className={`flex flex-col items-center gap-0.5 min-w-[50px] ${pathname.startsWith(getDashboardHref()) ? "text-[#EC008C]" : "text-[#667085]"}`}>
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center transition ${pathname.startsWith(getDashboardHref()) ? "bg-[#FCE8F3]" : "bg-[#F4F7FB]"}`}>
                   <LayoutDashboard size={18} />

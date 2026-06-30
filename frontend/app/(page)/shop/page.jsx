@@ -11,7 +11,7 @@ import { SlidersHorizontal, X, ChevronDown, Grid3X3, List, Search, Plus } from "
 import useDistrict from "@/helper/useDistrict";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
-import FloatingWhatsAppButton from "@/components/layout/FloatingWhatsAppButton";
+import FloatingChatButton from "@/components/layout/FloatingChatButton";
 
 const OFFER_TITLES = {
   STOCK_CLEARANCE: "Stock Clearance Sale",
@@ -498,7 +498,7 @@ function ShopContent() {
         </button>
       )}
 
-      <FloatingWhatsAppButton />
+      <FloatingChatButton />
       <Footer />
     </div>
   );
