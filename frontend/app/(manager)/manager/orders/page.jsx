@@ -2,7 +2,8 @@
 import { useState, useEffect } from "react";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
-import { X, Truck, Search, Package, Clock, CheckCircle, MapPin, Phone, User, ChevronDown, RefreshCw } from "lucide-react";
+import { X, Truck, Search, Package, Clock, CheckCircle, MapPin, Phone, User, ChevronDown, RefreshCw, Printer } from "lucide-react";
+import { generateInvoicePDF } from "@/lib/generateInvoice";
 
 const statusColors = {
   PENDING: "bg-yellow-100 text-yellow-700",
@@ -214,15 +215,20 @@ export default function ManagerOrdersPage() {
                     )}
                   </td>
                   <td className="px-3 py-2.5 text-right">
-                    {!order.riderId && order.orderStatus !== "DELIVERED" && order.orderStatus !== "CANCELLED" && (
-                      <button onClick={() => openRiderModal(order)}
-                        className="flex items-center gap-1 text-[10px] sm:text-[11px] bg-[#00215B] text-white px-3 py-1.5 rounded-lg hover:bg-[#001A4A] transition ml-auto">
-                        <Truck size={11} /> Assign Rider
+                    <div className="flex items-center justify-end gap-1.5">
+                      <button onClick={() => generateInvoicePDF(order)} className="p-1.5 text-[#667085] hover:text-[#00215B] hover:bg-[#F4F7FB] rounded-lg transition" title="Print Invoice">
+                        <Printer size={14} />
                       </button>
-                    )}
-                    {order.riderId && (
-                      <span className="text-[10px] sm:text-[11px] text-green-600 font-medium">Assigned</span>
-                    )}
+                      {!order.riderId && order.orderStatus !== "DELIVERED" && order.orderStatus !== "CANCELLED" && (
+                        <button onClick={() => openRiderModal(order)}
+                          className="flex items-center gap-1 text-[10px] sm:text-[11px] bg-[#00215B] text-white px-3 py-1.5 rounded-lg hover:bg-[#001A4A] transition">
+                          <Truck size={11} /> Assign Rider
+                        </button>
+                      )}
+                      {order.riderId && (
+                        <span className="text-[10px] sm:text-[11px] text-green-600 font-medium">Assigned</span>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))

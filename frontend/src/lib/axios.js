@@ -28,6 +28,7 @@ api.interceptors.response.use(
     if (typeof window !== "undefined") {
       if (status === 401) {
         localStorage.removeItem("bm-token");
+        localStorage.removeItem("bm-location");
         store.dispatch(clearUser());
         if (!window.location.pathname.includes("/signin")) {
           window.location.href = "/signin";
@@ -36,6 +37,7 @@ api.interceptors.response.use(
         const pathname = window.location.pathname;
         if (pathname.startsWith("/dashboard") || pathname.startsWith("/manager") || pathname.startsWith("/rider")) {
           localStorage.removeItem("bm-token");
+          localStorage.removeItem("bm-location");
           store.dispatch(clearUser());
           window.location.href = "/signin";
         }

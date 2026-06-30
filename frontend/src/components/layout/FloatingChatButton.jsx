@@ -17,10 +17,10 @@ export default function FloatingChatButton() {
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  const bottomOffset = isMobile ? "bottom-20" : "bottom-6";
+  const bottomOffset = isMobile ? "bottom-36" : "bottom-6";
 
   return (
-    <div className={`fixed ${bottomOffset} right-4 sm:right-6 z-[60]`}>
+    <div className={`fixed ${bottomOffset} right-4 sm:right-6 z-[90]`}>
       {isOpen && (
         <div className="mb-3 flex flex-col gap-2 items-end animate-in slide-in-from-bottom-2 duration-200">
           <a

@@ -33,7 +33,7 @@ export default function FloatingCartButton() {
       {/* Floating Button */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed right-3.5 top-1/2 z-40 hidden -translate-y-1/2 text-xs font-medium leading-none text-white transition-all duration-300 ease-linear md:block hover:scale-105"
+        className="fixed right-3.5 top-1/2 z-40 -translate-y-1/2 text-xs font-medium leading-none text-white transition-all duration-300 ease-linear hover:scale-105"
       >
         <span className="relative flex items-center justify-center gap-1.5 rounded-t-[5px] bg-[#00215B] px-3 pb-1.5 pt-6">
           <ShoppingCart size={16} className="absolute top-1.5 left-1/2 -translate-x-1/2" />

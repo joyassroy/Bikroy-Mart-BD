@@ -1,6 +1,7 @@
 const bn = {
   // Header
   freeDelivery: "১৫০০ টাকার উপরে অর্ডারে ফ্রি ডেলিভারি",
+  deliveryCutoff: "দৈনিক ১১:০০ টার আগে অর্ডার করুন একই দিনে ডেলিভারি পান",
   trackOrder: "অর্ডার ট্র্যাক করুন",
   storeLocator: "স্টোর লোকেটর",
   searchPlaceholder: "পণ্য খুঁজুন...",
@@ -233,6 +234,8 @@ const bn = {
   currentStatus: "বর্তমান স্ট্যাটাস",
   orderPlaced: "অর্ডার দেওয়া হয়েছে",
   confirmed: "নিশ্চিত হয়েছে",
+  packaging: "প্যাকেজিং",
+  onTheWay: "পথে আছে",
   shipped: "পাঠানো হয়েছে",
   outForDelivery: "ডেলিভারিতে বের হয়েছে",
   delivered: "ডেলিভারি সম্পন্ন",
@@ -323,6 +326,7 @@ const bn = {
   orderPlacedSuccessfully: "অর্ডার সফলভাবে দেওয়া হয়েছে!",
   yourTrackingId: "আপনার ট্র্যাকিং আইডি",
   copyTrackingId: "ট্র্যাকিং আইডি কপি করুন",
+  downloadInvoice: "ইনভয়েস PDF ডাউনলোড করুন",
   trackYourOrder: "আপনার অর্ডার ট্র্যাক করুন",
   orderConfirmedMsg: "আপনার অর্ডার নিশ্চিত হয়েছে। ডেলিভারি ট্র্যাক করতে ট্র্যাকিং আইডি ব্যবহার করুন।",
 

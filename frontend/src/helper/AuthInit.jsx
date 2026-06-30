@@ -62,6 +62,7 @@ export default function AuthInit({ children }) {
       .catch(() => {
         localStorage.removeItem("bm-token");
         dispatch(clearUser());
+        detectLocationFromIP(dispatch);
       })
       .finally(() => {
         setAuthChecked(true);

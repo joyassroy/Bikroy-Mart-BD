@@ -2,8 +2,9 @@
 import { useState, useEffect } from "react";
 import api from "@/lib/axios";
 import { ALL_DISTRICTS } from "@/lib/constants";
-import { Search, Eye, ChevronDown } from "lucide-react";
+import { Search, Eye, ChevronDown, Printer } from "lucide-react";
 import toast from "react-hot-toast";
+import { generateInvoicePDF } from "@/lib/generateInvoice";
 
 const statusColors = {
   PENDING: "bg-yellow-100 text-yellow-700",
@@ -115,9 +116,14 @@ export default function OrdersPage() {
                       </select>
                     </td>
                     <td className="px-4 py-3">
-                      <button onClick={() => setSelectedOrder(order)} className="text-blue-500 hover:text-blue-700">
-                        <Eye size={16} />
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => setSelectedOrder(order)} className="text-blue-500 hover:text-blue-700">
+                          <Eye size={16} />
+                        </button>
+                        <button onClick={() => generateInvoicePDF(order)} className="text-gray-500 hover:text-gray-700" title="Print Invoice">
+                          <Printer size={16} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -149,7 +155,12 @@ export default function OrdersPage() {
                 ))}
               </div>
             </div>
-            <button onClick={() => setSelectedOrder(null)} className="mt-4 w-full bg-gray-100 py-2 rounded-lg text-sm hover:bg-gray-200">Close</button>
+            <div className="flex gap-2 mt-4">
+              <button onClick={() => generateInvoicePDF(selectedOrder)} className="flex-1 flex items-center justify-center gap-2 bg-[#00215B] text-white py-2 rounded-lg text-sm hover:bg-[#001A4A] transition">
+                <Printer size={14} /> Print Invoice
+              </button>
+              <button onClick={() => setSelectedOrder(null)} className="flex-1 bg-gray-100 py-2 rounded-lg text-sm hover:bg-gray-200">Close</button>
+            </div>
           </div>
         </div>
       )}

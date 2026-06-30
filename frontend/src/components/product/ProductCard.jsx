@@ -83,7 +83,7 @@ export default function ProductCard({ product, showActions, onDelete, onProductU
 
   return (
     <>
-      <div className="bg-[#f4f7fb] rounded-lg overflow-hidden hover:shadow-[rgba(0,0,0,0.1)_0px_1px_3px_0px,rgba(0,0,0,0.1)_0px_1px_2px_-1px] transition-all duration-300 hover:scale-[1.02] group cursor-pointer">
+      <Link href={`/product/${product.slug}`} className="block bg-[#f4f7fb] rounded-lg overflow-hidden hover:shadow-[rgba(0,0,0,0.1)_0px_1px_3px_0px,rgba(0,0,0,0.1)_0px_1px_2px_-1px] transition-all duration-300 hover:scale-[1.02] group cursor-pointer">
         <div className="relative p-2 sm:p-3 flex items-center justify-center" style={{ aspectRatio: "1/1" }}>
           {product.badges?.length > 0 && (
             <span className="absolute top-1.5 left-1.5 bg-[#FF6B6B] text-white text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded z-10">
@@ -108,7 +108,7 @@ export default function ProductCard({ product, showActions, onDelete, onProductU
           )}
         </div>
         <div className="p-2 sm:p-2.5 bg-white">
-          <h3 className="text-[11px] sm:text-xs font-semibold text-[#364152] line-clamp-2 mb-1 sm:mb-1.5 min-h-[28px] sm:min-h-[32px] leading-tight">
+          <h3 className="text-[11px] sm:text-xs font-semibold text-[#364152] line-clamp-2 mb-1 sm:mb-1.5 min-h-[28px] sm:min-h-[32px] leading-tight hover:text-[#EC008C] transition">
             {product.name}
           </h3>
 
@@ -187,7 +187,7 @@ export default function ProductCard({ product, showActions, onDelete, onProductU
             </button>
           )}
         </div>
-      </div>
+      </Link>
 
       {showDeleteModal && (
         <DeleteModal product={product} onConfirm={confirmDelete} onCancel={() => setShowDeleteModal(false)} />

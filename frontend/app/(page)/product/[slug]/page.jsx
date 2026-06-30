@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "@/redux/cartSlice";
-import { addToProductRequest, removeProductRequest } from "@/redux/productRequestSlice";
+import { addProductRequest, removeProductRequest } from "@/redux/productRequestSlice";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import ProductCard from "@/components/product/ProductCard";

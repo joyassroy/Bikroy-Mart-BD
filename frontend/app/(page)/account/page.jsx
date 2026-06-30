@@ -63,6 +63,7 @@ export default function AccountPage() {
 
   const handleLogout = async () => {
     localStorage.removeItem("bm-token");
+    localStorage.removeItem("bm-location");
     dispatch(clearUser());
     disconnectSocket();
     await signOut({ redirect: false });

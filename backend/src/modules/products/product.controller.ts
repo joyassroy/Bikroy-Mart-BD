@@ -45,6 +45,148 @@ export const getAllProducts = async (req: Request, res: Response) => {
     const limitNum = parseInt(limit as string, 10);
     const skip = (pageNum - 1) * limitNum;
 
+    // ── Fuzzy search with pg_trgm similarity ──────────────────────────
+    if (search) {
+      const searchTerm = String(search).trim();
+      const conditions: string[] = ['p."isActive" = true'];
+      const params: any[] = [searchTerm];
+      let idx = 2;
+
+      if (category) {
+        conditions.push(`c.slug = $${idx}`);
+        params.push(String(category));
+        idx++;
+      }
+      if (subcategory) {
+        conditions.push(`s.slug = $${idx}`);
+        params.push(String(subcategory));
+        idx++;
+      }
+      if (minPrice) {
+        conditions.push(`p.price >= $${idx}`);
+        params.push(parseFloat(minPrice as string));
+        idx++;
+      }
+      if (maxPrice) {
+        conditions.push(`p.price <= $${idx}`);
+        params.push(parseFloat(maxPrice as string));
+        idx++;
+      }
+      if (featured === "true") {
+        conditions.push(`p."isFeatured" = true`);
+      }
+      if (managerId) {
+        conditions.push(`p."managerId" = $${idx}`);
+        params.push(String(managerId));
+        idx++;
+      }
+      if (includeInactive !== "true") {
+        conditions.push(`p."isActive" = true`);
+      }
+
+      // District filter
+      if (district) {
+        const managers = await prisma.managerProfile.findMany({
+          where: { assignedDistrict: String(district) },
+          select: { id: true },
+        });
+        const managerIds = managers.map((m) => m.id);
+        if (managerIds.length > 0) {
+          conditions.push(`(p."managerId" IN (${managerIds.map((_, i) => `$${idx + i}`).join(",")}) OR p."managerId" IS NULL)`);
+          params.push(...managerIds);
+          idx += managerIds.length;
+        } else {
+          conditions.push(`p."managerId" IS NULL`);
+        }
+      }
+
+      // Similarity threshold — only include products with some match
+      conditions.push(`(
+        similarity(p.name, $1) > 0.05
+        OR similarity(p."nameBn", $1) > 0.05
+        OR similarity(p.description, $1) > 0.05
+        OR similarity(p."descriptionBn", $1) > 0.05
+      )`);
+
+      const whereClause = conditions.join(" AND ");
+
+      // Relevance score — highest similarity across all fields
+      const relevanceExpr = `GREATEST(
+        COALESCE(similarity(p.name, $1), 0),
+        COALESCE(similarity(p."nameBn", $1), 0),
+        COALESCE(similarity(p.description, $1), 0),
+        COALESCE(similarity(p."descriptionBn", $1), 0)
+      )`;
+
+      const offset = (pageNum - 1) * limitNum;
+
+      const products = await prisma.$queryRawUnsafe(`
+        SELECT p.*,
+               c.id AS "categoryId_value", c.name AS "categoryName", c.slug AS "categorySlug",
+               s.id AS "subcategoryId_value", s.name AS "subcategoryName", s.slug AS "subcategorySlug",
+               ${relevanceExpr} AS relevance
+        FROM "Product" p
+        LEFT JOIN "Category" c ON p."categoryId" = c.id
+        LEFT JOIN "Subcategory" s ON p."subcategoryId" = s.id
+        WHERE ${whereClause}
+        ORDER BY relevance DESC
+        LIMIT ${limitNum} OFFSET ${offset}
+      `, ...params);
+
+      const countResult = await prisma.$queryRawUnsafe(`
+        SELECT COUNT(*)::int AS total
+        FROM "Product" p
+        LEFT JOIN "Category" c ON p."categoryId" = c.id
+        LEFT JOIN "Subcategory" s ON p."subcategoryId" = s.id
+        WHERE ${whereClause}
+      `, ...params);
+
+      const total = (countResult as any[])[0]?.total || 0;
+
+      const resolved = (products as any[]).map((p) => ({
+        id: p.id,
+        name: p.name,
+        nameBn: p.nameBn,
+        slug: p.slug,
+        description: p.description,
+        descriptionBn: p.descriptionBn,
+        price: p.price,
+        discountPrice: p.discountPrice,
+        unit: p.unit,
+        minQuantity: p.minQuantity,
+        stock: p.stock,
+        sku: p.sku,
+        barcode: p.barcode,
+        images: p.images,
+        isFeatured: p.isFeatured,
+        isActive: p.isActive,
+        deliveryTime: p.deliveryTime,
+        badges: p.badges,
+        createdAt: p.createdAt,
+        updatedAt: p.updatedAt,
+        managerId: p.managerId,
+        categoryId: p.categoryId,
+        subcategoryId: p.subcategoryId,
+        category: p.categoryId_value
+          ? { id: p.categoryId_value, name: p.categoryName, slug: p.categorySlug }
+          : null,
+        subcategory: p.subcategoryId_value
+          ? { id: p.subcategoryId_value, name: p.subcategoryName, slug: p.subcategorySlug }
+          : null,
+        effectivePrice: p.price,
+        effectiveDiscountPrice: p.discountPrice,
+        relevance: Number(p.relevance),
+      }));
+
+      return sendSuccess(res, "Products fetched", resolved, 200, {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        totalPages: Math.ceil(total / limitNum),
+      });
+    }
+
+    // ── Standard listing (no search) ──────────────────────────────────
     const where: any = {};
     if (includeInactive !== "true") {
       where.isActive = true;
@@ -53,16 +195,6 @@ export const getAllProducts = async (req: Request, res: Response) => {
     if (subcategory) where.subcategory = { slug: subcategory };
     if (managerId) where.managerId = managerId;
     if (featured === "true") where.isFeatured = true;
-    let searchFilter: any = null;
-    if (search) {
-      searchFilter = {
-        OR: [
-          { name: { contains: search as string, mode: "insensitive" } },
-          { nameBn: { contains: search as string, mode: "insensitive" } },
-          { description: { contains: search as string, mode: "insensitive" } },
-        ],
-      };
-    }
     if (minPrice || maxPrice) {
       where.price = {};
       if (minPrice) where.price.gte = parseFloat(minPrice as string);
@@ -90,27 +222,15 @@ export const getAllProducts = async (req: Request, res: Response) => {
       }
     }
 
-    let districtFilter: any = null;
     if (district) {
       const managers = await prisma.managerProfile.findMany({
         where: { assignedDistrict: String(district) },
         select: { id: true },
       });
       const managerIds = managers.map((m) => m.id);
-      districtFilter = {
-        OR: [
-          { managerId: { in: managerIds } },
-          { managerId: null },
-        ],
-      };
-    }
-
-    if (searchFilter && districtFilter) {
-      where.AND = [searchFilter, districtFilter];
-    } else if (searchFilter) {
-      Object.assign(where, searchFilter);
-    } else if (districtFilter) {
-      Object.assign(where, districtFilter);
+      where.AND = [
+        { OR: [{ managerId: { in: managerIds } }, { managerId: null }] },
+      ];
     }
 
     const orderBy: any = {};

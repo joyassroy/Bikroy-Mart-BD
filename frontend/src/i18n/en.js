@@ -1,6 +1,7 @@
 const en = {
   // Header
   freeDelivery: "Free delivery on orders over ৳1500",
+  deliveryCutoff: "Order before 11:00 AM for same-day delivery",
   trackOrder: "Track Order",
   storeLocator: "Store Locator",
   searchPlaceholder: "Search for products...",
@@ -240,7 +241,8 @@ const en = {
   currentStatus: "Current Status",
   orderPlaced: "Order Placed",
   confirmed: "Confirmed",
-  processing: "Processing",
+  packaging: "Packaging",
+  onTheWay: "On the Way",
   shipped: "Shipped",
   outForDelivery: "Out for Delivery",
   delivered: "Delivered",
@@ -332,6 +334,7 @@ const en = {
   orderPlacedSuccessfully: "Order Placed Successfully!",
   yourTrackingId: "Your Tracking ID",
   copyTrackingId: "Copy Tracking ID",
+  downloadInvoice: "Download Invoice PDF",
   trackYourOrder: "Track Your Order",
   continueShopping: "Continue Shopping",
   orderConfirmedMsg: "Your order has been confirmed. Use the tracking ID to track your delivery.",

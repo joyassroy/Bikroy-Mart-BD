@@ -6,7 +6,7 @@ import Footer from "@/components/layout/Footer";
 import LiveRiderMap from "@/components/tracking/LiveRiderMap";
 import useSocket from "@/helper/useSocket";
 import api from "@/lib/axios";
-import { Search, Package, Truck, CheckCircle, Clock, MapPin, Radio } from "lucide-react";
+import { Search, Package, Truck, CheckCircle, Clock, MapPin, Phone, User, Navigation } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 
 function TrackOrderContent() {
@@ -20,12 +20,11 @@ function TrackOrderContent() {
   const { liveRiderLocation, connected } = useSocket(order?.id);
 
   const statusSteps = [
-    { key: "PENDING", label: t.orderPlaced, icon: Package },
-    { key: "CONFIRMED", label: t.confirmed, icon: CheckCircle },
-    { key: "PROCESSING", label: t.processing, icon: Clock },
-    { key: "SHIPPED", label: t.shipped, icon: Truck },
-    { key: "OUT_FOR_DELIVERY", label: t.outForDelivery, icon: MapPin },
-    { key: "DELIVERED", label: t.delivered, icon: CheckCircle },
+    { key: "PENDING", label: t.orderPlaced, icon: Package, color: "#00215B" },
+    { key: "CONFIRMED", label: t.confirmed, icon: CheckCircle, color: "#00AFCC" },
+    { key: "PROCESSING", label: t.packaging, icon: Clock, color: "#F59E0B" },
+    { key: "SHIPPED", label: t.onTheWay, icon: Truck, color: "#EC008C" },
+    { key: "DELIVERED", label: t.delivered, icon: CheckCircle, color: "#16A34A" },
   ];
 
   const fetchOrder = async (number) => {
@@ -44,112 +43,255 @@ function TrackOrderContent() {
   };
 
   useEffect(() => {
-    if (initialOrder) {
-      fetchOrder(initialOrder);
-    }
+    if (initialOrder) fetchOrder(initialOrder);
   }, []);
 
-  const handleSearch = async (e) => {
+  const handleSearch = (e) => {
     e.preventDefault();
     fetchOrder(orderNumber);
   };
 
-  const getStatusIndex = (status) => statusSteps.findIndex((s) => s.key === status);
+  const getStatusIndex = (status) => {
+    const map = { PENDING: 0, CONFIRMED: 1, PROCESSING: 2, SHIPPED: 3, OUT_FOR_DELIVERY: 3, DELIVERED: 4 };
+    return map[status] ?? -1;
+  };
+
+  const currentIdx = order ? getStatusIndex(order.orderStatus) : -1;
+  const currentStep = statusSteps[currentIdx];
 
   return (
-    <div className="min-h-screen bg-[#F0F2F5]">
+    <div className="min-h-screen bg-gradient-to-b from-[#F0F2F5] to-white">
       <Header />
-      <main className="max-w-[1200px] mx-auto px-3 sm:px-4 md:px-6 lg:px-10 py-3 sm:py-4">
-        <h1 className="text-base sm:text-lg md:text-xl font-semibold text-[#00215B] mb-2 sm:mb-3">{t.trackOrder}</h1>
+      <main className="max-w-[800px] mx-auto px-3 sm:px-4 py-4 sm:py-6">
+        {/* Page Title */}
+        <div className="text-center mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl font-bold text-[#00215B]">{t.trackOrder}</h1>
+          <p className="text-xs sm:text-sm text-[#667085] mt-1">{t.trackOrderSubtitle}</p>
+        </div>
 
-        <form onSubmit={handleSearch} className="bg-white rounded-lg p-3 sm:p-4 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB] mb-3">
+        {/* Search Bar */}
+        <form onSubmit={handleSearch} className="bg-white rounded-2xl p-3 sm:p-4 shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-[#E5E7EB] mb-4 sm:mb-6">
           <div className="flex gap-2">
-            <input type="text" placeholder={`${t.orderId} (e.g., BM-XXXX-XXXX)`} value={orderNumber} onChange={(e) => setOrderNumber(e.target.value)} className="input-field flex-1" />
-            <button type="submit" disabled={loading} className="btn-primary flex-shrink-0">
-              <Search size={14} />
+            <div className="relative flex-1">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#99A0B4]" />
+              <input
+                type="text"
+                placeholder={`${t.orderId} (e.g., BM-XXXX-XXXX)`}
+                value={orderNumber}
+                onChange={(e) => setOrderNumber(e.target.value)}
+                className="w-full pl-9 pr-3 py-2.5 sm:py-3 text-xs sm:text-sm bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EC008C]/30 focus:border-[#EC008C] transition"
+              />
+            </div>
+            <button type="submit" disabled={loading} className="bg-[#EC008C] hover:bg-[#D60071] text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 flex-shrink-0 disabled:opacity-50">
+              {loading ? (
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <Search size={16} />
+              )}
               <span className="hidden sm:inline">{loading ? t.loading : t.trackButton}</span>
             </button>
           </div>
-          {error && <div className="alert-error mt-2.5">{error}</div>}
+          {error && (
+            <div className="mt-3 px-3 py-2 bg-[#FFF0F0] text-[#FF6B6B] text-xs rounded-lg font-medium">{error}</div>
+          )}
         </form>
 
+        {/* Order Results */}
         {order && (
-          <div className="bg-white rounded-lg p-3 sm:p-4 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">
-            <div className="flex justify-between items-start mb-3">
-              <div>
-                <h2 className="font-semibold text-[#000000] text-xs sm:text-sm">Order #{order.orderNumber}</h2>
-                <p className="text-[10px] sm:text-[11px] text-[#667085] mt-0.5">Placed on {new Date(order.createdAt).toLocaleDateString("bn-BD")}</p>
-                {order.deliveryDistrict && (
-                  <p className="text-[10px] sm:text-[11px] text-[#667085] mt-0.5">
-                    <MapPin size={10} className="inline mr-0.5" />
-                    {order.deliveryDistrict}{order.deliveryUpazila ? `, ${order.deliveryUpazila}` : ""}
-                  </p>
-                )}
-              </div>
-              <span className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md text-[9px] sm:text-[10px] font-semibold ${
-                order.orderStatus === "DELIVERED" ? "bg-green-50 text-green-700" :
-                order.orderStatus === "CANCELLED" ? "bg-[#FFF0F0] text-[#FF6B6B]" :
-                "bg-[#E8F4F8] text-[#00AFCC]"
+          <div className="space-y-4 sm:space-y-5">
+            {/* Order Header Card */}
+            <div className="bg-white rounded-2xl overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-[#E5E7EB]">
+              {/* Status Banner */}
+              <div className={`px-4 sm:px-6 py-4 sm:py-5 ${
+                order.orderStatus === "DELIVERED"
+                  ? "bg-gradient-to-r from-[#16A34A] to-[#22C55E]"
+                  : order.orderStatus === "CANCELLED"
+                  ? "bg-gradient-to-r from-[#DC2626] to-[#EF4444]"
+                  : "bg-gradient-to-r from-[#00215B] to-[#0044AA]"
               }`}>
-                {order.orderStatus}
-              </span>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-white/70 text-[10px] sm:text-xs font-medium uppercase tracking-wider">Order Number</p>
+                    <p className="text-white text-lg sm:text-xl font-mono font-bold tracking-wider mt-0.5">{order.orderNumber}</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="inline-block px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold bg-white/20 text-white backdrop-blur-sm">
+                      {statusSteps.find((s) => s.key === order.orderStatus)?.label || order.orderStatus}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Progress Stepper */}
+              <div className="px-4 sm:px-6 py-5 sm:py-6">
+                <div className="flex items-start justify-between relative">
+                  {/* Background line */}
+                  <div className="absolute top-[18px] sm:top-[20px] left-[10%] right-[10%] h-[3px] bg-[#E5E7EB] rounded-full" />
+                  {/* Active line */}
+                  <div
+                    className="absolute top-[18px] sm:top-[20px] left-[10%] h-[3px] rounded-full transition-all duration-700"
+                    style={{
+                      width: `${Math.min(100, (currentIdx / (statusSteps.length - 1)) * 80)}%`,
+                      background: currentStep?.color || "#EC008C",
+                    }}
+                  />
+
+                  {statusSteps.map((step, index) => {
+                    const isCompleted = index <= currentIdx;
+                    const isCurrent = index === currentIdx;
+                    return (
+                      <div key={step.key} className="flex flex-col items-center flex-1 relative z-10">
+                        <div
+                          className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-500 ${
+                            isCompleted
+                              ? "text-white shadow-lg"
+                              : "bg-[#F0F2F5] text-[#D0D5DD] border-2 border-[#E5E7EB]"
+                          } ${isCurrent ? "scale-110 ring-4 ring-offset-2" : ""}`}
+                          style={{
+                            backgroundColor: isCompleted ? step.color : undefined,
+                            ringColor: isCurrent ? step.color + "30" : undefined,
+                          }}
+                        >
+                          {isCompleted && !isCurrent ? (
+                            <CheckCircle size={16} className="sm:w-[18px] sm:h-[18px]" />
+                          ) : (
+                            <step.icon size={16} className="sm:w-[18px] sm:h-[18px]" />
+                          )}
+                        </div>
+                        <p className={`text-[9px] sm:text-[11px] font-semibold text-center mt-2 leading-tight ${
+                          isCompleted ? "text-[#181717]" : "text-[#D0D5DD]"
+                        }`}>
+                          {step.label}
+                        </p>
+                        {isCurrent && (
+                          <span
+                            className="mt-1 px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] font-bold text-white"
+                            style={{ backgroundColor: step.color }}
+                          >
+                            {t.currentStatus}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Order Info Row */}
+              <div className="px-4 sm:px-6 py-3 border-t border-[#F0F2F5] flex flex-wrap gap-x-6 gap-y-2 text-[10px] sm:text-[11px] text-[#667085]">
+                <span className="flex items-center gap-1">
+                  <Clock size={12} className="text-[#99A0B4]" />
+                  Placed {new Date(order.createdAt).toLocaleDateString("en-BD", { month: "short", day: "numeric", year: "numeric" })}
+                </span>
+                {order.deliveryDistrict && (
+                  <span className="flex items-center gap-1">
+                    <MapPin size={12} className="text-[#EC008C]" />
+                    {order.deliveryDistrict}{order.deliveryUpazila ? `, ${order.deliveryUpazila}` : ""}
+                  </span>
+                )}
+                <span className="flex items-center gap-1">
+                  <Package size={12} className="text-[#99A0B4]" />
+                  {order.items?.length || 0} items
+                </span>
+              </div>
             </div>
 
-            <div className="space-y-2 sm:space-y-2.5 mb-3">
-              {statusSteps.map((step, index) => {
-                const currentIndex = getStatusIndex(order.orderStatus);
-                const isCompleted = index <= currentIndex;
-                const isCurrent = index === currentIndex;
-                return (
-                  <div key={step.key} className="flex items-center gap-2 sm:gap-2.5">
-                    <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      isCompleted ? "bg-[#EC008C] text-white" : "bg-[#F0F2F5] text-[#E5E7EB]"
-                    } ${isCurrent ? "ring-2 sm:ring-3 ring-[#FCE8F3]" : ""}`}>
-                      <step.icon size={12} className="sm:w-4 sm:h-4" />
+            {/* Rider Info */}
+            {order.rider && (
+              <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-[#E5E7EB]">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-8 h-8 rounded-full bg-[#E8F4F8] flex items-center justify-center">
+                    <Navigation size={14} className="text-[#00AFCC]" />
+                  </div>
+                  <h3 className="font-semibold text-[#181717] text-xs sm:text-sm">{t.riderDashboard}</h3>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="flex items-center gap-3 p-3 bg-[#F9FAFB] rounded-xl">
+                    <div className="w-10 h-10 rounded-full bg-[#00215B]/10 flex items-center justify-center flex-shrink-0">
+                      <User size={16} className="text-[#00215B]" />
                     </div>
-                    <div>
-                      <p className={`font-medium text-[11px] sm:text-xs ${isCompleted ? "text-[#000000]" : "text-[#E5E7EB]"}`}>{step.label}</p>
-                      {isCurrent && <p className="text-[10px] sm:text-[11px] text-[#EC008C] font-semibold">{t.currentStatus}</p>}
+                    <div className="min-w-0">
+                      <p className="text-[10px] text-[#99A0B4] font-medium">Rider Name</p>
+                      <p className="text-xs sm:text-sm font-semibold text-[#181717] truncate">{order.rider.user?.name}</p>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-
-            {order.rider && (
-              <div className="p-2.5 bg-[#E8F4F8] rounded-lg mb-3">
-                <h3 className="font-medium text-[#000000] mb-0.5 text-[11px] sm:text-xs">{t.riderDashboard}</h3>
-                <p className="text-[10px] sm:text-[11px] text-[#5A6C91]">Name: {order.rider.user?.name}</p>
-                <p className="text-[10px] sm:text-[11px] text-[#5A6C91]">Phone: {order.rider.user?.phone}</p>
+                  <div className="flex items-center gap-3 p-3 bg-[#F9FAFB] rounded-xl">
+                    <div className="w-10 h-10 rounded-full bg-[#16A34A]/10 flex items-center justify-center flex-shrink-0">
+                      <Phone size={16} className="text-[#16A34A]" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] text-[#99A0B4] font-medium">Phone</p>
+                      <a href={`tel:${order.rider.user?.phone}`} className="text-xs sm:text-sm font-semibold text-[#16A34A] truncate block hover:underline">
+                        {order.rider.user?.phone}
+                      </a>
+                    </div>
+                  </div>
+                </div>
                 {order.rider.currentLat && (
-                  <a href={`https://www.openstreetmap.org/?mlat=${order.rider.currentLat}&mlon=${order.rider.currentLng}#map=15/${order.rider.currentLat}/${order.rider.currentLng}`} target="_blank" rel="noopener noreferrer" className="text-[#00AFCC] text-[10px] sm:text-[11px] hover:underline mt-1.5 inline-block font-semibold">
+                  <a
+                    href={`https://www.openstreetmap.org/?mlat=${order.rider.currentLat}&mlon=${order.rider.currentLng}#map=15/${order.rider.currentLat}/${order.rider.currentLng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 flex items-center justify-center gap-2 w-full py-2.5 bg-[#00AFCC]/10 hover:bg-[#00AFCC]/20 rounded-xl text-[#00AFCC] text-xs sm:text-sm font-semibold transition"
+                  >
+                    <MapPin size={14} />
                     {t.viewOnMap}
                   </a>
                 )}
               </div>
             )}
 
+            {/* Manager Info */}
             {order.manager && (
-              <div className="p-2.5 bg-[#FCE8F3] rounded-lg mb-3">
-                <h3 className="font-medium text-[#000000] mb-0.5 text-[11px] sm:text-xs">Zila Manager</h3>
-                <p className="text-[10px] sm:text-[11px] text-[#5A6C91]">Name: {order.manager.user?.name}</p>
-                <p className="text-[10px] sm:text-[11px] text-[#5A6C91]">Phone: {order.manager.user?.phone}</p>
-                <p className="text-[10px] sm:text-[11px] text-[#5A6C91]">District: {order.manager.assignedDistrict}</p>
-                {order.manager.assignedZila && (
-                  <p className="text-[10px] sm:text-[11px] text-[#5A6C91]">Zila: {order.manager.assignedZila}</p>
-                )}
+              <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-[#E5E7EB]">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-8 h-8 rounded-full bg-[#FCE8F3] flex items-center justify-center">
+                    <User size={14} className="text-[#EC008C]" />
+                  </div>
+                  <h3 className="font-semibold text-[#181717] text-xs sm:text-sm">Zila Manager</h3>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="flex items-center gap-3 p-3 bg-[#F9FAFB] rounded-xl">
+                    <div className="w-10 h-10 rounded-full bg-[#EC008C]/10 flex items-center justify-center flex-shrink-0">
+                      <User size={16} className="text-[#EC008C]" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] text-[#99A0B4] font-medium">Manager Name</p>
+                      <p className="text-xs sm:text-sm font-semibold text-[#181717] truncate">{order.manager.user?.name}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 p-3 bg-[#F9FAFB] rounded-xl">
+                    <div className="w-10 h-10 rounded-full bg-[#16A34A]/10 flex items-center justify-center flex-shrink-0">
+                      <Phone size={16} className="text-[#16A34A]" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] text-[#99A0B4] font-medium">Phone</p>
+                      <a href={`tel:${order.manager.user?.phone}`} className="text-xs sm:text-sm font-semibold text-[#16A34A] truncate block hover:underline">
+                        {order.manager.user?.phone}
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-3 flex items-center gap-2 text-[10px] sm:text-[11px] text-[#667085]">
+                  <MapPin size={12} className="text-[#EC008C]" />
+                  {order.manager.assignedDistrict}{order.manager.assignedZila ? `, ${order.manager.assignedZila}` : ""}
+                </div>
               </div>
             )}
 
+            {/* Live Map */}
             {order.deliveryLatitude && order.deliveryLongitude && (
-              <div className="mb-3">
+              <div className="bg-white rounded-2xl overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-[#E5E7EB]">
                 {connected && (
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                    <span className="text-[10px] font-semibold text-emerald-600">Live Tracking</span>
+                  <div className="px-4 sm:px-5 py-3 border-b border-[#F0F2F5] flex items-center gap-2">
+                    <span className="relative flex h-2.5 w-2.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+                    </span>
+                    <span className="text-xs font-semibold text-emerald-700">Live Tracking Active</span>
                   </div>
                 )}
-                <div className="rounded-lg overflow-hidden border border-[#E5E7EB]" style={{ height: "250px" }}>
+                <div className="h-[250px] sm:h-[300px]">
                   <LiveRiderMap
                     riderLat={liveRiderLocation?.lat || order.rider?.currentLat || null}
                     riderLng={liveRiderLocation?.lng || order.rider?.currentLng || null}
@@ -160,20 +302,29 @@ function TrackOrderContent() {
               </div>
             )}
 
-            {order.items && (
-              <div className="border-t border-[#E5E7EB] pt-2.5">
-                <h3 className="font-medium text-[#000000] mb-1.5 text-[11px] sm:text-xs">{t.items}</h3>
-                <div className="space-y-1 sm:space-y-1.5">
+            {/* Order Items */}
+            {order.items && order.items.length > 0 && (
+              <div className="bg-white rounded-2xl overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-[#E5E7EB]">
+                <div className="px-4 sm:px-5 py-3 border-b border-[#F0F2F5]">
+                  <h3 className="font-semibold text-[#181717] text-xs sm:text-sm">{t.items}</h3>
+                </div>
+                <div className="divide-y divide-[#F0F2F5]">
                   {order.items.map((item) => (
-                    <div key={item.id} className="flex justify-between text-[11px] sm:text-xs">
-                      <span className="text-[#667085] truncate mr-2">{item.product?.name} x {item.quantity}</span>
-                      <span className="font-medium text-[#000000] whitespace-nowrap">৳{item.totalPrice}</span>
+                    <div key={item.id} className="px-4 sm:px-5 py-3 flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-[#F4F7FB] flex items-center justify-center flex-shrink-0">
+                        <Package size={16} className="text-[#99A0B4]" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs sm:text-sm font-medium text-[#181717] truncate">{item.product?.name}</p>
+                        <p className="text-[10px] sm:text-[11px] text-[#667085]">Qty: {item.quantity}</p>
+                      </div>
+                      <p className="text-xs sm:text-sm font-bold text-[#181717] whitespace-nowrap">৳{item.totalPrice}</p>
                     </div>
                   ))}
                 </div>
-                <div className="flex justify-between font-bold text-xs sm:text-sm mt-2 pt-2 border-t border-[#E5E7EB]">
-                  <span className="text-[#000000]">{t.total}</span>
-                  <span className="text-[#000000]">৳{order.total}</span>
+                <div className="px-4 sm:px-5 py-3 bg-[#F9FAFB] flex justify-between items-center">
+                  <span className="text-xs sm:text-sm font-semibold text-[#667085]">{t.total}</span>
+                  <span className="text-sm sm:text-base font-bold text-[#00215B]">৳{order.total}</span>
                 </div>
               </div>
             )}
@@ -187,7 +338,14 @@ function TrackOrderContent() {
 
 export default function TrackOrderPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#F0F2F5] flex items-center justify-center">Loading...</div>}>
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#F0F2F5] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <span className="w-8 h-8 border-3 border-[#EC008C]/30 border-t-[#EC008C] rounded-full animate-spin" />
+          <p className="text-xs text-[#667085] font-medium">Loading...</p>
+        </div>
+      </div>
+    }>
       <TrackOrderContent />
     </Suspense>
   );

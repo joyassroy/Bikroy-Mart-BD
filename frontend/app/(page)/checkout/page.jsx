@@ -7,12 +7,13 @@ import Footer from "@/components/layout/Footer";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { MessageSquare, CheckCircle, Copy, ExternalLink, Home, MapPin } from "lucide-react";
+import { MessageSquare, CheckCircle, Copy, ExternalLink, Home, MapPin, Download } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useAuthChecked } from "@/helper/AuthInit";
 import { BANGLADESH_LOCATIONS, getUpazilas } from "@/lib/constants";
 import DeliveryMapPicker from "@/components/checkout/DeliveryMapPicker";
 import FloatingChatButton from "@/components/layout/FloatingChatButton";
+import { generateInvoicePDF } from "@/lib/generateInvoice";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -29,6 +30,7 @@ export default function CheckoutPage() {
   const [selectedAddressId, setSelectedAddressId] = useState("");
   const [showOrderSuccess, setShowOrderSuccess] = useState(false);
   const [placedOrderNumber, setPlacedOrderNumber] = useState("");
+  const [placedOrderData, setPlacedOrderData] = useState(null);
   const [form, setForm] = useState({
     name: "", phone: "", address: "", division: reduxLocation.division || "Dhaka", district: reduxLocation.district || "Dhaka", upazila: "",
     paymentMethod: "COD",
@@ -117,6 +119,21 @@ export default function CheckoutPage() {
       const res = await api.post("/orders", orderData);
       dispatch(clearCart());
       setPlacedOrderNumber(res.data.data.orderNumber);
+      setPlacedOrderData({
+        orderNumber: res.data.data.orderNumber,
+        items: cartItems,
+        subtotal,
+        deliveryCharge,
+        total,
+        name: form.name,
+        phone: form.phone,
+        address: form.address,
+        district: form.district,
+        division: form.division,
+        upazila: form.upazila,
+        paymentMethod: form.paymentMethod,
+        date: new Date().toLocaleDateString("en-BD"),
+      });
       setShowOrderSuccess(true);
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to place order");
@@ -128,6 +145,12 @@ export default function CheckoutPage() {
   const copyTrackingId = () => {
     navigator.clipboard.writeText(placedOrderNumber);
     toast.success("Tracking ID copied!");
+  };
+
+  const downloadInvoice = () => {
+    if (!placedOrderData) return;
+    generateInvoicePDF(placedOrderData);
+    toast.success("Invoice downloaded!");
   };
 
   return (
@@ -283,6 +306,11 @@ export default function CheckoutPage() {
             <button onClick={copyTrackingId} className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium text-gray-700 transition mb-3">
               <Copy size={16} />
               {t.copyTrackingId}
+            </button>
+
+            <button onClick={downloadInvoice} className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-white border border-[#E5E7EB] hover:bg-[#F4F7FB] rounded-xl text-sm font-medium text-[#364152] transition mb-3">
+              <Download size={16} />
+              {t.downloadInvoice}
             </button>
 
             <button onClick={() => router.push(`/track-order?order=${placedOrderNumber}`)} className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-[#EC008C] hover:bg-[#D60071] rounded-xl text-sm font-semibold text-white transition mb-3">
