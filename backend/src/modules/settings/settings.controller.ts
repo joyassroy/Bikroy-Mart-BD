@@ -14,6 +14,10 @@ const DEFAULT_SETTINGS: Record<string, string> = {
   defaultDeliveryCharge: "60",
   deliveryWithinDistrict: "60",
   deliveryOutsideDistrict: "120",
+  deliveryCutoff: "Order before 11:00 AM for same-day delivery",
+  deliveryCutoffBn: "দৈনিক ১১:০০ টার আগে অর্ডার করুন একই দিনে ডেলিভারি পান",
+  freeDeliveryText: "Free delivery on orders over ৳1500",
+  freeDeliveryTextBn: "১৫০০ টাকার উপরে অর্ডারে ফ্রি ডেলিভারি",
   jwtSecret: "",
   smtpHost: "",
   smtpPort: "587",
@@ -38,11 +42,18 @@ export const getSettings = async (req: Request, res: Response) => {
 
 export const getPublicSettings = async (req: Request, res: Response) => {
   try {
-    const publicKeys = ["storeName", "storePhone", "storeEmail", "storeAddress", "freeDeliveryMinimum", "defaultDeliveryCharge", "deliveryWithinDistrict", "deliveryOutsideDistrict", "currency"];
+    const publicKeys = ["storeName", "storePhone", "storeEmail", "storeAddress", "freeDeliveryMinimum", "defaultDeliveryCharge", "deliveryWithinDistrict", "deliveryOutsideDistrict", "deliveryCutoff", "deliveryCutoffBn", "freeDeliveryText", "freeDeliveryTextBn", "currency"];
     const settings = await prisma.setting.findMany({
       where: { key: { in: publicKeys } },
     });
     const settingsMap: Record<string, string> = {};
+    // Apply defaults first
+    for (const key of publicKeys) {
+      if (DEFAULT_SETTINGS[key]) {
+        settingsMap[key] = DEFAULT_SETTINGS[key];
+      }
+    }
+    // Override with DB values
     for (const s of settings) {
       settingsMap[s.key] = s.value;
     }

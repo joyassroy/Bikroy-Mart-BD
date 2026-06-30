@@ -76,7 +76,7 @@ export default function ProductRequestPage() {
       <main className="max-w-[1200px] mx-auto px-3 sm:px-4 md:px-6 lg:px-10 py-3 sm:py-4">
         <div className="flex items-center gap-2 mb-4">
           <Heart size={18} className="text-[#EC008C]" />
-          <h1 className="text-base sm:text-lg md:text-xl font-semibold text-[#00215B]">{t.customRequest}</h1>
+          <h1 className="text-base sm:text-lg md:text-xl font-semibold text-[#00215B]">{t.productRequest}</h1>
           <span className="text-[11px] text-[#667085]">({productRequestItems.length})</span>
         </div>
 

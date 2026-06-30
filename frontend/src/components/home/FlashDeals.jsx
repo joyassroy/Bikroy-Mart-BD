@@ -97,7 +97,6 @@ export default function FlashDeals() {
             : "DEAL",
           endsAt: deal.endsAt,
           slug: deal.product?.slug,
-          deliveryTime: deal.product?.deliveryTime || "1-2 hours",
           stock: deal.quantity - deal.sold,
         })));
       }
@@ -188,10 +187,6 @@ export default function FlashDeals() {
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <span className="text-[#EC008C] font-bold text-sm sm:text-[15px] md:text-base">৳{deal.dealPrice}</span>
                   <span className="text-[#667085] text-[11px] sm:text-xs line-through">৳{deal.price}</span>
-                </div>
-                <div className="text-[10px] sm:text-[11px] text-[#00AFCC] flex items-center gap-1">
-                  <span className="w-1 h-1 bg-[#00AFCC] rounded-full flex-shrink-0"></span>
-                  <span className="truncate">{deal.deliveryTime}</span>
                 </div>
               </div>
             </Link>

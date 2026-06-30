@@ -248,6 +248,7 @@ export const getAllProducts = async (req: Request, res: Response) => {
           category: { select: { id: true, name: true, slug: true } },
           subcategory: { select: { id: true, name: true, slug: true } },
           districtPrices: district ? { where: { district: String(district) } } : false,
+          reviews: { select: { rating: true } },
           _count: { select: { reviews: true } },
         },
         orderBy,
@@ -257,10 +258,20 @@ export const getAllProducts = async (req: Request, res: Response) => {
       prisma.product.count({ where }),
     ]);
 
+    const productIds = products.map((p) => p.id);
+    const salesRows = productIds.length > 0
+      ? await prisma.orderItem.groupBy({
+          by: ["productId"],
+          where: { productId: { in: productIds }, order: { paymentStatus: "PAID" } },
+          _sum: { quantity: true },
+        })
+      : [];
+    const salesMap = new Map(salesRows.map((r) => [r.productId, Number(r._sum.quantity || 0)]));
+
     const resolved = products.map((p) => {
       const { effectivePrice, effectiveDiscountPrice } = resolveDistrictPrice(p, district as string);
       const { districtPrices, ...rest } = p;
-      return { ...rest, effectivePrice, effectiveDiscountPrice };
+      return { ...rest, effectivePrice, effectiveDiscountPrice, totalSales: salesMap.get(p.id) || 0 };
     });
 
     return sendSuccess(res, "Products fetched", resolved, 200, {
@@ -348,16 +359,27 @@ export const getFeaturedProducts = async (req: Request, res: Response) => {
       include: {
         category: { select: { id: true, name: true, slug: true } },
         districtPrices: district ? { where: { district: String(district) } } : false,
+        reviews: { select: { rating: true } },
         _count: { select: { reviews: true } },
       },
       orderBy: { createdAt: "desc" },
       take: 12,
     });
 
+    const productIds = products.map((p) => p.id);
+    const salesRows = productIds.length > 0
+      ? await prisma.orderItem.groupBy({
+          by: ["productId"],
+          where: { productId: { in: productIds }, order: { paymentStatus: "PAID" } },
+          _sum: { quantity: true },
+        })
+      : [];
+    const salesMap = new Map(salesRows.map((r) => [r.productId, Number(r._sum.quantity || 0)]));
+
     const resolved = products.map((p) => {
       const { effectivePrice, effectiveDiscountPrice } = resolveDistrictPrice(p, district as string);
       const { districtPrices, ...rest } = p;
-      return { ...rest, effectivePrice, effectiveDiscountPrice };
+      return { ...rest, effectivePrice, effectiveDiscountPrice, totalSales: salesMap.get(p.id) || 0 };
     });
 
     return sendSuccess(res, "Featured products fetched", resolved);

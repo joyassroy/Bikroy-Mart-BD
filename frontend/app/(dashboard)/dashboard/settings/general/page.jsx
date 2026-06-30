@@ -128,6 +128,52 @@ export default function GeneralSettings() {
           </div>
         </div>
 
+        <div className="mb-6 border-b pb-4">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">Promo Bar Text</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Free Delivery Text (English)</label>
+              <input
+                type="text"
+                value={settings.freeDeliveryText || ""}
+                onChange={(e) => handleChange("freeDeliveryText", e.target.value)}
+                className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#EC008C] focus:outline-none"
+                placeholder="Free delivery on orders over ৳1500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Free Delivery Text (বাংলা)</label>
+              <input
+                type="text"
+                value={settings.freeDeliveryTextBn || ""}
+                onChange={(e) => handleChange("freeDeliveryTextBn", e.target.value)}
+                className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#EC008C] focus:outline-none"
+                placeholder="১৫০০ টাকার উপরে অর্ডারে ফ্রি ডেলিভারি"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Cutoff Text (English)</label>
+              <input
+                type="text"
+                value={settings.deliveryCutoff || ""}
+                onChange={(e) => handleChange("deliveryCutoff", e.target.value)}
+                className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#EC008C] focus:outline-none"
+                placeholder="Order before 11:00 AM for same-day delivery"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Cutoff Text (বাংলা)</label>
+              <input
+                type="text"
+                value={settings.deliveryCutoffBn || ""}
+                onChange={(e) => handleChange("deliveryCutoffBn", e.target.value)}
+                className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#EC008C] focus:outline-none"
+                placeholder="দৈনিক ১১:০০ টার আগে অর্ডার করুন একই দিনে ডেলিভারি পান"
+              />
+            </div>
+          </div>
+        </div>
+
         <div className="flex justify-end mt-6">
           <button
             type="submit"

@@ -79,7 +79,6 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
           dealPrice: deal.dealPrice,
           image: product.images?.[0] || null,
           discount,
-          deliveryTime: product.deliveryTime || "1-2 hours",
           isPlaceholder: false,
           badge: null,
         };
@@ -98,7 +97,6 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
           dealPrice: offer.offerPrice,
           image: firstItem?.images?.[0] || null,
           discount,
-          deliveryTime: firstItem?.deliveryTime || "1-2 hours",
           isPlaceholder: false,
           badge: type === "BOGO" ? `Buy ${offer.buyQuantity} Get ${offer.getQuantity}` : type === "COMBO" ? "Bundle Deal" : null,
           items: offer.items,
@@ -113,7 +111,6 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
         image: null,
         emoji: p.emoji,
         discount: 30,
-        deliveryTime: "1-2 hours",
         isPlaceholder: true,
         badge: null,
       }));
@@ -241,10 +238,6 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
                       You save ৳{Math.max(0, item.price - item.dealPrice)}
                     </div>
                   )}
-                  <div className="text-[10px] sm:text-[11px] text-[#00AFCC] flex items-center gap-1">
-                    <span className="w-1 h-1 bg-[#00AFCC] rounded-full flex-shrink-0"></span>
-                    <span className="truncate">{item.deliveryTime}</span>
-                  </div>
                 </div>
               </Link>
             );

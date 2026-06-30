@@ -2,8 +2,53 @@
 import { useEffect, useRef, useState } from "react";
 import { MapPin, Crosshair, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
+import { BANGLADESH_LOCATIONS } from "@/lib/constants";
 
-export default function DeliveryMapPicker({ coords, onCoordsChange }) {
+function findClosestDistrict(city) {
+  if (!city) return null;
+  const allDistricts = [];
+  for (const division of BANGLADESH_LOCATIONS) {
+    for (const district of division.districts) {
+      allDistricts.push({ ...district, division: division.division });
+    }
+  }
+  const term = city.toLowerCase().trim();
+  for (const d of allDistricts) {
+    if (d.name.toLowerCase().includes(term) || term.includes(d.name.toLowerCase())) {
+      return { division: d.division, district: d.name };
+    }
+  }
+  for (const d of allDistricts) {
+    for (const upazila of d.upazilas) {
+      if (upazila.toLowerCase().includes(term) || term.includes(upazila.toLowerCase())) {
+        return { division: d.division, district: d.name };
+      }
+    }
+  }
+  return null;
+}
+
+async function reverseGeocode(lat, lng) {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=en&addressdetails=1`,
+      { headers: { "Accept-Language": "en" } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    const addr = data.address || {};
+    const city = addr.city || addr.state_district || addr.town || addr.village || addr.county || "";
+    const match = findClosestDistrict(city);
+    if (match) {
+      return { division: match.division, district: match.district, upazila: addr.suburb || addr.neighbourhood || "" };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+export default function DeliveryMapPicker({ coords, onCoordsChange, onLocationDetected }) {
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
   const markerRef = useRef(null);
@@ -101,10 +146,19 @@ export default function DeliveryMapPicker({ coords, onCoordsChange }) {
     }
     setLoading(true);
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        onCoordsChange({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
+      async (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        onCoordsChange({ latitude: lat, longitude: lng });
+
+        const location = await reverseGeocode(lat, lng);
+        if (location && onLocationDetected) {
+          onLocationDetected(location);
+          toast.success(`Location detected: ${location.district}, ${location.division}`);
+        } else {
+          toast.success("Location captured! Drag the pin to adjust.");
+        }
         setLoading(false);
-        toast.success("Location captured! Drag the pin to adjust.");
       },
       () => {
         setLoading(false);
@@ -124,7 +178,7 @@ export default function DeliveryMapPicker({ coords, onCoordsChange }) {
           className="flex items-center gap-1.5 px-3 py-1.5 bg-[#00AFCC] text-white rounded-lg text-[11px] font-semibold hover:bg-[#009BB5] disabled:opacity-50 transition"
         >
           {loading ? <Loader2 size={12} className="animate-spin" /> : <Crosshair size={12} />}
-          {loading ? "Locating..." : "Use My Current Location"}
+          {loading ? "Detecting location..." : "Use My Current Location"}
         </button>
         {coords?.latitude && (
           <span className="text-[10px] text-[#667085]">

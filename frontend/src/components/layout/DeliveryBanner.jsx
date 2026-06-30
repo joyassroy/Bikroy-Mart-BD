@@ -1,9 +1,25 @@
 "use client";
+import { useState, useEffect } from "react";
 import { Clock } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
+import api from "@/lib/axios";
 
 export default function DeliveryBanner() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const [texts, setTexts] = useState({ deliveryCutoff: "", freeDelivery: "" });
+
+  useEffect(() => {
+    api.get("/settings/public")
+      .then((res) => {
+        const s = res.data.data || {};
+        const isBn = language === "bn";
+        setTexts({
+          deliveryCutoff: isBn ? (s.deliveryCutoffBn || s.deliveryCutoff || t.deliveryCutoff) : (s.deliveryCutoff || t.deliveryCutoff),
+          freeDelivery: isBn ? (s.freeDeliveryTextBn || s.freeDeliveryText || t.freeDelivery) : (s.freeDeliveryText || t.freeDelivery),
+        });
+      })
+      .catch(() => {});
+  }, [language]);
 
   return (
     <div className="fixed bottom-[60px] left-0 right-0 z-[80] md:hidden pointer-events-none px-3 pb-2">
@@ -14,10 +30,10 @@ export default function DeliveryBanner() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-white text-[11px] font-semibold leading-tight truncate">
-              {t.deliveryCutoff}
+              {texts.deliveryCutoff || t.deliveryCutoff}
             </p>
             <p className="text-white/60 text-[9px] mt-0.5">
-              {t.freeDelivery}
+              {texts.freeDelivery || t.freeDelivery}
             </p>
           </div>
         </div>

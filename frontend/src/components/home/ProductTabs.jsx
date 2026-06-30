@@ -38,12 +38,12 @@ export default function ProductTabs() {
     } catch (err) {
       console.error(err);
       setProducts([
-        { id: "1", name: "Brooke Bond Taaza Tea 400gm", price: 250, images: ["🍵"], deliveryTime: "1-2 hours" },
-        { id: "2", name: "ACI Pure Salt 1kg", price: 42, images: ["🧂"], deliveryTime: "1-2 hours" },
-        { id: "3", name: "Pran Muri 250gm", price: 40, images: ["🍘"], deliveryTime: "1-2 hours" },
-        { id: "4", name: "Wheel Laundry Soap 125gm", price: 30, dealPrice: 29, images: ["🧼"], deliveryTime: "1-2 hours", badge: "OFF" },
-        { id: "5", name: "Vim Dish Wash Bar 300gm", price: 40, images: ["🫧"], deliveryTime: "1-2 hours" },
-        { id: "6", name: "Dano Daily Pusti Milk 500gm", price: 400, dealPrice: 380, images: ["🥛"], deliveryTime: "1-2 hours", badge: "5% OFF" },
+        { id: "1", name: "Brooke Bond Taaza Tea 400gm", price: 250, images: ["🍵"] },
+        { id: "2", name: "ACI Pure Salt 1kg", price: 42, images: ["🧂"] },
+        { id: "3", name: "Pran Muri 250gm", price: 40, images: ["🍘"] },
+        { id: "4", name: "Wheel Laundry Soap 125gm", price: 30, dealPrice: 29, images: ["🧼"], badge: "OFF" },
+        { id: "5", name: "Vim Dish Wash Bar 300gm", price: 40, images: ["🫧"] },
+        { id: "6", name: "Dano Daily Pusti Milk 500gm", price: 400, dealPrice: 380, images: ["🥛"], badge: "5% OFF" },
       ]);
     } finally {
       setLoading(false);

@@ -21,7 +21,7 @@ const bn = {
   categories: "ক্যাটাগরি",
   deals: "ডিল",
   contact: "যোগাযোগ",
-  customRequest: "কাস্টম রিকোয়েস্ট",
+  customRequest: "পণ্য অনুরোধ",
 
   // Hero
   shopNow: "এখনই কিনুন",

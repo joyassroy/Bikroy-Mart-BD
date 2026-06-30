@@ -21,7 +21,7 @@ const en = {
   categories: "Categories",
   deals: "Deals",
   contact: "Contact",
-  customRequest: "Custom Request",
+  customRequest: "Product Request",
 
   // Hero
   shopNow: "Shop Now",

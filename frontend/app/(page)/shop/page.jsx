@@ -12,6 +12,7 @@ import useDistrict from "@/helper/useDistrict";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import FloatingChatButton from "@/components/layout/FloatingChatButton";
+import FloatingCartButton from "@/components/home/FloatingCartButton";
 
 const OFFER_TITLES = {
   STOCK_CLEARANCE: "Stock Clearance Sale",
@@ -409,7 +410,7 @@ function ShopContent() {
               </div>
             ) : (
               <>
-                <div className={`grid gap-2.5 sm:gap-3 ${viewMode === "grid" ? "grid-cols-2 md:grid-cols-3 lg:grid-cols-4" : "grid-cols-1 sm:grid-cols-2"}`}>
+                <div className={`grid gap-2.5 sm:gap-3 ${viewMode === "grid" ? "grid-cols-2 md:grid-cols-3 lg:grid-cols-4" : "grid-cols-1"}`}>
                   {products.map((product) => (
                     <ProductCard
                       key={product.id}
@@ -498,6 +499,7 @@ function ShopContent() {
         </button>
       )}
 
+      <FloatingCartButton />
       <FloatingChatButton />
       <Footer />
     </div>

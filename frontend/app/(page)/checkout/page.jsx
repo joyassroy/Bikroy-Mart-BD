@@ -39,6 +39,15 @@ export default function CheckoutPage() {
   const [upazilas, setUpazilas] = useState([]);
   const [deliveryCoords, setDeliveryCoords] = useState({ latitude: null, longitude: null });
 
+  const handleLocationDetected = (location) => {
+    setForm((prev) => ({
+      ...prev,
+      division: location.division || prev.division,
+      district: location.district || prev.district,
+      upazila: location.upazila || prev.upazila,
+    }));
+  };
+
   useEffect(() => {
     const div = BANGLADESH_LOCATIONS.find((d) => d.division === form.division);
     setDistricts(div ? div.districts.map((d) => d.name) : []);
@@ -233,7 +242,7 @@ export default function CheckoutPage() {
                 <label className="block text-[10px] sm:text-[11px] font-semibold text-[#364152] mb-1">{t.apartment}</label>
                 <textarea placeholder={t.apartment} required rows={3} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="input-field !h-auto min-h-[70px]" />
               </div>
-              <DeliveryMapPicker coords={deliveryCoords} onCoordsChange={setDeliveryCoords} />
+              <DeliveryMapPicker coords={deliveryCoords} onCoordsChange={setDeliveryCoords} onLocationDetected={handleLocationDetected} />
             </div>
 
             <div className="bg-white rounded-lg p-3 sm:p-4 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">

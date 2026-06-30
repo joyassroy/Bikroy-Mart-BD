@@ -49,6 +49,7 @@ export default function Header() {
   const [searchQuery, setSearchQuery] = useState("");
   const [apiCategories, setApiCategories] = useState([]);
   const [expandedCats, setExpandedCats] = useState({});
+  const [promoTexts, setPromoTexts] = useState({ freeDelivery: "", deliveryCutoff: "" });
   const megaMenuRef = useRef(null);
   const cartItems = useSelector((state) => state.cart.items);
   const user = useSelector((state) => state.user.data);
@@ -102,6 +103,19 @@ export default function Header() {
   }, [drawerOpen]);
 
   useEffect(() => {
+    api.get("/settings/public")
+      .then((res) => {
+        const s = res.data.data || {};
+        const isBn = language === "bn";
+        setPromoTexts({
+          freeDelivery: isBn ? (s.freeDeliveryTextBn || s.freeDeliveryText || t.freeDelivery) : (s.freeDeliveryText || t.freeDelivery),
+          deliveryCutoff: isBn ? (s.deliveryCutoffBn || s.deliveryCutoff || t.deliveryCutoff) : (s.deliveryCutoff || t.deliveryCutoff),
+        });
+      })
+      .catch(() => {});
+  }, [language]);
+
+  useEffect(() => {
     document.body.style.overflow = drawerOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [drawerOpen]);
@@ -114,13 +128,13 @@ export default function Header() {
           <div className="max-w-[1200px] mx-auto px-4 md:px-6 lg:px-10 py-1.5 flex justify-between items-center">
             <div className="font-semibold whitespace-nowrap overflow-hidden flex-1 mr-4">
               <div className="inline-block animate-marquee">
-                <span className="mx-8">{t.freeDelivery}</span>
+                <span className="mx-8">{promoTexts.freeDelivery || t.freeDelivery}</span>
                 <span className="mx-8">|</span>
-                <span className="mx-8">⏰ {t.deliveryCutoff}</span>
+                <span className="mx-8">⏰ {promoTexts.deliveryCutoff || t.deliveryCutoff}</span>
                 <span className="mx-8">|</span>
-                <span className="mx-8">{t.freeDelivery}</span>
+                <span className="mx-8">{promoTexts.freeDelivery || t.freeDelivery}</span>
                 <span className="mx-8">|</span>
-                <span className="mx-8">⏰ {t.deliveryCutoff}</span>
+                <span className="mx-8">⏰ {promoTexts.deliveryCutoff || t.deliveryCutoff}</span>
               </div>
             </div>
             <div className="flex gap-5 flex-shrink-0">
@@ -535,6 +549,12 @@ export default function Header() {
               </div>
               <span className="text-[9px] font-semibold">{t.categories}</span>
             </button>
+            <Link href="/custom-request" className={`flex flex-col items-center gap-0.5 min-w-[50px] ${pathname === "/custom-request" ? "text-[#EC008C]" : "text-[#667085]"}`}>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center transition ${pathname === "/custom-request" ? "bg-[#FCE8F3]" : "bg-[#F4F7FB]"}`}>
+                <ClipboardList size={18} />
+              </div>
+              <span className="text-[9px] font-semibold">{t.customRequest}</span>
+            </Link>
             <Link href="/cart" className={`relative flex flex-col items-center gap-0.5 min-w-[50px] ${pathname === "/cart" ? "text-[#EC008C]" : "text-[#667085]"}`}>
               <div className={`relative w-8 h-8 rounded-full flex items-center justify-center transition ${pathname === "/cart" ? "bg-[#FCE8F3]" : "bg-[#F4F7FB]"}`}>
                 <ShoppingCart size={18} />
