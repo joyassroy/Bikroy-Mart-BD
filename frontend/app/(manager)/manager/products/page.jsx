@@ -22,10 +22,6 @@ export default function ManagerProductsPage() {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const user = useSelector((state) => state.user?.data);
-  const [districtPrice, setDistrictPrice] = useState("");
-  const [districtDiscountPrice, setDistrictDiscountPrice] = useState("");
-  const [existingDistrictPrice, setExistingDistrictPrice] = useState(null);
-  const [savingDistrict, setSavingDistrict] = useState(false);
   const [managerProfile, setManagerProfile] = useState(null);
   const [existingImages, setExistingImages] = useState([]);
 
@@ -79,55 +75,22 @@ export default function ManagerProductsPage() {
     });
     setSelectedFiles([]);
     setExistingImages(p.images || []);
-    setDistrictPrice("");
-    setDistrictDiscountPrice("");
-    setExistingDistrictPrice(null);
 
+    // Fetch DistrictPrice for manager's district to pre-fill price
     if (user?.assignedDistrict) {
       api.get(`/products/${p.id}/district-prices`).then((res) => {
-        const all = res.data.data || [];
-        const myDistrict = all.find((dp) => dp.district === user.assignedDistrict);
-        if (myDistrict) {
-          setExistingDistrictPrice(myDistrict);
-          setDistrictPrice(myDistrict.price?.toString() || "");
-          setDistrictDiscountPrice(myDistrict.discountPrice?.toString() || "");
+        const dp = (res.data.data || []).find((d) => d.district === user.assignedDistrict);
+        if (dp) {
+          setForm((prev) => ({
+            ...prev,
+            price: dp.price?.toString() || prev.price,
+            discountPrice: dp.discountPrice?.toString() || "",
+          }));
         }
       }).catch(() => {});
     }
 
     setShowModal(true);
-  };
-
-  const handleDistrictPriceSave = async () => {
-    if (!districtPrice) { toast.error("Enter a price"); return; }
-    setSavingDistrict(true);
-    try {
-      await api.post(`/products/${editId}/district-prices`, {
-        district: user.assignedDistrict,
-        price: parseFloat(districtPrice),
-        discountPrice: districtDiscountPrice ? parseFloat(districtDiscountPrice) : null,
-      });
-      toast.success(`Price set for ${user.assignedDistrict}`);
-      const res = await api.get(`/products/${editId}/district-prices`);
-      const all = res.data.data || [];
-      setExistingDistrictPrice(all.find((dp) => dp.district === user.assignedDistrict) || null);
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to save");
-    } finally {
-      setSavingDistrict(false);
-    }
-  };
-
-  const handleDistrictPriceDelete = async () => {
-    try {
-      await api.delete(`/products/${editId}/district-prices/${user.assignedDistrict}`);
-      setExistingDistrictPrice(null);
-      setDistrictPrice("");
-      setDistrictDiscountPrice("");
-      toast.success("District price removed");
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to remove");
-    }
   };
 
   const handleChange = (e) => {
@@ -137,9 +100,9 @@ export default function ManagerProductsPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.name.trim()) { toast.error("Product name is required"); return; }
-    if (!form.price) { toast.error("Price is required"); return; }
-    if (!form.categoryId) { toast.error("Category is required"); return; }
+    if (!editId && !form.name.trim()) { toast.error("Product name is required"); return; }
+    if (!editId && !form.price) { toast.error("Price is required"); return; }
+    if (!editId && !form.categoryId) { toast.error("Category is required"); return; }
 
     try {
       setSubmitting(true);
@@ -231,6 +194,8 @@ export default function ManagerProductsPage() {
               <button onClick={() => setShowModal(false)} className="p-1 hover:bg-gray-100 rounded"><X size={18} /></button>
             </div>
             <form onSubmit={handleSubmit} className="p-4 space-y-3">
+              {!editId && (
+              <>
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1">Product Name *</label>
                 <input name="name" value={form.name} onChange={handleChange}
@@ -321,35 +286,29 @@ export default function ManagerProductsPage() {
                 <input type="checkbox" name="isFeatured" checked={form.isFeatured} onChange={handleChange} className="rounded" />
                 Featured Product
               </label>
+              </>
+              )}
 
-              {editId && user?.assignedDistrict && (
-                <div className="border-t border-[#E5E7EB] pt-3 mt-2">
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">
-                    Price for {user.assignedDistrict}
-                  </label>
-                  <p className="text-[10px] text-gray-400 mb-2">Set your district-specific price (overrides base price for your district)</p>
-                  <div className="flex gap-2 items-end">
-                    <div className="flex-1">
-                      <input type="number" step="0.01" placeholder="District Price" value={districtPrice}
-                        onChange={(e) => setDistrictPrice(e.target.value)}
+              {editId && (
+                <div className="border-t border-[#E5E7EB] pt-3 mt-2 space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1">
+                        Price (৳) — {user?.assignedDistrict || "District"}
+                      </label>
+                      <input name="price" type="number" value={form.price} onChange={handleChange}
                         className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:border-[#EC008C]" />
                     </div>
-                    <div className="flex-1">
-                      <input type="number" step="0.01" placeholder="Discount Price" value={districtDiscountPrice}
-                        onChange={(e) => setDistrictDiscountPrice(e.target.value)}
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1">Discount Price (৳)</label>
+                      <input name="discountPrice" type="number" value={form.discountPrice} onChange={handleChange}
                         className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:border-[#EC008C]" />
                     </div>
-                    <button type="button" onClick={handleDistrictPriceSave} disabled={savingDistrict}
-                      className="px-3 py-2 bg-[#00AFCC] text-white rounded-lg text-xs font-semibold hover:bg-[#009BB5] disabled:opacity-50 transition flex items-center gap-1">
-                      {savingDistrict ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
-                      Save
-                    </button>
-                    {existingDistrictPrice && (
-                      <button type="button" onClick={handleDistrictPriceDelete}
-                        className="px-3 py-2 bg-red-500 text-white rounded-lg text-xs font-semibold hover:bg-red-600 transition flex items-center gap-1">
-                        <Trash2 size={12} />
-                      </button>
-                    )}
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">Stock</label>
+                    <input name="stock" type="number" value={form.stock} onChange={handleChange}
+                      className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:border-[#EC008C]" />
                   </div>
                 </div>
               )}

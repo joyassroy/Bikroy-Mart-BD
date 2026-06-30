@@ -91,13 +91,16 @@ export const getAllProducts = async (req: Request, res: Response) => {
           select: { id: true },
         });
         const managerIds = managers.map((m) => m.id);
+        const dpPlaceholder = `$${idx}`;
+        const managerPlaceholders = managerIds.map((_, i) => `$${idx + 1 + i}`);
+        idx += 1 + managerIds.length;
+        params.push(String(district), ...managerIds);
+        const parts = [`EXISTS (SELECT 1 FROM "DistrictPrice" dp WHERE dp."productId" = p.id AND dp."district" = ${dpPlaceholder})`];
         if (managerIds.length > 0) {
-          conditions.push(`(p."managerId" IN (${managerIds.map((_, i) => `$${idx + i}`).join(",")}) OR p."managerId" IS NULL)`);
-          params.push(...managerIds);
-          idx += managerIds.length;
-        } else {
-          conditions.push(`p."managerId" IS NULL`);
+          parts.push(`p."managerId" IN (${managerPlaceholders.join(",")})`);
         }
+        parts.push(`p."managerId" IS NULL`);
+        conditions.push(`(${parts.join(" OR ")})`);
       }
 
       // Similarity threshold — only include products with some match
@@ -143,40 +146,56 @@ export const getAllProducts = async (req: Request, res: Response) => {
 
       const total = (countResult as any[])[0]?.total || 0;
 
-      const resolved = (products as any[]).map((p) => ({
-        id: p.id,
-        name: p.name,
-        nameBn: p.nameBn,
-        slug: p.slug,
-        description: p.description,
-        descriptionBn: p.descriptionBn,
-        price: p.price,
-        discountPrice: p.discountPrice,
-        unit: p.unit,
-        minQuantity: p.minQuantity,
-        stock: p.stock,
-        sku: p.sku,
-        barcode: p.barcode,
-        images: p.images,
-        isFeatured: p.isFeatured,
-        isActive: p.isActive,
-        deliveryTime: p.deliveryTime,
-        badges: p.badges,
-        createdAt: p.createdAt,
-        updatedAt: p.updatedAt,
-        managerId: p.managerId,
-        categoryId: p.categoryId,
-        subcategoryId: p.subcategoryId,
-        category: p.categoryId_value
-          ? { id: p.categoryId_value, name: p.categoryName, slug: p.categorySlug }
-          : null,
-        subcategory: p.subcategoryId_value
-          ? { id: p.subcategoryId_value, name: p.subcategoryName, slug: p.subcategorySlug }
-          : null,
-        effectivePrice: p.price,
-        effectiveDiscountPrice: p.discountPrice,
-        relevance: Number(p.relevance),
-      }));
+      const productIds = (products as any[]).map((p) => p.id);
+
+      let districtPriceMap = new Map<string, { price: number; discountPrice: number | null }>();
+      if (district && productIds.length > 0) {
+        const dpRows = await prisma.districtPrice.findMany({
+          where: { productId: { in: productIds }, district: String(district) },
+          select: { productId: true, price: true, discountPrice: true },
+        });
+        for (const dp of dpRows) {
+          districtPriceMap.set(dp.productId, { price: dp.price, discountPrice: dp.discountPrice });
+        }
+      }
+
+      const resolved = (products as any[]).map((p) => {
+        const dp = districtPriceMap.get(p.id);
+        return {
+          id: p.id,
+          name: p.name,
+          nameBn: p.nameBn,
+          slug: p.slug,
+          description: p.description,
+          descriptionBn: p.descriptionBn,
+          price: p.price,
+          discountPrice: p.discountPrice,
+          unit: p.unit,
+          minQuantity: p.minQuantity,
+          stock: p.stock,
+          sku: p.sku,
+          barcode: p.barcode,
+          images: p.images,
+          isFeatured: p.isFeatured,
+          isActive: p.isActive,
+          deliveryTime: p.deliveryTime,
+          badges: p.badges,
+          createdAt: p.createdAt,
+          updatedAt: p.updatedAt,
+          managerId: p.managerId,
+          categoryId: p.categoryId,
+          subcategoryId: p.subcategoryId,
+          category: p.categoryId_value
+            ? { id: p.categoryId_value, name: p.categoryName, slug: p.categorySlug }
+            : null,
+          subcategory: p.subcategoryId_value
+            ? { id: p.subcategoryId_value, name: p.subcategoryName, slug: p.subcategorySlug }
+            : null,
+          effectivePrice: dp ? dp.price : p.price,
+          effectiveDiscountPrice: dp ? dp.discountPrice : p.discountPrice,
+          relevance: Number(p.relevance),
+        };
+      });
 
       return sendSuccess(res, "Products fetched", resolved, 200, {
         page: pageNum,
@@ -229,7 +248,13 @@ export const getAllProducts = async (req: Request, res: Response) => {
       });
       const managerIds = managers.map((m) => m.id);
       where.AND = [
-        { OR: [{ managerId: { in: managerIds } }, { managerId: null }] },
+        {
+          OR: [
+            { managerId: { in: managerIds } },
+            { managerId: null },
+            { districtPrices: { some: { district: String(district) } } },
+          ],
+        },
       ];
     }
 
@@ -351,6 +376,7 @@ export const getFeaturedProducts = async (req: Request, res: Response) => {
       where.OR = [
         { managerId: { in: managerIds } },
         { managerId: null },
+        { districtPrices: { some: { district: String(district) } } },
       ];
     }
 
@@ -445,13 +471,18 @@ export const updateProduct = async (req: AuthRequest, res: Response) => {
       subcategoryId, isFeatured, deliveryTime, badges, isActive
     } = req.body;
 
-    // Check ownership for managers
+    const productId = String(req.params.id);
+    let existing: any = null;
+    let managerProfile: any = null;
+
+    // Manager: fetch product + profile for ownership check and district price logic
     if (req.user?.role === "MANAGER") {
-      const existing = await prisma.product.findUnique({ where: { id: String(req.params.id) } });
+      existing = await prisma.product.findUnique({ where: { id: productId } });
       if (!existing) return sendError(res, "Product not found", 404);
-      const profile = await prisma.managerProfile.findUnique({ where: { userId: req.user.userId } });
-      if (!profile || existing.managerId !== profile.id) {
-        return sendError(res, "You can only edit your own products", 403);
+      managerProfile = await prisma.managerProfile.findUnique({ where: { userId: req.user.userId } });
+      if (!managerProfile) return sendError(res, "Manager profile not found", 403);
+      if (existing.managerId && existing.managerId !== managerProfile.id) {
+        return sendError(res, "You can only edit your own or admin-created products", 403);
       }
     }
 
@@ -459,7 +490,6 @@ export const updateProduct = async (req: AuthRequest, res: Response) => {
     let finalImages: string[] | undefined;
     const existingImagesRaw = req.body.existingImages;
     if (existingImagesRaw !== undefined) {
-      // Client sent the list of images to keep
       finalImages = Array.isArray(existingImagesRaw) ? existingImagesRaw : [existingImagesRaw];
     }
 
@@ -469,27 +499,50 @@ export const updateProduct = async (req: AuthRequest, res: Response) => {
     }
 
     const updateData: any = {};
-    if (name) updateData.name = name;
-    if (nameBn) updateData.nameBn = nameBn;
-    if (description) updateData.description = description;
-    if (descriptionBn) updateData.descriptionBn = descriptionBn;
-    if (price) updateData.price = parseFloat(price);
-    if (discountPrice !== undefined) updateData.discountPrice = discountPrice ? parseFloat(discountPrice) : null;
-    if (unit) updateData.unit = unit;
-    if (minQuantity) updateData.minQuantity = parseFloat(minQuantity);
-    if (stock) updateData.stock = parseInt(stock, 10);
-    if (sku) updateData.sku = sku;
-    if (barcode) updateData.barcode = barcode;
-    if (categoryId) updateData.categoryId = categoryId;
-    if (subcategoryId) updateData.subcategoryId = subcategoryId;
-    if (isFeatured !== undefined) updateData.isFeatured = isFeatured === 'true' || isFeatured === true;
-    if (isActive !== undefined) updateData.isActive = isActive === 'true' || isActive === true;
-    if (deliveryTime) updateData.deliveryTime = deliveryTime;
-    if (badges) updateData.badges = Array.isArray(badges) ? badges : [badges];
-    if (finalImages !== undefined) updateData.images = finalImages;
+
+    if (req.user?.role === "MANAGER") {
+      // Managers can update stock and images on base product
+      if (stock) updateData.stock = parseInt(stock, 10);
+      if (finalImages !== undefined) updateData.images = finalImages;
+
+      // Price/discountPrice → DistrictPrice for manager's assigned district
+      if (price || discountPrice !== undefined) {
+        const dpWhere = { productId_district: { productId, district: managerProfile.assignedDistrict } };
+        const existingDp = await prisma.districtPrice.findUnique({ where: dpWhere });
+        const priceVal = price ? parseFloat(price) : (existingDp?.price ?? existing.price);
+        const discVal = discountPrice !== undefined
+          ? (discountPrice ? parseFloat(discountPrice) : null)
+          : (existingDp?.discountPrice ?? null);
+        await prisma.districtPrice.upsert({
+          where: dpWhere,
+          update: { price: priceVal, discountPrice: discVal },
+          create: { productId, district: managerProfile.assignedDistrict, price: priceVal, discountPrice: discVal },
+        });
+      }
+    } else {
+      // Admin can update everything
+      if (name) updateData.name = name;
+      if (nameBn) updateData.nameBn = nameBn;
+      if (description) updateData.description = description;
+      if (descriptionBn) updateData.descriptionBn = descriptionBn;
+      if (price) updateData.price = parseFloat(price);
+      if (discountPrice !== undefined) updateData.discountPrice = discountPrice ? parseFloat(discountPrice) : null;
+      if (unit) updateData.unit = unit;
+      if (minQuantity) updateData.minQuantity = parseFloat(minQuantity);
+      if (stock) updateData.stock = parseInt(stock, 10);
+      if (sku) updateData.sku = sku;
+      if (barcode) updateData.barcode = barcode;
+      if (categoryId) updateData.categoryId = categoryId;
+      if (subcategoryId) updateData.subcategoryId = subcategoryId;
+      if (isFeatured !== undefined) updateData.isFeatured = isFeatured === 'true' || isFeatured === true;
+      if (isActive !== undefined) updateData.isActive = isActive === 'true' || isActive === true;
+      if (deliveryTime) updateData.deliveryTime = deliveryTime;
+      if (badges) updateData.badges = Array.isArray(badges) ? badges : [badges];
+      if (finalImages !== undefined) updateData.images = finalImages;
+    }
 
     const product = await prisma.product.update({
-      where: { id: String(req.params.id) },
+      where: { id: productId },
       data: updateData,
     });
     return sendSuccess(res, "Product updated", product);

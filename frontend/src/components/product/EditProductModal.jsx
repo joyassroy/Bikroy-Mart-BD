@@ -4,8 +4,12 @@ import api from "@/lib/axios";
 import { ALL_DISTRICTS } from "@/lib/constants";
 import toast from "react-hot-toast";
 import { X, Image as ImageIcon, Loader2, Plus, Trash2 } from "lucide-react";
+import { useSelector } from "react-redux";
 
 export default function EditProductModal({ productId, onClose, onUpdated }) {
+  const user = useSelector((state) => state.user?.data);
+  const isManager = user?.role === "MANAGER";
+
   const [form, setForm] = useState({
     name: "", nameBn: "", description: "", price: "", discountPrice: "",
     unit: "piece", minQuantity: "1", stock: "", sku: "", categoryId: "",
@@ -25,11 +29,14 @@ export default function EditProductModal({ productId, onClose, onUpdated }) {
   const [savingDistrict, setSavingDistrict] = useState(false);
 
   useEffect(() => {
-    Promise.all([
+    const requests = [
       api.get(`/products/${productId}`),
       api.get("/categories"),
-      api.get(`/products/${productId}/district-prices`),
-    ]).then(([prodRes, catRes, distRes]) => {
+    ];
+    if (!isManager) {
+      requests.push(api.get(`/products/${productId}/district-prices`));
+    }
+    Promise.all(requests).then(([prodRes, catRes, distRes]) => {
       const p = prodRes.data.data;
       setForm({
         name: p.name || "", nameBn: p.nameBn || "", description: p.description || "",
@@ -41,18 +48,34 @@ export default function EditProductModal({ productId, onClose, onUpdated }) {
         isFeatured: p.isFeatured || false, isActive: p.isActive ?? true,
       });
       setExistingImages(p.images || []);
-      setDistrictPrices(distRes.data.data || []);
+      if (!isManager && distRes) {
+        setDistrictPrices(distRes.data.data || []);
+      }
       setCategories(catRes.data.data || []);
       if (p.categoryId) {
         api.get(`/subcategories?categoryId=${p.categoryId}`).then((res) => {
           setSubcategories(res.data.data || []);
         });
       }
+
+      // Manager: pre-fill price from DistrictPrice for their assigned district
+      if (isManager && user?.assignedDistrict) {
+        api.get(`/products/${productId}/district-prices`).then((dpRes) => {
+          const dp = (dpRes.data.data || []).find((d) => d.district === user.assignedDistrict);
+          if (dp) {
+            setForm((prev) => ({
+              ...prev,
+              price: dp.price?.toString() || prev.price,
+              discountPrice: dp.discountPrice?.toString() || "",
+            }));
+          }
+        }).catch(() => {});
+      }
     }).catch(() => {
       toast.error("Failed to load product");
       onClose();
     }).finally(() => setLoading(false));
-  }, [productId]);
+  }, [productId, isManager, user?.assignedDistrict]);
 
   useEffect(() => {
     if (form.categoryId) {
@@ -170,6 +193,9 @@ export default function EditProductModal({ productId, onClose, onUpdated }) {
 
         <form onSubmit={handleSubmit} className="p-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+
+            {!isManager && (
+            <>
             <div className="md:col-span-2">
               <label className="block text-[11px] font-semibold text-[#364152] mb-1">Product Name *</label>
               <input type="text" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -201,9 +227,14 @@ export default function EditProductModal({ productId, onClose, onUpdated }) {
                 {subcategories.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
               </select>
             </div>
+            </>
+            )}
+
             <div>
-              <label className="block text-[11px] font-semibold text-[#364152] mb-1">Price (৳) *</label>
-              <input type="number" required step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })}
+              <label className="block text-[11px] font-semibold text-[#364152] mb-1">
+                Price (৳) {isManager ? `— ${user?.assignedDistrict || "District"}` : "*"}
+              </label>
+              <input type="number" required={!isManager} step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })}
                 className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#EC008C]" />
             </div>
             <div>
@@ -211,6 +242,9 @@ export default function EditProductModal({ productId, onClose, onUpdated }) {
               <input type="number" step="0.01" value={form.discountPrice} onChange={(e) => setForm({ ...form, discountPrice: e.target.value })}
                 className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#EC008C]" />
             </div>
+
+            {!isManager && (
+            <>
             <div>
               <label className="block text-[11px] font-semibold text-[#364152] mb-1">Unit</label>
               <select value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })}
@@ -226,21 +260,30 @@ export default function EditProductModal({ productId, onClose, onUpdated }) {
               <input type="number" step="0.01" value={form.minQuantity} onChange={(e) => setForm({ ...form, minQuantity: e.target.value })}
                 className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#EC008C]" />
             </div>
+            </>
+            )}
+
             <div>
               <label className="block text-[11px] font-semibold text-[#364152] mb-1">Stock *</label>
               <input type="number" required value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })}
                 className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#EC008C]" />
             </div>
+
+            {!isManager && (
             <div>
               <label className="block text-[11px] font-semibold text-[#364152] mb-1">Delivery Time</label>
               <input type="text" value={form.deliveryTime} onChange={(e) => setForm({ ...form, deliveryTime: e.target.value })}
                 className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#EC008C]" />
             </div>
+            )}
+
+            {!isManager && (
             <div className="md:col-span-2">
               <label className="block text-[11px] font-semibold text-[#364152] mb-1">Description</label>
               <textarea rows={2} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}
                 className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#EC008C]" />
             </div>
+            )}
 
             <div className="md:col-span-2">
               <label className="block text-[11px] font-semibold text-[#364152] mb-1">Images</label>
@@ -281,6 +324,7 @@ export default function EditProductModal({ productId, onClose, onUpdated }) {
               )}
             </div>
 
+            {!isManager && (
             <div className="flex items-center gap-4 md:col-span-2">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={form.isFeatured} onChange={(e) => setForm({ ...form, isFeatured: e.target.checked })}
@@ -293,7 +337,9 @@ export default function EditProductModal({ productId, onClose, onUpdated }) {
                 <span className="text-[11px] text-[#364152] font-medium">Active</span>
               </label>
             </div>
+            )}
 
+            {!isManager && (
             <div className="md:col-span-2 border-t border-[#E5E7EB] pt-4 mt-2">
               <label className="block text-[11px] font-semibold text-[#364152] mb-2">District Prices</label>
               <p className="text-[10px] text-[#667085] mb-3">Set different prices for specific districts. Leave empty to use base price.</p>
@@ -343,6 +389,7 @@ export default function EditProductModal({ productId, onClose, onUpdated }) {
                 </button>
               </div>
             </div>
+            )}
           </div>
 
           <div className="flex justify-end gap-2 mt-5 pt-4 border-t border-[#E5E7EB]">

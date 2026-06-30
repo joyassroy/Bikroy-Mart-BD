@@ -18,14 +18,15 @@ export default function AuthInit({ children }) {
     if (initRef.current) return;
     initRef.current = true;
 
-    detectLocationFromIP(dispatch);
-
     const token = localStorage.getItem("bm-token");
     if (!token) {
       dispatch(clearUser());
+      detectLocationFromIP(dispatch);
       setAuthChecked(true);
       return;
     }
+
+    detectLocationFromIP(dispatch, { force: true });
 
     api.get("/auth/me")
       .then((res) => {
@@ -38,31 +39,18 @@ export default function AuthInit({ children }) {
             localStorage.removeItem("bm-token");
           }
 
-          if (user.managerProfile?.assignedDistrict) {
-            dispatch(setLocation({
-              division: "",
-              district: user.managerProfile.assignedDistrict,
-              upazila: "",
-            }));
-          } else if (user.riderProfile?.assignedZila) {
-            dispatch(setLocation({
-              division: "",
-              district: user.riderProfile.assignedZila,
-              upazila: "",
-            }));
-          } else if (user.district) {
-            dispatch(setLocation({
-              division: "",
-              district: user.district,
-              upazila: "",
-            }));
+          const userDistrict = user.managerProfile?.assignedDistrict
+            || user.riderProfile?.assignedZila
+            || user.district;
+
+          if (userDistrict) {
+            dispatch(setLocation({ division: "", district: userDistrict, upazila: "" }));
           }
         }
       })
       .catch(() => {
         localStorage.removeItem("bm-token");
         dispatch(clearUser());
-        detectLocationFromIP(dispatch);
       })
       .finally(() => {
         setAuthChecked(true);

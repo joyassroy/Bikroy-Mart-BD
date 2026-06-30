@@ -100,9 +100,9 @@ const detectFromIP = async () => {
   return null;
 };
 
-export const detectLocationFromIP = async (dispatch) => {
+export const detectLocationFromIP = async (dispatch, { force = false } = {}) => {
   try {
-    if (typeof window !== "undefined") {
+    if (!force && typeof window !== "undefined") {
       const saved = localStorage.getItem("bm-location");
       if (saved) {
         const parsed = JSON.parse(saved);

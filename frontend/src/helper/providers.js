@@ -12,8 +12,11 @@ function StoreHydrator() {
   const dispatch = useDispatch();
   useEffect(() => {
     try {
-      const savedLocation = localStorage.getItem("bm-location");
-      if (savedLocation) dispatch(hydrateLocation(JSON.parse(savedLocation)));
+      const hasToken = !!localStorage.getItem("bm-token");
+      if (!hasToken) {
+        const savedLocation = localStorage.getItem("bm-location");
+        if (savedLocation) dispatch(hydrateLocation(JSON.parse(savedLocation)));
+      }
     } catch {}
     try {
       const savedCart = localStorage.getItem("bm-cart");
