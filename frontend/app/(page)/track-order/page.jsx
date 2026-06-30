@@ -229,7 +229,7 @@ function TrackOrderContent() {
                 </div>
                 {order.rider.currentLat && (
                   <a
-                    href={`https://www.openstreetmap.org/?mlat=${order.rider.currentLat}&mlon=${order.rider.currentLng}#map=15/${order.rider.currentLat}/${order.rider.currentLng}`}
+                    href={`https://www.google.com/maps?q=${order.rider.currentLat},${order.rider.currentLng}&z=15`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="mt-3 flex items-center justify-center gap-2 w-full py-2.5 bg-[#00AFCC]/10 hover:bg-[#00AFCC]/20 rounded-xl text-[#00AFCC] text-xs sm:text-sm font-semibold transition"

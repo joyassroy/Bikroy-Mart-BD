@@ -1,16 +1,7 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
-import { Navigation, Maximize2 } from "lucide-react";
-
-function getDistanceKm(lat1, lng1, lat2, lng2) {
-  const R = 6371;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLng = ((lng2 - lng1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
+import { useEffect, useRef, useState, useCallback } from "react";
+import { Maximize2, Navigation } from "lucide-react";
+import { TILES_LIGHT, DEFAULT_CENTER, createMapMarker, fetchOSRMRoute, formatETA, formatDistance } from "@/lib/mapConfig";
 
 export default function LiveRiderMap({ riderLat, riderLng, destinationLat, destinationLng, customerLat, customerLng, height }) {
   const mapRef = useRef(null);
@@ -18,9 +9,10 @@ export default function LiveRiderMap({ riderLat, riderLng, destinationLat, desti
   const riderMarkerRef = useRef(null);
   const destMarkerRef = useRef(null);
   const customerMarkerRef = useRef(null);
-  const polylineRef = useRef(null);
+  const routeLineRef = useRef(null);
+  const straightLineRef = useRef(null);
   const [ready, setReady] = useState(false);
-  const [distance, setDistance] = useState(null);
+  const [routeInfo, setRouteInfo] = useState(null);
 
   useEffect(() => {
     let mounted = true;
@@ -31,14 +23,11 @@ export default function LiveRiderMap({ riderLat, riderLng, destinationLat, desti
         ? [destinationLat, destinationLng]
         : riderLat && riderLng
           ? [riderLat, riderLng]
-          : [23.8103, 90.4125];
+          : DEFAULT_CENTER;
 
       mapInstance.current = L.map(mapRef.current, { zoomControl: false }).setView(center, 14);
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      }).addTo(mapInstance.current);
-
+      L.tileLayer(TILES_LIGHT.url, TILES_LIGHT.options).addTo(mapInstance.current);
       L.control.zoom({ position: "topright" }).addTo(mapInstance.current);
 
       setTimeout(() => {
@@ -55,48 +44,24 @@ export default function LiveRiderMap({ riderLat, riderLng, destinationLat, desti
         riderMarkerRef.current = null;
         destMarkerRef.current = null;
         customerMarkerRef.current = null;
-        polylineRef.current = null;
+        routeLineRef.current = null;
+        straightLineRef.current = null;
       }
     };
   }, []);
 
+  // Update markers + route
   useEffect(() => {
     if (!ready || !mapInstance.current) return;
 
-    import("leaflet").then((L) => {
-      const riderIcon = L.divIcon({
-        html: `<div style="display:flex;flex-direction:column;align-items:center;">
-          <div style="background:#0067A0;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.35);">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3.5-3.5 2-3 4.5 3h3"/></svg>
-          </div>
-          <span style="background:#0067A0;color:white;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;margin-top:2px;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.25);">Rider</span>
-        </div>`,
-        iconSize: [36, 48], iconAnchor: [18, 48], className: "",
-      });
-      const destIcon = L.divIcon({
-        html: `<div style="display:flex;flex-direction:column;align-items:center;">
-          <div style="background:#C30000;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.35);">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
-          </div>
-          <span style="background:#C30000;color:white;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;margin-top:2px;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.25);">Delivery</span>
-        </div>`,
-        iconSize: [36, 48], iconAnchor: [18, 48], className: "",
-      });
-      const customerIcon = L.divIcon({
-        html: `<div style="display:flex;flex-direction:column;align-items:center;">
-          <div style="background:#16A34A;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.35);">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-          </div>
-          <span style="background:#16A34A;color:white;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;margin-top:2px;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.25);">Customer</span>
-        </div>`,
-        iconSize: [36, 48], iconAnchor: [18, 48], className: "",
-      });
-
+    import("leaflet").then(async (L) => {
+      // Rider marker
       if (riderLat && riderLng) {
+        const icon = createMapMarker({ color: "#0067A0", icon: "🏍", size: 36, label: "Rider" });
         if (riderMarkerRef.current) {
           riderMarkerRef.current.setLatLng([riderLat, riderLng]);
         } else {
-          riderMarkerRef.current = L.marker([riderLat, riderLng], { icon: riderIcon })
+          riderMarkerRef.current = L.marker([riderLat, riderLng], { icon })
             .addTo(mapInstance.current)
             .bindPopup("Rider Location");
         }
@@ -105,11 +70,13 @@ export default function LiveRiderMap({ riderLat, riderLng, destinationLat, desti
         riderMarkerRef.current = null;
       }
 
+      // Destination marker
       if (destinationLat && destinationLng) {
+        const icon = createMapMarker({ color: "#C30000", icon: "📍", size: 36, label: "Delivery" });
         if (destMarkerRef.current) {
           destMarkerRef.current.setLatLng([destinationLat, destinationLng]);
         } else {
-          destMarkerRef.current = L.marker([destinationLat, destinationLng], { icon: destIcon })
+          destMarkerRef.current = L.marker([destinationLat, destinationLng], { icon })
             .addTo(mapInstance.current)
             .bindPopup("Delivery Location");
         }
@@ -118,11 +85,13 @@ export default function LiveRiderMap({ riderLat, riderLng, destinationLat, desti
         destMarkerRef.current = null;
       }
 
+      // Customer marker
       if (customerLat && customerLng) {
+        const icon = createMapMarker({ color: "#16A34A", icon: "🏠", size: 36, label: "Customer" });
         if (customerMarkerRef.current) {
           customerMarkerRef.current.setLatLng([customerLat, customerLng]);
         } else {
-          customerMarkerRef.current = L.marker([customerLat, customerLng], { icon: customerIcon })
+          customerMarkerRef.current = L.marker([customerLat, customerLng], { icon })
             .addTo(mapInstance.current)
             .bindPopup("Customer Location");
         }
@@ -131,29 +100,93 @@ export default function LiveRiderMap({ riderLat, riderLng, destinationLat, desti
         customerMarkerRef.current = null;
       }
 
+      // Collect all points
       const points = [
         riderLat && riderLng ? [riderLat, riderLng] : null,
         destinationLat && destinationLng ? [destinationLat, destinationLng] : null,
         customerLat && customerLng ? [customerLat, customerLng] : null,
       ].filter(Boolean);
 
-      if (points.length >= 2) {
-        if (polylineRef.current) {
-          polylineRef.current.setLatLngs(points);
-        } else {
-          polylineRef.current = L.polyline(points, {
-            color: "#0067A0", weight: 4, opacity: 0.7, dashArray: "8, 8",
-          }).addTo(mapInstance.current);
+      // Try OSRM routes
+      if (riderLat && riderLng && destinationLat && destinationLng) {
+        const route = await fetchOSRMRoute(
+          { lat: riderLat, lng: riderLng },
+          { lat: destinationLat, lng: destinationLng }
+        );
+        if (route && mounted) {
+          // Draw road-following route
+          if (routeLineRef.current) {
+            routeLineRef.current.setLatLngs(
+              route.geometry.coordinates.map((c) => [c[1], c[0]])
+            );
+          } else {
+            routeLineRef.current = L.polyline(
+              route.geometry.coordinates.map((c) => [c[1], c[0]]),
+              { color: "#0067A0", weight: 5, opacity: 0.8, lineCap: "round", lineJoin: "round" }
+            ).addTo(mapInstance.current);
+          }
+          if (straightLineRef.current) {
+            mapInstance.current.removeLayer(straightLineRef.current);
+            straightLineRef.current = null;
+          }
+          setRouteInfo({ distance: route.distance, duration: route.duration });
+        } else if (points.length >= 2) {
+          // Fallback to straight line
+          if (straightLineRef.current) {
+            straightLineRef.current.setLatLngs(points);
+          } else {
+            straightLineRef.current = L.polyline(points, {
+              color: "#0067A0", weight: 4, opacity: 0.6, dashArray: "8, 8",
+            }).addTo(mapInstance.current);
+          }
+          if (routeLineRef.current) {
+            mapInstance.current.removeLayer(routeLineRef.current);
+            routeLineRef.current = null;
+          }
+          setRouteInfo(null);
         }
+      } else if (destinationLat && destinationLng && customerLat && customerLng) {
+        const route = await fetchOSRMRoute(
+          { lat: destinationLat, lng: destinationLng },
+          { lat: customerLat, lng: customerLng }
+        );
+        if (route && mounted) {
+          if (routeLineRef.current) {
+            routeLineRef.current.setLatLngs(
+              route.geometry.coordinates.map((c) => [c[1], c[0]])
+            );
+          } else {
+            routeLineRef.current = L.polyline(
+              route.geometry.coordinates.map((c) => [c[1], c[0]]),
+              { color: "#16A34A", weight: 5, opacity: 0.8, lineCap: "round", lineJoin: "round" }
+            ).addTo(mapInstance.current);
+          }
+          if (straightLineRef.current) {
+            mapInstance.current.removeLayer(straightLineRef.current);
+            straightLineRef.current = null;
+          }
+          setRouteInfo({ distance: route.distance, duration: route.duration });
+        } else if (points.length >= 2) {
+          if (straightLineRef.current) {
+            straightLineRef.current.setLatLngs(points);
+          } else {
+            straightLineRef.current = L.polyline(points, {
+              color: "#16A34A", weight: 4, opacity: 0.6, dashArray: "8, 8",
+            }).addTo(mapInstance.current);
+          }
+          if (routeLineRef.current) {
+            mapInstance.current.removeLayer(routeLineRef.current);
+            routeLineRef.current = null;
+          }
+          setRouteInfo(null);
+        }
+      }
+
+      // Fit bounds
+      if (points.length >= 2) {
         mapInstance.current.fitBounds(points, { padding: [60, 60] });
       } else if (points.length === 1) {
         mapInstance.current.setView(points[0], 15);
-      }
-
-      if (riderLat && riderLng && destinationLat && destinationLng) {
-        setDistance(getDistanceKm(riderLat, riderLng, destinationLat, destinationLng));
-      } else {
-        setDistance(null);
       }
     });
   }, [ready, riderLat, riderLng, destinationLat, destinationLng, customerLat, customerLng]);
@@ -192,45 +225,49 @@ export default function LiveRiderMap({ riderLat, riderLng, destinationLat, desti
       />
 
       {hasDestination && !hasRider && (
-        <div className="absolute top-2 left-2 z-[1000] bg-amber-50/95 backdrop-blur rounded-lg px-2.5 py-1.5 border border-amber-200 shadow-sm">
-          <p className="text-[10px] font-semibold text-amber-700">⏳ Waiting for rider location...</p>
+        <div className="absolute top-2 left-2 z-[1000] bg-amber-50/95 backdrop-blur-sm rounded-lg px-3 py-2 border border-amber-200 shadow-sm">
+          <p className="text-[11px] font-semibold text-amber-700">⏳ Waiting for rider...</p>
         </div>
       )}
 
-      <div className="absolute top-2 right-10 z-[1000] bg-white/95 backdrop-blur rounded-lg px-2 py-1.5 shadow border border-[#E5E7EB]">
+      <div className="absolute top-2 right-10 z-[1000] bg-white/95 backdrop-blur-sm rounded-lg px-2.5 py-2 shadow-sm border border-[#E5E7EB]">
         <div className="flex flex-col gap-0.5">
           {hasRider && (
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-[#0067A0] flex-shrink-0" />
-              <span className="text-[8px] font-semibold text-[#00215B]">Rider</span>
+              <span className="text-[9px] font-semibold text-[#00215B]">Rider</span>
             </div>
           )}
           {hasDestination && (
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-[#C30000] flex-shrink-0" />
-              <span className="text-[8px] font-semibold text-[#00215B]">Delivery</span>
+              <span className="text-[9px] font-semibold text-[#00215B]">Delivery</span>
             </div>
           )}
           {customerLat && customerLng && (
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-[#16A34A] flex-shrink-0" />
-              <span className="text-[8px] font-semibold text-[#00215B]">Customer</span>
+              <span className="text-[9px] font-semibold text-[#00215B]">Customer</span>
             </div>
           )}
         </div>
       </div>
 
-      {distance !== null && (
-        <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur rounded-xl px-3 py-2 shadow-lg border border-[#E5E7EB] z-[1000]">
-          <p className="text-[11px] font-bold text-[#00215B]">
-            {distance < 1 ? `${Math.round(distance * 1000)} m` : `${distance.toFixed(1)} km`}
-          </p>
-          <p className="text-[9px] text-[#667085]">away from delivery</p>
+      {routeInfo && (
+        <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-sm rounded-xl px-3 py-2 shadow-lg border border-[#E5E7EB] z-[1000]">
+          <div className="flex items-center gap-2">
+            <Navigation size={12} className="text-[#0067A0]" />
+            <div>
+              <p className="text-[11px] font-bold text-[#00215B]">{formatETA(routeInfo.duration)}</p>
+              <p className="text-[9px] text-[#667085]">{formatDistance(routeInfo.distance)} away</p>
+            </div>
+          </div>
         </div>
       )}
+
       <button
         onClick={recenter}
-        className="absolute bottom-3 right-3 w-9 h-9 bg-white/95 backdrop-blur rounded-xl shadow-lg border border-[#E5E7EB] flex items-center justify-center hover:bg-[#F4F7FB] transition z-[1000]"
+        className="absolute bottom-3 right-3 w-9 h-9 bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-[#E5E7EB] flex items-center justify-center hover:bg-[#F4F7FB] transition z-[1000]"
         title="Re-center map"
       >
         <Maximize2 size={14} className="text-[#00215B]" />

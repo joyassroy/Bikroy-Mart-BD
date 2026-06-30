@@ -246,7 +246,7 @@ export default function RiderDashboard() {
                   </Link>
                   {activeDelivery.deliveryLatitude && activeDelivery.deliveryLongitude && (
                     <a
-                      href={`https://www.openstreetmap.org/?mlat=${activeDelivery.deliveryLatitude}&mlon=${activeDelivery.deliveryLongitude}#map=15/${activeDelivery.deliveryLatitude}/${activeDelivery.deliveryLongitude}`}
+                      href={`https://www.google.com/maps?q=${activeDelivery.deliveryLatitude},${activeDelivery.deliveryLongitude}&z=15`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="bg-[#F4F7FB] text-[#00215B] px-4 py-2.5 rounded-xl text-xs font-semibold hover:bg-[#E8EDF4] transition-all duration-200 flex items-center gap-2 border border-[#E5E7EB]"

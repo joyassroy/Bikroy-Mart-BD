@@ -95,7 +95,7 @@ function CustomDeliveryCard({ del, completingId, markDelivered, t }) {
           </a>
           {del.deliveryLatitude && del.deliveryLongitude && (
             <a
-              href={`https://www.openstreetmap.org/?mlat=${del.deliveryLatitude}&mlon=${del.deliveryLongitude}#map=15/${del.deliveryLatitude}/${del.deliveryLongitude}`}
+              href={`https://www.google.com/maps?q=${del.deliveryLatitude},${del.deliveryLongitude}&z=15`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 bg-[#F4F7FB] text-[#00215B] px-4 py-2.5 rounded-xl text-xs font-semibold hover:bg-[#E8EDF4] transition border border-[#E5E7EB]"

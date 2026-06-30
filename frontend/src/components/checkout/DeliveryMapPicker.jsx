@@ -1,8 +1,9 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
-import { MapPin, Crosshair, Loader2 } from "lucide-react";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { MapPin, Crosshair, Loader2, Search, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { BANGLADESH_LOCATIONS } from "@/lib/constants";
+import { TILES_LIGHT, DEFAULT_CENTER, createMapMarker } from "@/lib/mapConfig";
 
 function findClosestDistrict(city) {
   if (!city) return null;
@@ -54,6 +55,23 @@ export default function DeliveryMapPicker({ coords, onCoordsChange, onLocationDe
   const markerRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+  const searchTimeout = useRef(null);
+
+  const placeMarker = useCallback((L, lat, lng) => {
+    const pinIcon = createMapMarker({ color: "#EC008C", icon: "📍", size: 32 });
+    if (markerRef.current) {
+      markerRef.current.setLatLng([lat, lng]);
+    } else {
+      markerRef.current = L.marker([lat, lng], { icon: pinIcon, draggable: true }).addTo(mapInstance.current);
+      markerRef.current.on("dragend", (e) => {
+        const pos = e.target.getLatLng();
+        onCoordsChange({ latitude: pos.lat, longitude: pos.lng });
+      });
+    }
+  }, [onCoordsChange]);
 
   useEffect(() => {
     let mounted = true;
@@ -63,42 +81,19 @@ export default function DeliveryMapPicker({ coords, onCoordsChange, onLocationDe
     ]).then(([L]) => {
       if (!mounted || !mapRef.current || mapInstance.current) return;
 
-      const center = coords?.latitude ? [coords.latitude, coords.longitude] : [23.8103, 90.4125];
+      const center = coords?.latitude ? [coords.latitude, coords.longitude] : DEFAULT_CENTER;
       mapInstance.current = L.map(mapRef.current, { zoomControl: false }).setView(center, coords?.latitude ? 15 : 6);
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; OpenStreetMap',
-      }).addTo(mapInstance.current);
-
+      L.tileLayer(TILES_LIGHT.url, TILES_LIGHT.options).addTo(mapInstance.current);
       L.control.zoom({ position: "topright" }).addTo(mapInstance.current);
 
       if (coords?.latitude) {
-        const pinIcon = L.divIcon({
-          html: `<div style="background:#EC008C;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:grab;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>`,
-          iconSize: [28, 28], iconAnchor: [14, 28], className: "",
-        });
-        markerRef.current = L.marker(center, { icon: pinIcon, draggable: true }).addTo(mapInstance.current);
-        markerRef.current.on("dragend", (e) => {
-          const pos = e.target.getLatLng();
-          onCoordsChange({ latitude: pos.lat, longitude: pos.lng });
-        });
+        placeMarker(L, coords.latitude, coords.longitude);
       }
 
       mapInstance.current.on("click", (e) => {
         const { lat, lng } = e.latlng;
-        const pinIcon = L.divIcon({
-          html: `<div style="background:#EC008C;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:grab;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>`,
-          iconSize: [28, 28], iconAnchor: [14, 28], className: "",
-        });
-        if (markerRef.current) {
-          markerRef.current.setLatLng([lat, lng]);
-        } else {
-          markerRef.current = L.marker([lat, lng], { icon: pinIcon, draggable: true }).addTo(mapInstance.current);
-          markerRef.current.on("dragend", (ev) => {
-            const pos = ev.target.getLatLng();
-            onCoordsChange({ latitude: pos.lat, longitude: pos.lng });
-          });
-        }
+        placeMarker(L, lat, lng);
         onCoordsChange({ latitude: lat, longitude: lng });
       });
 
@@ -122,35 +117,50 @@ export default function DeliveryMapPicker({ coords, onCoordsChange, onLocationDe
     if (!ready || !mapInstance.current || !coords?.latitude) return;
     const latlng = [coords.latitude, coords.longitude];
     mapInstance.current.setView(latlng, 15);
-    import("leaflet").then((L) => {
-      if (markerRef.current) {
-        markerRef.current.setLatLng(latlng);
-      } else {
-        const pinIcon = L.divIcon({
-          html: `<div style="background:#EC008C;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:grab;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>`,
-          iconSize: [28, 28], iconAnchor: [14, 28], className: "",
-        });
-        markerRef.current = L.marker(latlng, { icon: pinIcon, draggable: true }).addTo(mapInstance.current);
-        markerRef.current.on("dragend", (e) => {
-          const pos = e.target.getLatLng();
-          onCoordsChange({ latitude: pos.lat, longitude: pos.lng });
-        });
-      }
-    });
-  }, [ready, coords?.latitude, coords?.longitude]);
+    import("leaflet").then((L) => placeMarker(L, coords.latitude, coords.longitude));
+  }, [ready, coords?.latitude, coords?.longitude, placeMarker]);
+
+  const handleSearch = useCallback((query) => {
+    setSearchQuery(query);
+    if (searchTimeout.current) clearTimeout(searchTimeout.current);
+    if (!query || query.length < 3) { setSearchResults([]); return; }
+    searchTimeout.current = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query + " Bangladesh")}&format=json&limit=5&addressdetails=1`,
+          { headers: { "Accept-Language": "en" } }
+        );
+        const data = await res.json();
+        setSearchResults(data.map((r) => ({
+          name: r.display_name,
+          lat: parseFloat(r.lat),
+          lng: parseFloat(r.lon),
+          short: r.display_name.split(",").slice(0, 3).join(","),
+        })));
+      } catch { setSearchResults([]); }
+      setSearching(false);
+    }, 500);
+  }, []);
+
+  const selectSearchResult = useCallback((result) => {
+    setSearchQuery(result.short);
+    setSearchResults([]);
+    if (mapInstance.current) {
+      mapInstance.current.setView([result.lat, result.lng], 15);
+      import("leaflet").then((L) => placeMarker(L, result.lat, result.lng));
+      onCoordsChange({ latitude: result.lat, longitude: result.lng });
+    }
+  }, [placeMarker, onCoordsChange]);
 
   const handleUseLocation = () => {
-    if (!navigator.geolocation) {
-      toast.error("Geolocation not supported");
-      return;
-    }
+    if (!navigator.geolocation) { toast.error("Geolocation not supported"); return; }
     setLoading(true);
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
         onCoordsChange({ latitude: lat, longitude: lng });
-
         const location = await reverseGeocode(lat, lng);
         if (location && onLocationDetected) {
           onLocationDetected(location);
@@ -160,10 +170,7 @@ export default function DeliveryMapPicker({ coords, onCoordsChange, onLocationDe
         }
         setLoading(false);
       },
-      () => {
-        setLoading(false);
-        toast.error("Failed to get location. Please allow location access.");
-      },
+      () => { setLoading(false); toast.error("Failed to get location. Please allow location access."); },
       { enableHighAccuracy: true, timeout: 10000 }
     );
   };
@@ -171,14 +178,10 @@ export default function DeliveryMapPicker({ coords, onCoordsChange, onLocationDe
   return (
     <div className="mt-2">
       <div className="flex items-center gap-2 mb-2">
-        <button
-          type="button"
-          onClick={handleUseLocation}
-          disabled={loading}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-[#00AFCC] text-white rounded-lg text-[11px] font-semibold hover:bg-[#009BB5] disabled:opacity-50 transition"
-        >
+        <button type="button" onClick={handleUseLocation} disabled={loading}
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-[#00AFCC] text-white rounded-lg text-[11px] font-semibold hover:bg-[#009BB5] disabled:opacity-50 transition">
           {loading ? <Loader2 size={12} className="animate-spin" /> : <Crosshair size={12} />}
-          {loading ? "Detecting location..." : "Use My Current Location"}
+          {loading ? "Detecting..." : "Use My Location"}
         </button>
         {coords?.latitude && (
           <span className="text-[10px] text-[#667085]">
@@ -186,11 +189,35 @@ export default function DeliveryMapPicker({ coords, onCoordsChange, onLocationDe
           </span>
         )}
       </div>
-      <div
-        ref={mapRef}
-        className="w-full rounded-lg border border-[#E5E7EB] overflow-hidden"
-        style={{ height: "250px", background: "#e5e7eb" }}
-      />
+      <div className="relative" style={{ height: "250px" }}>
+        <div className="map-search-bar">
+          <Search size={16} className="search-icon" />
+          <input
+            type="text"
+            placeholder="Search address..."
+            value={searchQuery}
+            onChange={(e) => handleSearch(e.target.value)}
+          />
+          {searching && <Loader2 size={14} className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-[#667085]" />}
+          {searchQuery && !searching && (
+            <button onClick={() => { setSearchQuery(""); setSearchResults([]); }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#667085] hover:text-[#333]">
+              <X size={14} />
+            </button>
+          )}
+          {searchResults.length > 0 && (
+            <div className="map-search-results">
+              {searchResults.map((r, i) => (
+                <div key={i} className="result-item" onClick={() => selectSearchResult(r)}>
+                  <div className="text-xs font-medium text-[#364152]">{r.short}</div>
+                  <div className="text-[10px] text-[#667085] truncate">{r.name}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <div ref={mapRef} className="w-full h-full rounded-lg border border-[#E5E7EB] overflow-hidden" style={{ background: "#e5e7eb" }} />
+      </div>
       <p className="text-[9px] text-[#667085] mt-1">Click the map or drag the pin to set exact delivery location</p>
     </div>
   );
