@@ -80,7 +80,12 @@ export const getManagerProducts = async (req: AuthRequest, res: Response) => {
     if (!manager) return sendError(res, "Manager profile not found", 404);
 
     const products = await prisma.product.findMany({
-      where: { managerId: manager.id },
+      where: {
+        OR: [
+          { managerId: manager.id },
+          { managerId: null },
+        ],
+      },
       include: {
         category: { select: { id: true, name: true } },
         subcategory: { select: { id: true, name: true } },
@@ -100,9 +105,16 @@ export const getManagerStats = async (req: AuthRequest, res: Response) => {
     });
     if (!manager) return sendError(res, "Manager profile not found", 404);
 
+    const productWhere = {
+      OR: [
+        { managerId: manager.id },
+        { managerId: null },
+      ],
+    };
+
     const [totalProducts, activeProducts, totalOrders, pendingOrders] = await Promise.all([
-      prisma.product.count({ where: { managerId: manager.id } }),
-      prisma.product.count({ where: { managerId: manager.id, isActive: true } }),
+      prisma.product.count({ where: productWhere }),
+      prisma.product.count({ where: { ...productWhere, isActive: true } }),
       prisma.order.count({ where: { deliveryDistrict: manager.assignedDistrict } }),
       prisma.order.count({
         where: { deliveryDistrict: manager.assignedDistrict, orderStatus: "PENDING" },
