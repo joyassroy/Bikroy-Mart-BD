@@ -40,7 +40,22 @@ const httpServer = createServer(app);
 initSocket(httpServer);
 
 // Middleware
-app.use(cors({ origin: config.clientUrl, credentials: true }));
+const allowedOrigins = [
+  config.clientUrl,
+  "https://bikroy-mart-bd-delta.vercel.app",
+  "https://bikroy-mart-bd.vercel.app",
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+}));
 app.use(compression());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
