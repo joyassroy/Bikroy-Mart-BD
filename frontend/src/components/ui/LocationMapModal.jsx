@@ -13,7 +13,7 @@ export default function LocationMapModal({ show, onClose, lat, lng, label = "Loc
     if (!show || !lat || !lng) return;
     let mounted = true;
 
-    Promise.all([import("leaflet"), import("leaflet/dist/leaflet.css")]).then(([L]) => {
+    Promise.all([import("leaflet"), import("leaflet/dist/leaflet.css")]).then(async ([L]) => {
       if (!mounted || !mapRef.current || mapInstance.current) return;
 
       mapInstance.current = L.map(mapRef.current, {
@@ -24,7 +24,7 @@ export default function LocationMapModal({ show, onClose, lat, lng, label = "Loc
       L.tileLayer(TILES_LIGHT.url, TILES_LIGHT.options).addTo(mapInstance.current);
       L.control.zoom({ position: "topright" }).addTo(mapInstance.current);
 
-      const icon = createMapMarker({ color: "#EC008C", icon: "📍", size: 40, label });
+      const icon = await createMapMarker({ color: "#EC008C", icon: "📍", size: 40, label });
       markerRef.current = L.marker([lat, lng], { icon })
         .addTo(mapInstance.current)
         .bindPopup(label)

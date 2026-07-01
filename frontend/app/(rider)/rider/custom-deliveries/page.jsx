@@ -4,8 +4,9 @@ import api from "@/lib/axios";
 import toast from "react-hot-toast";
 import { MapPin, Phone, CheckCircle, Package, User, ClipboardList, Loader2, Image as ImageIcon, Navigation } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
-import LiveRiderMap from "@/components/tracking/LiveRiderMap";
-import LocationMapModal from "@/components/ui/LocationMapModal";
+import dynamic from "next/dynamic";
+const LiveRiderMap = dynamic(() => import("@/components/tracking/LiveRiderMap"), { ssr: false });
+const LocationMapModal = dynamic(() => import("@/components/ui/LocationMapModal"), { ssr: false });
 import useSocket from "@/helper/useSocket";
 
 function CustomDeliveryCard({ del, completingId, markDelivered, t }) {

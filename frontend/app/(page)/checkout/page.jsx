@@ -11,7 +11,8 @@ import { MessageSquare, CheckCircle, Copy, ExternalLink, Home, MapPin, Download 
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useAuthChecked } from "@/helper/AuthInit";
 import { BANGLADESH_LOCATIONS, getUpazilas } from "@/lib/constants";
-import DeliveryMapPicker from "@/components/checkout/DeliveryMapPicker";
+import dynamic from "next/dynamic";
+const DeliveryMapPicker = dynamic(() => import("@/components/checkout/DeliveryMapPicker"), { ssr: false });
 import FloatingChatButton from "@/components/layout/FloatingChatButton";
 import { generateInvoicePDF } from "@/lib/generateInvoice";
 

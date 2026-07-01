@@ -60,8 +60,8 @@ export default function DeliveryMapPicker({ coords, onCoordsChange, onLocationDe
   const [searching, setSearching] = useState(false);
   const searchTimeout = useRef(null);
 
-  const placeMarker = useCallback((L, lat, lng) => {
-    const pinIcon = createMapMarker({ color: "#EC008C", icon: "📍", size: 32 });
+  const placeMarker = useCallback(async (L, lat, lng) => {
+    const pinIcon = await createMapMarker({ color: "#EC008C", icon: "📍", size: 32 });
     if (markerRef.current) {
       markerRef.current.setLatLng([lat, lng]);
     } else {

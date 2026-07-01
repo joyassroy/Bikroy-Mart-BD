@@ -59,7 +59,7 @@ export default function LiveRiderMap({ riderLat, riderLng, destinationLat, desti
     import("leaflet").then(async (L) => {
       // Rider marker
       if (riderLat && riderLng) {
-        const icon = createMapMarker({ color: "#0067A0", icon: "🏍", size: 36, label: "Rider" });
+        const icon = await createMapMarker({ color: "#0067A0", icon: "🏍", size: 36, label: "Rider" });
         if (riderMarkerRef.current) {
           riderMarkerRef.current.setLatLng([riderLat, riderLng]);
         } else {
@@ -74,7 +74,7 @@ export default function LiveRiderMap({ riderLat, riderLng, destinationLat, desti
 
       // Destination marker
       if (destinationLat && destinationLng) {
-        const icon = createMapMarker({ color: "#C30000", icon: "📍", size: 36, label: "Delivery" });
+        const icon = await createMapMarker({ color: "#C30000", icon: "📍", size: 36, label: "Delivery" });
         if (destMarkerRef.current) {
           destMarkerRef.current.setLatLng([destinationLat, destinationLng]);
         } else {
@@ -89,7 +89,7 @@ export default function LiveRiderMap({ riderLat, riderLng, destinationLat, desti
 
       // Customer marker
       if (customerLat && customerLng) {
-        const icon = createMapMarker({ color: "#16A34A", icon: "🏠", size: 36, label: "Customer" });
+        const icon = await createMapMarker({ color: "#16A34A", icon: "🏠", size: 36, label: "Customer" });
         if (customerMarkerRef.current) {
           customerMarkerRef.current.setLatLng([customerLat, customerLng]);
         } else {

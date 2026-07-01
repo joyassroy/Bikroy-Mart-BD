@@ -10,7 +10,8 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { useAuthChecked } from "@/helper/AuthInit";
 import { DELIVERY_AREAS } from "@/lib/constants";
 import { ClipboardList, Upload, X, MapPin, Loader2, CheckCircle, Clock, Eye, Truck, XCircle } from "lucide-react";
-import DeliveryMapPicker from "@/components/checkout/DeliveryMapPicker";
+import dynamic from "next/dynamic";
+const DeliveryMapPicker = dynamic(() => import("@/components/checkout/DeliveryMapPicker"), { ssr: false });
 import FloatingChatButton from "@/components/layout/FloatingChatButton";
 
 const STATUS_CONFIG = {

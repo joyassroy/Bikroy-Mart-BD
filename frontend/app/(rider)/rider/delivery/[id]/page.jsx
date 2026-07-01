@@ -2,8 +2,9 @@
 import { useState, useEffect } from "react";
 import api from "@/lib/axios";
 import { useParams, useRouter } from "next/navigation";
-import LiveRiderMap from "@/components/tracking/LiveRiderMap";
-import LocationMapModal from "@/components/ui/LocationMapModal";
+import dynamic from "next/dynamic";
+const LiveRiderMap = dynamic(() => import("@/components/tracking/LiveRiderMap"), { ssr: false });
+const LocationMapModal = dynamic(() => import("@/components/ui/LocationMapModal"), { ssr: false });
 import useSocket from "@/helper/useSocket";
 import { Package, MapPin, Phone, CheckCircle, ArrowLeft, Navigation, CreditCard, FileText, User, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";

@@ -1,5 +1,3 @@
-import L from "leaflet";
-
 // CARTO Positron tiles — clean, modern, Google Maps-like (free, no API key)
 export const TILES_LIGHT = {
   url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
@@ -26,12 +24,13 @@ export const DEFAULT_CENTER = [23.8103, 90.4125];
 export const DEFAULT_ZOOM = 13;
 
 // Google Maps-style SVG marker
-export function createMapMarker({
+export async function createMapMarker({
   color = "#1a73e8",
   icon = "",
   size = 36,
   label = "",
 }) {
+  const L = (await import("leaflet")).default;
   const h = size + 12;
   const cx = size / 2;
   const cy = size / 2;

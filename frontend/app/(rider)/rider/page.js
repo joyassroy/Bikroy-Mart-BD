@@ -5,8 +5,9 @@ import { Package, Truck, CheckCircle, MapPin, Phone, Clock, Star, ChevronRight, 
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useSelector } from "react-redux";
 import api from "@/lib/axios";
-import LiveRiderMap from "@/components/tracking/LiveRiderMap";
-import LocationMapModal from "@/components/ui/LocationMapModal";
+import dynamic from "next/dynamic";
+const LiveRiderMap = dynamic(() => import("@/components/tracking/LiveRiderMap"), { ssr: false });
+const LocationMapModal = dynamic(() => import("@/components/ui/LocationMapModal"), { ssr: false });
 import useSocket from "@/helper/useSocket";
 
 const statusConfig = {
