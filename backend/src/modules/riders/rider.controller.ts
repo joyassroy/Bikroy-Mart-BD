@@ -63,7 +63,9 @@ export const updateLocation = async (req: AuthRequest, res: Response) => {
           latitude, longitude, timestamp: new Date().toISOString(),
         });
       }
-    } catch {}
+    } catch (err) {
+      console.error("Socket broadcast failed for rider location:", err);
+    }
 
     return sendSuccess(res, "Location updated", rider);
   } catch (error: any) {
@@ -184,6 +186,19 @@ export const acceptOrder = async (req: AuthRequest, res: Response) => {
       where: { id: String(req.params.id) },
       data: { riderId: rider.id, orderStatus: "OUT_FOR_DELIVERY" },
     });
+
+    try {
+      const { getIO } = await import("../../socket/socketHandler");
+      const io = getIO();
+      io.to(`order-${order.id}`).emit("order-status", {
+        orderId: order.id,
+        status: "OUT_FOR_DELIVERY",
+        timestamp: new Date().toISOString(),
+      });
+    } catch (err) {
+      console.error("Socket broadcast failed for order status:", err);
+    }
+
     return sendSuccess(res, "Order accepted", order);
   } catch (error: any) {
     return sendError(res, error.message, 400);
@@ -210,6 +225,18 @@ export const deliverOrder = async (req: AuthRequest, res: Response) => {
       where: { id: rider.id },
       data: { totalDeliveries: { increment: 1 } },
     });
+
+    try {
+      const { getIO } = await import("../../socket/socketHandler");
+      const io = getIO();
+      io.to(`order-${order.id}`).emit("order-status", {
+        orderId: order.id,
+        status: "DELIVERED",
+        timestamp: new Date().toISOString(),
+      });
+    } catch (err) {
+      console.error("Socket broadcast failed for order status:", err);
+    }
 
     return sendSuccess(res, "Order delivered", order);
   } catch (error: any) {

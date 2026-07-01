@@ -13,11 +13,12 @@ export default function LiveRiderMap({ riderLat, riderLng, destinationLat, desti
   const straightLineRef = useRef(null);
   const [ready, setReady] = useState(false);
   const [routeInfo, setRouteInfo] = useState(null);
+  const mountedRef = useRef(true);
 
   useEffect(() => {
-    let mounted = true;
+    mountedRef.current = true;
     Promise.all([import("leaflet"), import("leaflet/dist/leaflet.css")]).then(([L]) => {
-      if (!mounted || !mapRef.current || mapInstance.current) return;
+      if (!mountedRef.current || !mapRef.current || mapInstance.current) return;
 
       const center = destinationLat && destinationLng
         ? [destinationLat, destinationLng]
@@ -38,6 +39,7 @@ export default function LiveRiderMap({ riderLat, riderLng, destinationLat, desti
     });
 
     return () => {
+      mountedRef.current = false;
       if (mapInstance.current) {
         mapInstance.current.remove();
         mapInstance.current = null;
@@ -113,7 +115,7 @@ export default function LiveRiderMap({ riderLat, riderLng, destinationLat, desti
           { lat: riderLat, lng: riderLng },
           { lat: destinationLat, lng: destinationLng }
         );
-        if (route && mounted) {
+        if (route && mountedRef.current) {
           // Draw road-following route
           if (routeLineRef.current) {
             routeLineRef.current.setLatLngs(
@@ -150,7 +152,7 @@ export default function LiveRiderMap({ riderLat, riderLng, destinationLat, desti
           { lat: destinationLat, lng: destinationLng },
           { lat: customerLat, lng: customerLng }
         );
-        if (route && mounted) {
+        if (route && mountedRef.current) {
           if (routeLineRef.current) {
             routeLineRef.current.setLatLngs(
               route.geometry.coordinates.map((c) => [c[1], c[0]])

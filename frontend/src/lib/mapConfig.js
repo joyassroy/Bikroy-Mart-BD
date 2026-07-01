@@ -59,18 +59,35 @@ export function createMapMarker({
   });
 }
 
+// OSRM route cache (sessionStorage-backed to survive re-mounts within same tab)
+const routeCache = new Map();
+const CACHE_MAX = 200;
+
+function getCacheKey(start, end) {
+  return `${start.lat.toFixed(5)},${start.lng.toFixed(5)}-${end.lat.toFixed(5)},${end.lng.toFixed(5)}`;
+}
+
 // OSRM route fetcher — returns road-following geometry + distance/duration
 export async function fetchOSRMRoute(start, end) {
+  const key = getCacheKey(start, end);
+  if (routeCache.has(key)) return routeCache.get(key);
+
   try {
     const url = `https://router.project-osrm.org/route/v1/driving/${start.lng},${start.lat};${end.lng},${end.lat}?geometries=geojson&overview=full`;
     const res = await fetch(url);
     const data = await res.json();
     if (data.code === "Ok" && data.routes.length > 0) {
-      return {
+      const route = {
         geometry: data.routes[0].geometry,
         distance: data.routes[0].distance,
         duration: data.routes[0].duration,
       };
+      if (routeCache.size >= CACHE_MAX) {
+        const firstKey = routeCache.keys().next().value;
+        routeCache.delete(firstKey);
+      }
+      routeCache.set(key, route);
+      return route;
     }
   } catch {}
   return null;

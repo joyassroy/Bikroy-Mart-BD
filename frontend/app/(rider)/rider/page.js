@@ -6,6 +6,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { useSelector } from "react-redux";
 import api from "@/lib/axios";
 import LiveRiderMap from "@/components/tracking/LiveRiderMap";
+import LocationMapModal from "@/components/ui/LocationMapModal";
 import useSocket from "@/helper/useSocket";
 
 const statusConfig = {
@@ -28,6 +29,7 @@ export default function RiderDashboard() {
   const [loading, setLoading] = useState(true);
   const [togglingAvailability, setTogglingAvailability] = useState(false);
   const { liveRiderLocation, connected } = useSocket(activeDelivery?.id);
+  const [showDeliveryMap, setShowDeliveryMap] = useState(false);
 
   const fetchDashboard = async () => {
     try {
@@ -245,14 +247,12 @@ export default function RiderDashboard() {
                     <Navigation size={14} /> {t.startDelivery || "Open Delivery"}
                   </Link>
                   {activeDelivery.deliveryLatitude && activeDelivery.deliveryLongitude && (
-                    <a
-                      href={`https://www.google.com/maps?q=${activeDelivery.deliveryLatitude},${activeDelivery.deliveryLongitude}&z=15`}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button
+                      onClick={() => setShowDeliveryMap(true)}
                       className="bg-[#F4F7FB] text-[#00215B] px-4 py-2.5 rounded-xl text-xs font-semibold hover:bg-[#E8EDF4] transition-all duration-200 flex items-center gap-2 border border-[#E5E7EB]"
                     >
                       <MapPin size={14} /> {t.viewOnMap || "View on Map"}
-                    </a>
+                    </button>
                   )}
                 </div>
               </div>
@@ -329,6 +329,16 @@ export default function RiderDashboard() {
           )}
         </div>
       </div>
+      {activeDelivery?.deliveryLatitude && activeDelivery?.deliveryLongitude && (
+        <LocationMapModal
+          show={showDeliveryMap}
+          onClose={() => setShowDeliveryMap(false)}
+          lat={activeDelivery.deliveryLatitude}
+          lng={activeDelivery.deliveryLongitude}
+          label="Delivery Location"
+          title="Delivery Location"
+        />
+      )}
     </div>
   );
 }

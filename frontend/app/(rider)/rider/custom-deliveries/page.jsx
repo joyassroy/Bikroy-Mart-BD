@@ -5,10 +5,12 @@ import toast from "react-hot-toast";
 import { MapPin, Phone, CheckCircle, Package, User, ClipboardList, Loader2, Image as ImageIcon, Navigation } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import LiveRiderMap from "@/components/tracking/LiveRiderMap";
+import LocationMapModal from "@/components/ui/LocationMapModal";
 import useSocket from "@/helper/useSocket";
 
 function CustomDeliveryCard({ del, completingId, markDelivered, t }) {
   const { liveRiderLocation } = useSocket(del.id);
+  const [showMap, setShowMap] = useState(false);
 
   return (
     <div className="bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden">
@@ -94,14 +96,12 @@ function CustomDeliveryCard({ del, completingId, markDelivered, t }) {
             <Phone size={14} /> {t.callCustomer || "Call Customer"}
           </a>
           {del.deliveryLatitude && del.deliveryLongitude && (
-            <a
-              href={`https://www.google.com/maps?q=${del.deliveryLatitude},${del.deliveryLongitude}&z=15`}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={() => setShowMap(true)}
               className="flex items-center justify-center gap-2 bg-[#F4F7FB] text-[#00215B] px-4 py-2.5 rounded-xl text-xs font-semibold hover:bg-[#E8EDF4] transition border border-[#E5E7EB]"
             >
               <Navigation size={14} />
-            </a>
+            </button>
           )}
           <button
             onClick={() => markDelivered(del.id)}
@@ -117,6 +117,16 @@ function CustomDeliveryCard({ del, completingId, markDelivered, t }) {
           </button>
         </div>
       </div>
+      {del.deliveryLatitude && del.deliveryLongitude && (
+        <LocationMapModal
+          show={showMap}
+          onClose={() => setShowMap(false)}
+          lat={del.deliveryLatitude}
+          lng={del.deliveryLongitude}
+          label="Delivery Location"
+          title="Delivery Location"
+        />
+      )}
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import api from "@/lib/axios";
 import { useParams, useRouter } from "next/navigation";
 import LiveRiderMap from "@/components/tracking/LiveRiderMap";
+import LocationMapModal from "@/components/ui/LocationMapModal";
 import useSocket from "@/helper/useSocket";
 import { Package, MapPin, Phone, CheckCircle, ArrowLeft, Navigation, CreditCard, FileText, User, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -38,7 +39,8 @@ export default function DeliveryPage() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [delivering, setDelivering] = useState(false);
-  const { liveRiderLocation, connected } = useSocket(order?.id);
+  const { liveRiderLocation, connected, orderStatus } = useSocket(order?.id);
+  const [showNavigateMap, setShowNavigateMap] = useState(false);
 
   useEffect(() => {
     let pollTimer;
@@ -52,6 +54,14 @@ export default function DeliveryPage() {
     pollTimer = setInterval(fetchOrder, 10000);
     return () => clearInterval(pollTimer);
   }, [params.id]);
+
+  useEffect(() => {
+    if (orderStatus && orderStatus.orderId === params.id) {
+      api.get(`/orders/${params.id}`)
+        .then((res) => setOrder(res.data.data))
+        .catch(console.error);
+    }
+  }, [orderStatus, params.id]);
 
   const handleDeliver = async () => {
     setDelivering(true);
@@ -156,14 +166,12 @@ export default function DeliveryPage() {
                 <Phone size={14} /> {t.callCustomer || "Call Customer"}
               </a>
               {order.deliveryLatitude && order.deliveryLongitude && (
-                <a
-                  href={`https://www.google.com/maps?q=${order.deliveryLatitude},${order.deliveryLongitude}&z=15`}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  onClick={() => setShowNavigateMap(true)}
                   className="flex items-center justify-center gap-2 bg-[#F4F7FB] text-[#00215B] px-4 py-2.5 rounded-xl text-xs font-semibold hover:bg-[#E8EDF4] transition border border-[#E5E7EB]"
                 >
                   <Navigation size={14} /> {t.navigate || "Navigate"}
-                </a>
+                </button>
               )}
             </div>
           </div>
@@ -277,6 +285,16 @@ export default function DeliveryPage() {
           </div>
         </div>
       </div>
+      {order?.deliveryLatitude && order?.deliveryLongitude && (
+        <LocationMapModal
+          show={showNavigateMap}
+          onClose={() => setShowNavigateMap(false)}
+          lat={order.deliveryLatitude}
+          lng={order.deliveryLongitude}
+          label="Delivery Location"
+          title="Navigate to Delivery"
+        />
+      )}
     </div>
   );
 }

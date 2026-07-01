@@ -137,6 +137,19 @@ export const updateOrderStatus = async (req: AuthRequest, res: Response) => {
       where: { id: String(req.params.id) },
       data: { orderStatus: status },
     });
+
+    try {
+      const { getIO } = await import("../../socket/socketHandler");
+      const io = getIO();
+      io.to(`order-${order.id}`).emit("order-status", {
+        orderId: order.id,
+        status,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (err) {
+      console.error("Socket broadcast failed for order status:", err);
+    }
+
     return sendSuccess(res, "Order status updated", order);
   } catch (error: any) {
     return sendError(res, error.message, 400);
@@ -166,6 +179,19 @@ export const assignRider = async (req: AuthRequest, res: Response) => {
       where: { id: String(req.params.id) },
       data: { riderId, orderStatus: "OUT_FOR_DELIVERY" },
     });
+
+    try {
+      const { getIO } = await import("../../socket/socketHandler");
+      const io = getIO();
+      io.to(`order-${updated.id}`).emit("order-status", {
+        orderId: updated.id,
+        status: "OUT_FOR_DELIVERY",
+        timestamp: new Date().toISOString(),
+      });
+    } catch (err) {
+      console.error("Socket broadcast failed for order status:", err);
+    }
+
     return sendSuccess(res, "Rider assigned", updated);
   } catch (error: any) {
     return sendError(res, error.message, 400);

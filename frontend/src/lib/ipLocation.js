@@ -47,7 +47,7 @@ const detectFromBrowserGeolocation = () => {
           const { latitude, longitude } = position.coords;
           const res = await fetch(
             `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=en&addressdetails=1`,
-            { headers: { "Accept-Language": "en" } }
+            { headers: { "Accept-Language": "en", "User-Agent": "BikroyMartBD/1.0 (https://bikroymart.com)" } }
           );
           if (!res.ok) { resolve(null); return; }
 

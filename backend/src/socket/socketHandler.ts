@@ -1,13 +1,20 @@
 import { Server } from "socket.io";
 import { verifyAccessToken } from "../utils/jwt";
 import prisma from "../config/db";
+import config from "../config";
 
 let io: Server;
 
 export const initSocket = (server: any) => {
+  const allowedOrigins = [
+    config.clientUrl,
+    "http://localhost:3000",
+    "http://localhost:3001",
+  ].filter(Boolean);
+
   io = new Server(server, {
     cors: {
-      origin: ["http://localhost:3000", "http://localhost:3001"],
+      origin: allowedOrigins,
       credentials: true,
     },
     transports: ["websocket", "polling"],

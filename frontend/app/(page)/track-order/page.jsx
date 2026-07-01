@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import LiveRiderMap from "@/components/tracking/LiveRiderMap";
+import LocationMapModal from "@/components/ui/LocationMapModal";
 import useSocket from "@/helper/useSocket";
 import api from "@/lib/axios";
 import { Search, Package, Truck, CheckCircle, Clock, MapPin, Phone, User, Navigation } from "lucide-react";
@@ -17,7 +18,8 @@ function TrackOrderContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const { t } = useLanguage();
-  const { liveRiderLocation, connected } = useSocket(order?.id);
+  const { liveRiderLocation, connected, orderStatus } = useSocket(order?.id);
+  const [showRiderMap, setShowRiderMap] = useState(false);
 
   const statusSteps = [
     { key: "PENDING", label: t.orderPlaced, icon: Package, color: "#00215B" },
@@ -45,6 +47,12 @@ function TrackOrderContent() {
   useEffect(() => {
     if (initialOrder) fetchOrder(initialOrder);
   }, []);
+
+  useEffect(() => {
+    if (orderStatus && order?.orderNumber) {
+      fetchOrder(order.orderNumber);
+    }
+  }, [orderStatus]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -228,15 +236,13 @@ function TrackOrderContent() {
                   </div>
                 </div>
                 {order.rider.currentLat && (
-                  <a
-                    href={`https://www.google.com/maps?q=${order.rider.currentLat},${order.rider.currentLng}&z=15`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    onClick={() => setShowRiderMap(true)}
                     className="mt-3 flex items-center justify-center gap-2 w-full py-2.5 bg-[#00AFCC]/10 hover:bg-[#00AFCC]/20 rounded-xl text-[#00AFCC] text-xs sm:text-sm font-semibold transition"
                   >
                     <MapPin size={14} />
                     {t.viewOnMap}
-                  </a>
+                  </button>
                 )}
               </div>
             )}
@@ -332,6 +338,16 @@ function TrackOrderContent() {
         )}
       </main>
       <Footer />
+      {order?.rider?.currentLat && (
+        <LocationMapModal
+          show={showRiderMap}
+          onClose={() => setShowRiderMap(false)}
+          lat={order.rider.currentLat}
+          lng={order.rider.currentLng}
+          label="Rider Location"
+          title="Rider Location"
+        />
+      )}
     </div>
   );
 }
