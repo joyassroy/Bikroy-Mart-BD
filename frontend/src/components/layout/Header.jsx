@@ -158,10 +158,8 @@ export default function Header() {
               </button>
 
               {/* Logo - desktop only */}
-              <Link href="/" className="hidden lg:flex flex-shrink-0">
-                <span className="text-lg font-bold text-[#00215B] tracking-tight whitespace-nowrap">
-                  Bikroy<span className="text-[#EC008C]">-Mart</span>-BD
-                </span>
+              <Link href="/" className="hidden lg:flex flex-shrink-0 items-center">
+                <img src="/icon.png" alt="Bikroy-Mart-BD" className="h-9 w-auto" />
               </Link>
 
               {/* Location - tablet+ */}
@@ -419,8 +417,8 @@ export default function Header() {
           className={`fixed top-0 left-0 h-full w-[280px] bg-white shadow-2xl transition-transform duration-250 ease-in-out pointer-events-auto ${drawerOpen ? "translate-x-0" : "-translate-x-full"}`}
         >
           <div className="flex items-center justify-between p-4 border-b border-[#E5E7EB]">
-            <Link href="/" onClick={() => setDrawerOpen(false)}>
-              <span className="text-lg font-bold text-[#00215B]">Bikroy<span className="text-[#EC008C]">-Mart</span>-BD</span>
+            <Link href="/" onClick={() => setDrawerOpen(false)} className="flex items-center">
+              <img src="/icon.png" alt="Bikroy-Mart-BD" className="h-8 w-auto" />
             </Link>
             <button onClick={() => setDrawerOpen(false)} className="p-2 rounded-full hover:bg-[#F3F4F6] transition text-[#364152]" aria-label="Close menu">
               <X size={22} />
@@ -539,7 +537,7 @@ export default function Header() {
           <div className="flex items-center justify-around py-1.5">
             <Link href="/" className={`flex flex-col items-center gap-0.5 min-w-[50px] ${pathname === "/" ? "text-[#EC008C]" : "text-[#667085]"}`}>
               <div className={`w-8 h-8 rounded-full flex items-center justify-center transition ${pathname === "/" ? "bg-[#FCE8F3]" : "bg-[#F4F7FB]"}`}>
-                <span className="text-[11px] font-bold text-[#00215B] leading-none">BM</span>
+                <img src="/icon.png" alt="Home" className="w-5 h-5 object-contain" />
               </div>
               <span className="text-[9px] font-semibold">{t.home}</span>
             </Link>
