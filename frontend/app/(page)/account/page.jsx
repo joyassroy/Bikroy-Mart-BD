@@ -1,11 +1,11 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import api from "@/lib/axios";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { User, Package, MapPin, LogOut, Loader2, ExternalLink, X, Plus, Pencil, Trash2, Star, ChevronDown } from "lucide-react";
+import { User, Package, MapPin, LogOut, Loader2, ExternalLink, X, Plus, Pencil, Trash2, Star, ChevronDown, Camera, Copy, Check } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
-import { clearUser } from "@/redux/userSlice";
+import { updateUser, clearUser } from "@/redux/userSlice";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useAuthChecked } from "@/helper/AuthInit";
@@ -33,6 +33,25 @@ export default function AccountPage() {
   });
   const [districts, setDistricts] = useState([]);
   const [upazilas, setUpazilas] = useState([]);
+  const [showProfileEdit, setShowProfileEdit] = useState(false);
+  const [profileForm, setProfileForm] = useState({ name: "", phone: "" });
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [copiedId, setCopiedId] = useState(null);
+  const fileInputRef = useRef(null);
+  const [editingOrder, setEditingOrder] = useState(false);
+  const [orderEditForm, setOrderEditForm] = useState({
+    items: [], subtotal: 0, total: 0, paymentMethod: "",
+    deliveryAddress: "", deliveryDivision: "", deliveryDistrict: "", deliveryUpazila: "",
+    deliveryLatitude: null, deliveryLongitude: null,
+  });
+  const [orderEditDistricts, setOrderEditDistricts] = useState([]);
+  const [orderEditUpazilas, setOrderEditUpazilas] = useState([]);
+  const [productSearchQuery, setProductSearchQuery] = useState("");
+  const [productSearchResults, setProductSearchResults] = useState([]);
+  const [searchingProducts, setSearchingProducts] = useState(false);
+  const [savingOrder, setSavingOrder] = useState(false);
 
   useEffect(() => {
     const div = BANGLADESH_LOCATIONS.find((d) => d.division === addressForm.division);
@@ -63,6 +82,7 @@ export default function AccountPage() {
 
   const handleLogout = async () => {
     localStorage.removeItem("bm-token");
+    localStorage.removeItem("bm-refresh-token");
     localStorage.removeItem("bm-location");
     dispatch(clearUser());
     disconnectSocket();
@@ -111,6 +131,190 @@ export default function AccountPage() {
     }
   };
 
+  const openProfileEdit = () => {
+    setProfileForm({ name: user.name || "", phone: user.phone || "" });
+    setAvatarPreview(user.avatar || null);
+    setAvatarFile(null);
+    setShowProfileEdit(true);
+  };
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be less than 5MB");
+      return;
+    }
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+  };
+
+  const handleProfileSave = async () => {
+    setSavingProfile(true);
+    try {
+      const textRes = await api.put("/auth/me", {
+        name: profileForm.name,
+        phone: profileForm.phone || undefined,
+      });
+      dispatch(updateUser(textRes.data.data));
+
+      if (avatarFile) {
+        const formData = new FormData();
+        formData.append("avatar", avatarFile);
+        const avatarRes = await api.post("/auth/me/avatar", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        dispatch(updateUser({ avatar: avatarRes.data.data.avatar }));
+      }
+
+      toast.success("Profile updated!");
+      setShowProfileEdit(false);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to update profile");
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const handleCopyOrderNumber = (orderNumber, e) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(orderNumber).then(() => {
+      setCopiedId(orderNumber);
+      toast.success("Order ID copied!");
+      setTimeout(() => setCopiedId(null), 2000);
+    });
+  };
+
+  const EDITABLE_STATUSES = ["PENDING", "CONFIRMED", "PROCESSING"];
+
+  useEffect(() => {
+    const div = BANGLADESH_LOCATIONS.find((d) => d.division === orderEditForm.deliveryDivision);
+    setOrderEditDistricts(div ? div.districts.map((d) => d.name) : []);
+  }, [orderEditForm.deliveryDivision]);
+
+  useEffect(() => {
+    setOrderEditUpazilas(getUpazilas(orderEditForm.deliveryDivision, orderEditForm.deliveryDistrict));
+  }, [orderEditForm.deliveryDivision, orderEditForm.deliveryDistrict]);
+
+  useEffect(() => {
+    if (!productSearchQuery.trim()) { setProductSearchResults([]); return; }
+    const t = setTimeout(() => {
+      setSearchingProducts(true);
+      api.get(`/products?search=${encodeURIComponent(productSearchQuery.trim())}&limit=8`)
+        .then((res) => setProductSearchResults(res.data.data || []))
+        .catch(() => setProductSearchResults([]))
+        .finally(() => setSearchingProducts(false));
+    }, 300);
+    return () => clearTimeout(t);
+  }, [productSearchQuery]);
+
+  const startEditOrder = () => {
+    if (!selectedOrder) return;
+    setOrderEditForm({
+      items: (selectedOrder.items || []).map((item) => ({
+        productId: item.productId,
+        productName: item.product?.name || "Unknown",
+        productImage: item.product?.images?.[0] || null,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        totalPrice: item.totalPrice,
+      })),
+      subtotal: selectedOrder.subtotal,
+      total: selectedOrder.total,
+      paymentMethod: selectedOrder.paymentMethod,
+      deliveryAddress: selectedOrder.deliveryAddress || "",
+      deliveryDivision: selectedOrder.deliveryDivision || "",
+      deliveryDistrict: selectedOrder.deliveryDistrict || "",
+      deliveryUpazila: selectedOrder.deliveryUpazila || "",
+      deliveryLatitude: selectedOrder.deliveryLatitude,
+      deliveryLongitude: selectedOrder.deliveryLongitude,
+    });
+    setEditingOrder(true);
+    setProductSearchQuery("");
+    setProductSearchResults([]);
+  };
+
+  const handleOrderItemQty = (idx, delta) => {
+    setOrderEditForm((prev) => {
+      const items = [...prev.items];
+      const newQty = Math.max(1, items[idx].quantity + delta);
+      items[idx].quantity = newQty;
+      items[idx].totalPrice = items[idx].unitPrice * newQty;
+      const subtotal = items.reduce((s, i) => s + i.totalPrice, 0);
+      return { ...prev, items, subtotal, total: subtotal };
+    });
+  };
+
+  const handleOrderItemRemove = (idx) => {
+    setOrderEditForm((prev) => {
+      const items = prev.items.filter((_, i) => i !== idx);
+      const subtotal = items.reduce((s, i) => s + i.totalPrice, 0);
+      return { ...prev, items, subtotal, total: subtotal };
+    });
+  };
+
+  const handleOrderItemAdd = (product) => {
+    setOrderEditForm((prev) => {
+      const existing = prev.items.find((i) => i.productId === product.id);
+      let items;
+      if (existing) {
+        items = prev.items.map((i) =>
+          i.productId === product.id
+            ? { ...i, quantity: i.quantity + 1, totalPrice: i.unitPrice * (i.quantity + 1) }
+            : i
+        );
+      } else {
+        const price = product.discountPrice || product.price;
+        items = [...prev.items, {
+          productId: product.id,
+          productName: product.name,
+          productImage: product.images?.[0] || null,
+          quantity: 1,
+          unitPrice: price,
+          totalPrice: price,
+        }];
+      }
+      const subtotal = items.reduce((s, i) => s + i.totalPrice, 0);
+      return { ...prev, items, subtotal, total: subtotal };
+    });
+    setProductSearchQuery("");
+    setProductSearchResults([]);
+  };
+
+  const handleOrderEditSave = async () => {
+    if (orderEditForm.items.length === 0) {
+      toast.error("Order must have at least one item");
+      return;
+    }
+    setSavingOrder(true);
+    try {
+      const res = await api.put(`/orders/${selectedOrder.id}`, {
+        items: orderEditForm.items.map((i) => ({
+          productId: i.productId,
+          quantity: i.quantity,
+          unitPrice: i.unitPrice,
+          totalPrice: i.totalPrice,
+        })),
+        subtotal: orderEditForm.subtotal,
+        total: orderEditForm.total,
+        paymentMethod: orderEditForm.paymentMethod,
+        deliveryAddress: orderEditForm.deliveryAddress,
+        deliveryDivision: orderEditForm.deliveryDivision,
+        deliveryDistrict: orderEditForm.deliveryDistrict,
+        deliveryUpazila: orderEditForm.deliveryUpazila,
+        deliveryLatitude: orderEditForm.deliveryLatitude,
+        deliveryLongitude: orderEditForm.deliveryLongitude,
+      });
+      setSelectedOrder(res.data.data);
+      setEditingOrder(false);
+      toast.success("Order updated!");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to update order");
+    } finally {
+      setSavingOrder(false);
+    }
+  };
+
   const openEditAddress = (addr) => {
     setEditingAddress(addr);
     setAddressForm({
@@ -144,13 +348,25 @@ export default function AccountPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 h-fit">
             <div className="text-center mb-6">
-              <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-3">
-                <User size={36} className="text-[#0067A0]" />
+              <div className="relative w-20 h-20 mx-auto mb-3">
+                {user.avatar ? (
+                  <img src={user.avatar} alt={user.name} className="w-20 h-20 rounded-full object-cover border-2 border-gray-100" />
+                ) : (
+                  <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center">
+                    <User size={36} className="text-[#0067A0]" />
+                  </div>
+                )}
+                <button onClick={openProfileEdit} className="absolute bottom-0 right-0 w-7 h-7 bg-[#0067A0] text-white rounded-full flex items-center justify-center hover:bg-[#005580] transition shadow-md" title="Edit profile">
+                  <Camera size={14} />
+                </button>
               </div>
               <h2 className="font-semibold text-gray-900 text-lg">{user.name}</h2>
               <p className="text-base text-gray-500 mt-1">{user.email}</p>
             </div>
             <div className="space-y-2">
+              <button onClick={openProfileEdit} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition ${activeTab === "profile" ? "bg-blue-50 text-[#0067A0]" : "text-gray-600 hover:bg-gray-50"}`}>
+                <Pencil size={20} /> Edit Profile
+              </button>
               <button onClick={() => setActiveTab("orders")} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition ${activeTab === "orders" ? "bg-blue-50 text-[#0067A0]" : "text-gray-600 hover:bg-gray-50"}`}>
                 <Package size={20} /> My Orders
               </button>
@@ -164,6 +380,61 @@ export default function AccountPage() {
           </div>
 
           <div className="lg:col-span-2">
+            {showProfileEdit && (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6">
+                <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+                  <h3 className="font-semibold text-gray-900 text-lg">Edit Profile</h3>
+                  <button onClick={() => setShowProfileEdit(false)} className="p-1.5 hover:bg-gray-100 rounded-lg transition">
+                    <X size={20} className="text-gray-500" />
+                  </button>
+                </div>
+                <div className="p-6 space-y-4">
+                  <div className="flex items-center gap-4">
+                    <div className="relative">
+                      {avatarPreview ? (
+                        <img src={avatarPreview} alt="Avatar" className="w-20 h-20 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center">
+                          <User size={32} className="text-[#0067A0]" />
+                        </div>
+                      )}
+                      <button onClick={() => fileInputRef.current?.click()} className="absolute bottom-0 right-0 w-7 h-7 bg-[#0067A0] text-white rounded-full flex items-center justify-center hover:bg-[#005580] transition shadow-md">
+                        <Camera size={14} />
+                      </button>
+                      <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">Profile Photo</p>
+                      <p className="text-xs text-gray-500">JPG, PNG or WebP. Max 5MB.</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                      <input type="text" value={profileForm.name} onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })} className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#0067A0] focus:border-transparent" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                      <input type="tel" value={profileForm.phone} onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })} placeholder="01XXXXXXXXX" className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#0067A0] focus:border-transparent" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" value={user.email} disabled className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-500 cursor-not-allowed" />
+                    <p className="text-xs text-gray-400 mt-1">Email cannot be changed</p>
+                  </div>
+                  <div className="flex gap-2 pt-2">
+                    <button onClick={handleProfileSave} disabled={savingProfile} className="bg-[#0067A0] text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-[#005580] transition disabled:opacity-50">
+                      {savingProfile ? "Saving..." : "Save Changes"}
+                    </button>
+                    <button onClick={() => setShowProfileEdit(false)} className="bg-gray-200 text-gray-700 px-5 py-2 rounded-lg text-sm font-medium hover:bg-gray-300 transition">
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {activeTab === "orders" && (
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
                 <div className="p-6 border-b border-gray-100"><h3 className="font-semibold text-gray-900 text-lg">My Orders</h3></div>
@@ -179,7 +450,12 @@ export default function AccountPage() {
                       <div key={order.id} className="p-6 hover:bg-gray-50 transition cursor-pointer" onClick={() => setSelectedOrder(order)}>
                         <div className="flex justify-between items-start">
                           <div>
-                            <p className="font-medium text-[#0067A0] text-base">#{order.orderNumber}</p>
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium text-[#0067A0] text-base">Order {order.orderNumber}</p>
+                              <button onClick={(e) => handleCopyOrderNumber(order.orderNumber, e)} className="p-1 hover:bg-blue-100 rounded transition text-[#0067A0]" title="Copy order ID">
+                                {copiedId === order.orderNumber ? <Check size={14} /> : <Copy size={14} />}
+                              </button>
+                            </div>
                             <p className="text-base text-gray-500 mt-1">{new Date(order.createdAt).toLocaleDateString()}</p>
                           </div>
                           <span className={`px-3 py-1.5 rounded-lg text-sm font-semibold ${
@@ -351,7 +627,12 @@ export default function AccountPage() {
             <div className="p-5 space-y-4">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="font-mono font-bold text-[#00215B] text-base">#{selectedOrder.orderNumber}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-mono font-bold text-[#00215B] text-base">Order {selectedOrder.orderNumber}</p>
+                    <button onClick={() => { navigator.clipboard.writeText(selectedOrder.orderNumber); setCopiedId(selectedOrder.orderNumber); toast.success("Order ID copied!"); setTimeout(() => setCopiedId(null), 2000); }} className="p-1 hover:bg-gray-100 rounded transition text-[#00215B]" title="Copy order ID">
+                      {copiedId === selectedOrder.orderNumber ? <Check size={14} /> : <Copy size={14} />}
+                    </button>
+                  </div>
                   <p className="text-sm text-gray-500 mt-0.5">{new Date(selectedOrder.createdAt).toLocaleDateString("en-BD", { year: "numeric", month: "long", day: "numeric" })}</p>
                 </div>
                 <span className={`px-3 py-1 rounded-lg text-xs font-semibold ${
@@ -360,6 +641,17 @@ export default function AccountPage() {
                   "bg-blue-50 text-blue-700"
                 }`}>{selectedOrder.orderStatus}</span>
               </div>
+
+              {EDITABLE_STATUSES.includes(selectedOrder.orderStatus) && !editingOrder && (
+                <button onClick={startEditOrder} className="flex items-center gap-1.5 text-sm text-[#0067A0] hover:text-[#00215B] font-medium transition">
+                  <Pencil size={14} /> Edit Order
+                </button>
+              )}
+              {editingOrder && (
+                <button onClick={() => setEditingOrder(false)} className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 font-medium transition">
+                  <X size={14} /> Cancel Edit
+                </button>
+              )}
 
               <div className="space-y-2">
                 {statusSteps.map((step, index) => {
@@ -382,35 +674,125 @@ export default function AccountPage() {
 
               <div className="border-t border-gray-100 pt-4">
                 <h3 className="font-medium text-gray-900 mb-2 text-sm">Items</h3>
-                <div className="space-y-2">
-                  {selectedOrder.items?.map((item) => (
-                    <div key={item.id} className="flex justify-between text-sm">
-                      <span className="text-gray-600">{item.product?.name} x {item.quantity}</span>
-                      <span className="font-medium text-gray-900">৳{item.totalPrice}</span>
+                {editingOrder ? (
+                  <div className="space-y-3">
+                    {orderEditForm.items.map((item, idx) => (
+                      <div key={item.productId} className="flex items-center gap-3 bg-gray-50 rounded-lg p-2">
+                        <div className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                          {item.productImage ? (
+                            <img src={item.productImage} alt={item.productName} className="w-full h-full object-cover" />
+                          ) : (
+                            <Package size={16} className="text-gray-400" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{item.productName}</p>
+                          <p className="text-xs text-gray-500">৳{item.unitPrice} each</p>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <button onClick={() => handleOrderItemQty(idx, -1)} className="w-6 h-6 rounded-full bg-white border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100 text-sm font-bold">-</button>
+                          <span className="w-6 text-center text-sm font-medium">{item.quantity}</span>
+                          <button onClick={() => handleOrderItemQty(idx, 1)} className="w-6 h-6 rounded-full bg-white border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100 text-sm font-bold">+</button>
+                        </div>
+                        <p className="text-sm font-semibold text-gray-900 w-16 text-right">৳{item.totalPrice}</p>
+                        <button onClick={() => handleOrderItemRemove(idx)} className="p-1 text-red-400 hover:text-red-600 transition">
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    ))}
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="Search products to add..."
+                        value={productSearchQuery}
+                        onChange={(e) => setProductSearchQuery(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#0067A0]"
+                      />
+                      {productSearchResults.length > 0 && (
+                        <div className="absolute z-10 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                          {productSearchResults.map((p) => (
+                            <button key={p.id} onClick={() => handleOrderItemAdd(p)} className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 text-left">
+                              <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                {p.images?.[0] ? <img src={p.images[0]} alt="" className="w-full h-full object-cover" /> : <Package size={12} className="text-gray-400" />}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-gray-900 truncate">{p.name}</p>
+                                <p className="text-xs text-gray-500">৳{p.discountPrice || p.price} — Stock: {p.stock ?? "N/A"}</p>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {selectedOrder.items?.map((item) => (
+                      <div key={item.id} className="flex justify-between text-sm">
+                        <span className="text-gray-600">{item.product?.name} x {item.quantity}</span>
+                        <span className="font-medium text-gray-900">৳{item.totalPrice}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <div className="flex justify-between font-bold text-sm mt-2 pt-2 border-t border-gray-100">
                   <span>Total</span>
-                  <span>৳{selectedOrder.total}</span>
-                </div>
-              </div>
-
-              <div className="border-t border-gray-100 pt-4 grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-gray-500 mb-0.5">Payment Method</p>
-                  <p className="font-medium text-gray-900">{selectedOrder.paymentMethod}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500 mb-0.5">Payment Status</p>
-                  <p className="font-medium text-gray-900">{selectedOrder.paymentStatus}</p>
+                  <span>৳{editingOrder ? orderEditForm.total : selectedOrder.total}</span>
                 </div>
               </div>
 
               <div className="border-t border-gray-100 pt-4 text-sm">
-                <p className="text-gray-500 mb-0.5">Delivery Address</p>
-                <p className="text-gray-900">{selectedOrder.deliveryUpazila}, {selectedOrder.deliveryDistrict}, {selectedOrder.deliveryDivision}</p>
-                <p className="text-gray-900">{selectedOrder.deliveryAddress}</p>
+                {editingOrder ? (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-gray-500 mb-1 block">Payment Method</label>
+                      <div className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-700">Cash on Delivery</div>
+                    </div>
+                    <div>
+                      <label className="text-gray-500 mb-1 block">Division</label>
+                      <select value={orderEditForm.deliveryDivision} onChange={(e) => setOrderEditForm({ ...orderEditForm, deliveryDivision: e.target.value, deliveryDistrict: "", deliveryUpazila: "" })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#0067A0]">
+                        <option value="">Select Division</option>
+                        {BANGLADESH_LOCATIONS.map((d) => <option key={d.division} value={d.division}>{d.division}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-gray-500 mb-1 block">District</label>
+                      <select value={orderEditForm.deliveryDistrict} onChange={(e) => setOrderEditForm({ ...orderEditForm, deliveryDistrict: e.target.value, deliveryUpazila: "" })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#0067A0]">
+                        <option value="">Select District</option>
+                        {orderEditDistricts.map((d) => <option key={d} value={d}>{d}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-gray-500 mb-1 block">Upazila</label>
+                      <select value={orderEditForm.deliveryUpazila} onChange={(e) => setOrderEditForm({ ...orderEditForm, deliveryUpazila: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#0067A0]">
+                        <option value="">Select Upazila</option>
+                        {orderEditUpazilas.map((u) => <option key={u} value={u}>{u}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-gray-500 mb-1 block">Full Address</label>
+                      <textarea value={orderEditForm.deliveryAddress} onChange={(e) => setOrderEditForm({ ...orderEditForm, deliveryAddress: e.target.value })} rows={2} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#0067A0] resize-none" />
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <p className="text-gray-500 mb-0.5">Payment Method</p>
+                        <p className="font-medium text-gray-900">{selectedOrder.paymentMethod}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-500 mb-0.5">Payment Status</p>
+                        <p className="font-medium text-gray-900">{selectedOrder.paymentStatus}</p>
+                      </div>
+                    </div>
+                    <div className="border-t border-gray-100 pt-4">
+                      <p className="text-gray-500 mb-0.5">Delivery Address</p>
+                      <p className="text-gray-900">{selectedOrder.deliveryUpazila}, {selectedOrder.deliveryDistrict}, {selectedOrder.deliveryDivision}</p>
+                      <p className="text-gray-900">{selectedOrder.deliveryAddress}</p>
+                    </div>
+                  </>
+                )}
               </div>
 
               {selectedOrder.customRequirement && (
@@ -427,9 +809,16 @@ export default function AccountPage() {
                 </div>
               )}
 
-              <button onClick={() => { setSelectedOrder(null); router.push(`/track-order?order=${selectedOrder.orderNumber}`); }} className="w-full flex items-center justify-center gap-2 bg-[#00215B] text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-[#001845] transition mt-2">
-                <ExternalLink size={16} /> Track Order
-              </button>
+              {editingOrder ? (
+                <button onClick={handleOrderEditSave} disabled={savingOrder} className="w-full flex items-center justify-center gap-2 bg-[#EC008C] text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-[#b8007a] transition mt-2 disabled:opacity-50">
+                  {savingOrder ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+                  {savingOrder ? "Saving..." : "Save Changes"}
+                </button>
+              ) : (
+                <button onClick={() => { setSelectedOrder(null); router.push(`/track-order?order=${selectedOrder.orderNumber}`); }} className="w-full flex items-center justify-center gap-2 bg-[#00215B] text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-[#001845] transition mt-2">
+                  <ExternalLink size={16} /> Track Order
+                </button>
+              )}
             </div>
           </div>
         </div>

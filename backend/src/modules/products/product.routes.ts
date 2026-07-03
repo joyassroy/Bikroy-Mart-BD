@@ -10,6 +10,7 @@ const router = Router();
 router.use("/:id/district-prices", districtPriceRoutes);
 
 router.get("/", productController.getAllProducts);
+router.get("/suggestions", productController.getSearchSuggestions);
 router.get("/featured", productController.getFeaturedProducts);
 router.get("/slug/:slug", productController.getProductBySlug);
 router.get("/:id", productController.getProductById);

@@ -16,7 +16,7 @@ interface RegisterInput {
 }
 
 interface LoginInput {
-  email: string;
+  identifier: string;
   password: string;
 }
 
@@ -64,12 +64,17 @@ export const register = async (input: RegisterInput) => {
 };
 
 export const login = async (input: LoginInput) => {
-  const user = await prisma.user.findUnique({
-    where: { email: input.email },
+  const user = await prisma.user.findFirst({
+    where: {
+      OR: [
+        { email: input.identifier },
+        { phone: input.identifier },
+      ],
+    },
   });
 
   if (!user) {
-    throw new Error("Invalid email or password");
+    throw new Error("Invalid credentials");
   }
 
   if (user.isBlocked) {
@@ -78,7 +83,7 @@ export const login = async (input: LoginInput) => {
 
   const isPasswordValid = await comparePassword(input.password, user.password);
   if (!isPasswordValid) {
-    throw new Error("Invalid email or password");
+    throw new Error("Invalid credentials");
   }
 
   const tokenPayload = {
@@ -223,6 +228,59 @@ export const googleSignIn = async (input: GoogleSignInInput) => {
     accessToken,
     refreshToken,
   };
+};
+
+interface UpdateMeInput {
+  name?: string;
+  phone?: string;
+}
+
+export const updateMe = async (userId: string, input: UpdateMeInput) => {
+  const data: any = {};
+  if (input.name !== undefined) data.name = input.name;
+  if (input.phone !== undefined) data.phone = input.phone;
+
+  if (Object.keys(data).length === 0) {
+    throw new Error("No fields to update");
+  }
+
+  const user = await prisma.user.update({
+    where: { id: userId },
+    data,
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      phone: true,
+      role: true,
+      avatar: true,
+      district: true,
+      isBlocked: true,
+      createdAt: true,
+    },
+  });
+
+  return user;
+};
+
+export const updateAvatar = async (userId: string, avatarUrl: string) => {
+  const user = await prisma.user.update({
+    where: { id: userId },
+    data: { avatar: avatarUrl },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      phone: true,
+      role: true,
+      avatar: true,
+      district: true,
+      isBlocked: true,
+      createdAt: true,
+    },
+  });
+
+  return user;
 };
 
 export const refreshToken = async (token: string) => {

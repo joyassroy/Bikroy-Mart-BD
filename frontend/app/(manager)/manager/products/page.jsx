@@ -247,7 +247,9 @@ export default function ManagerProductsPage() {
                   <select name="unit" value={form.unit} onChange={handleChange}
                     className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:border-[#EC008C]">
                     <option value="piece">Piece</option>
+                    <option value="ekok">Ekok (একক)</option>
                     <option value="kg">Kg</option>
+                    <option value="gram">Gram</option>
                     <option value="liter">Liter</option>
                     <option value="dozen">Dozen</option>
                     <option value="box">Box</option>

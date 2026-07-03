@@ -9,10 +9,11 @@ import api from "@/lib/axios";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { SlidersHorizontal, X, ChevronDown, Grid3X3, List, Search, Plus } from "lucide-react";
 import useDistrict from "@/helper/useDistrict";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import toast from "react-hot-toast";
 import FloatingChatButton from "@/components/layout/FloatingChatButton";
 import FloatingCartButton from "@/components/home/FloatingCartButton";
+import { setQuery as setSearchQueryRedux } from "@/redux/searchSlice";
 
 const OFFER_TITLES = {
   STOCK_CLEARANCE: "Stock Clearance Sale",
@@ -118,7 +119,9 @@ function ShopContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const district = useDistrict();
+  const dispatch = useDispatch();
   const user = useSelector((state) => state.user.data);
+  const searchQueryRedux = useSelector((state) => state.search.query);
   const isAdminOrManager = user && (user.role === "ADMIN" || user.role === "MANAGER");
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -128,7 +131,7 @@ function ShopContent() {
   const [sortBy, setSortBy] = useState("newest");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [localSearch, setLocalSearch] = useState("");
   const [totalProducts, setTotalProducts] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -137,6 +140,7 @@ function ShopContent() {
   const [offerType, setOfferType] = useState("");
   const { t } = useLanguage();
   const fetchIdRef = useRef(0);
+  const searchDebounceRef = useRef(null);
 
   const urlCategory = searchParams.get("category") || "";
   const urlSubcategory = searchParams.get("subcategory") || "";
@@ -151,12 +155,26 @@ function ShopContent() {
     setSelectedCategory(urlCategory);
     setSelectedSubcategory(urlSubcategory);
     setOfferType(urlOffer);
-    setSearchQuery(urlSearch);
-  }, [urlCategory, urlSubcategory, urlOffer, urlSearch]);
+    if (urlSearch) {
+      setLocalSearch(urlSearch);
+      dispatch(setSearchQueryRedux(urlSearch));
+    }
+  }, [urlCategory, urlSubcategory, urlOffer, urlSearch, dispatch]);
+
+  const activeSearch = localSearch || searchQueryRedux;
+
+  useEffect(() => {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      setCurrentPage(1);
+      fetchProducts();
+    }, 300);
+    return () => { if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current); };
+  }, [activeSearch]);
 
   useEffect(() => {
     fetchProducts();
-  }, [selectedCategory, selectedSubcategory, sortBy, minPrice, maxPrice, currentPage, offerType, searchQuery, district]);
+  }, [selectedCategory, selectedSubcategory, sortBy, minPrice, maxPrice, currentPage, offerType, district]);
 
   const fetchCategories = async () => {
     try {
@@ -177,7 +195,7 @@ function ShopContent() {
       if (sortBy) params.set("sort", sortBy);
       if (minPrice) params.set("minPrice", minPrice);
       if (maxPrice) params.set("maxPrice", maxPrice);
-      if (searchQuery) params.set("search", searchQuery);
+      if (activeSearch) params.set("search", activeSearch);
       if (offerType) params.set("offer", offerType);
       if (district) params.set("district", district);
       params.set("page", currentPage.toString());
@@ -222,7 +240,8 @@ function ShopContent() {
     setSelectedSubcategory("");
     setMinPrice("");
     setMaxPrice("");
-    setSearchQuery("");
+    setLocalSearch("");
+    dispatch(setSearchQueryRedux(""));
     setSortBy("newest");
     setOfferType("");
     setCurrentPage(1);
@@ -274,8 +293,8 @@ function ShopContent() {
             <input
               type="text"
               placeholder={t.productSearchPlaceholder}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={localSearch}
+              onChange={(e) => { setLocalSearch(e.target.value); dispatch(setSearchQueryRedux(e.target.value)); }}
               className="flex-1 rounded-l-md px-3 py-2 text-xs bg-white text-[#000000] placeholder:text-[#99A0B4] border border-[#E5E7EB] border-r-0 focus:outline-none focus:border-transparent"
             />
             <button type="submit" className="bg-[#EC008C] text-white px-3 rounded-r-md hover:bg-[#D60071] transition flex items-center">
@@ -296,8 +315,8 @@ function ShopContent() {
             <input
               type="text"
               placeholder={t.productSearchPlaceholder}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={localSearch}
+              onChange={(e) => { setLocalSearch(e.target.value); dispatch(setSearchQueryRedux(e.target.value)); }}
               className="flex-1 rounded-l-md px-4 py-2 text-sm bg-white text-[#000000] placeholder:text-[#99A0B4] border border-[#E5E7EB] border-r-0 focus:outline-none focus:border-transparent"
             />
             <button type="submit" className="bg-[#EC008C] text-white px-4 rounded-r-md hover:bg-[#D60071] transition flex items-center">
@@ -353,7 +372,7 @@ function ShopContent() {
               </div>
             </div>
 
-            {(selectedCategory || selectedSubcategory || minPrice || maxPrice || searchQuery || offerType) && (
+            {(selectedCategory || selectedSubcategory || minPrice || maxPrice || activeSearch || offerType) && (
               <div className="flex flex-wrap items-center gap-2 mb-3">
                 <span className="text-[10px] text-[#667085] font-medium">{t.filters}:</span>
                 {offerType && (
@@ -386,10 +405,10 @@ function ShopContent() {
                     <button onClick={() => setMaxPrice("")} className="hover:text-[#009AB5]"><X size={10} /></button>
                   </span>
                 )}
-                {searchQuery && (
+                {activeSearch && (
                   <span className="inline-flex items-center gap-1 bg-[#E8EDF5] text-[#00215B] text-[10px] font-medium px-2 py-1 rounded-full">
-                    &quot;{searchQuery}&quot;
-                    <button onClick={() => setSearchQuery("")} className="hover:text-[#001A4A]"><X size={10} /></button>
+                    &quot;{activeSearch}&quot;
+                    <button onClick={() => { setLocalSearch(""); dispatch(setSearchQueryRedux("")); }} className="hover:text-[#001A4A]"><X size={10} /></button>
                   </span>
                 )}
                 <button onClick={clearFilters} className="text-[10px] text-[#EC008C] font-semibold hover:underline">{t.clearAll}</button>

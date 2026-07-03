@@ -28,8 +28,9 @@ export default function SignupPage() {
     setErrors({});
     try {
       const res = await api.post("/auth/register", form);
-      const { user, accessToken } = res.data.data;
+      const { user, accessToken, refreshToken } = res.data.data;
       localStorage.setItem("bm-token", accessToken);
+      if (refreshToken) localStorage.setItem("bm-refresh-token", refreshToken);
       dispatch(setUser({ user, accessToken }));
       if (form.district) {
         dispatch(setLocation({ division: "", district: form.district, upazila: "" }));

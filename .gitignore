@@ -43,3 +43,4 @@ test-rider-movement.sh
 
 # AGENTS.md - local only, not tracked
 AGENTS.md
+frontend/.env.production

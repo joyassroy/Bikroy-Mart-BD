@@ -4,6 +4,7 @@ import productRequestReducer from "./productRequestSlice";
 import userReducer from "./userSlice";
 import locationReducer from "./locationSlice";
 import orderReducer from "./orderSlice";
+import searchReducer from "./searchSlice";
 
 const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ const store = configureStore({
     user: userReducer,
     location: locationReducer,
     order: orderReducer,
+    search: searchReducer,
   },
 });
 

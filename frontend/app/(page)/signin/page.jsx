@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { setUser } from "@/redux/userSlice";
@@ -8,7 +8,7 @@ import api from "@/lib/axios";
 import toast from "react-hot-toast";
 import Link from "next/link";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { signIn, useSession } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 import { Eye, EyeOff } from "lucide-react";
 
 function applyUserDistrict(dispatch, user) {
@@ -21,30 +21,62 @@ function applyUserDistrict(dispatch, user) {
   }
 }
 
+function loginUser(user, accessToken, refreshToken, dispatch, router) {
+  localStorage.setItem("bm-token", accessToken);
+  if (refreshToken) localStorage.setItem("bm-refresh-token", refreshToken);
+  dispatch(setUser({ user, accessToken }));
+  applyUserDistrict(dispatch, user);
+  if (user.role === "ADMIN") router.push("/dashboard");
+  else if (user.role === "MANAGER") router.push("/manager");
+  else if (user.role === "RIDER") router.push("/rider");
+  else router.push("/");
+}
+
 export default function SigninPage() {
   const router = useRouter();
   const dispatch = useDispatch();
   const { t } = useLanguage();
   const { data: session, status } = useSession();
-  const [form, setForm] = useState({ email: "", password: "" });
+  const [form, setForm] = useState({ identifier: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
+  const sessionProcessed = useRef(false);
 
   useEffect(() => {
-    if (status === "authenticated" && session?.user) {
-      const backendUser = session.user.backendUser;
-      const backendToken = session.user.backendToken;
-      if (backendUser && backendToken) {
-        localStorage.setItem("bm-token", backendToken);
-        dispatch(setUser({ user: backendUser, accessToken: backendToken }));
-        applyUserDistrict(dispatch, backendUser);
-        if (backendUser.role === "ADMIN") router.push("/dashboard");
-        else if (backendUser.role === "MANAGER") router.push("/manager");
-        else if (backendUser.role === "RIDER") router.push("/rider");
-        else router.push("/");
-      }
+    if (status !== "authenticated" || !session?.user || sessionProcessed.current) return;
+
+    const backendToken = session.user.backendToken;
+    const backendRefreshToken = session.user.backendRefreshToken;
+    const backendUser = session.user.backendUser;
+
+    if (!backendUser || !backendToken) {
+      signOut({ redirect: false });
+      return;
     }
+
+    sessionProcessed.current = true;
+
+    const controller = new AbortController();
+    const validateAndLogin = async () => {
+      try {
+        const res = await api.get("/auth/me", {
+          headers: { Authorization: `Bearer ${backendToken}` },
+          signal: controller.signal,
+        });
+        if (res.data?.data) {
+          loginUser(res.data.data, backendToken, backendRefreshToken, dispatch, router);
+          toast.success("Login successful!");
+        } else {
+          await signOut({ redirect: false });
+        }
+      } catch {
+        await signOut({ redirect: false });
+      }
+    };
+
+    validateAndLogin();
+    return () => controller.abort();
   }, [session, status, dispatch, router]);
 
   const handleSubmit = async (e) => {
@@ -53,14 +85,8 @@ export default function SigninPage() {
     setErrors({});
     try {
       const res = await api.post("/auth/login", form);
-      const { user, accessToken } = res.data.data;
-      localStorage.setItem("bm-token", accessToken);
-      dispatch(setUser({ user, accessToken }));
-      applyUserDistrict(dispatch, user);
-      if (user.role === "ADMIN") router.push("/dashboard");
-      else if (user.role === "MANAGER") router.push("/manager");
-      else if (user.role === "RIDER") router.push("/rider");
-      else router.push("/");
+      const { user, accessToken, refreshToken } = res.data.data;
+      loginUser(user, accessToken, refreshToken, dispatch, router);
       toast.success("Login successful!");
     } catch (err) {
       const msg = err.response?.data?.message || "Login failed";
@@ -106,16 +132,16 @@ export default function SigninPage() {
             <div className="w-full border-t border-[#E5E7EB]"></div>
           </div>
           <div className="relative flex justify-center text-[11px]">
-            <span className="bg-white px-2 text-[#667085]">or sign in with email</span>
+            <span className="bg-white px-2 text-[#667085]">or sign in with email/phone</span>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-2.5 sm:space-y-3">
           <div>
-            <label className="block text-[11px] sm:text-xs font-semibold text-[#364152] mb-1">{t.emailAddress}</label>
+            <label className="block text-[11px] sm:text-xs font-semibold text-[#364152] mb-1">Email or Phone Number</label>
             <input
-              type="email" placeholder="Enter your email" required
-              value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
+              type="text" placeholder="Enter email or phone number" required
+              value={form.identifier} onChange={(e) => setForm({ ...form, identifier: e.target.value })}
               className="input-field"
             />
           </div>

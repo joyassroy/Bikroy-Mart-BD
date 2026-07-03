@@ -38,6 +38,7 @@ export default function RiderLayout({ children }) {
 
   const handleLogout = () => {
     localStorage.removeItem("bm-token");
+    localStorage.removeItem("bm-refresh-token");
     localStorage.removeItem("bm-location");
     dispatch(clearUser());
     router.push("/signin");

@@ -156,6 +156,77 @@ export const updateOrderStatus = async (req: AuthRequest, res: Response) => {
   }
 };
 
+const EDITABLE_STATUSES = ["PENDING", "CONFIRMED", "PROCESSING"];
+
+export const updateOrder = async (req: AuthRequest, res: Response) => {
+  try {
+    const id = String(req.params.id);
+    const {
+      items,
+      subtotal,
+      total,
+      paymentMethod,
+      deliveryAddress,
+      deliveryDivision,
+      deliveryDistrict,
+      deliveryUpazila,
+      deliveryLatitude,
+      deliveryLongitude,
+    } = req.body;
+
+    const order = await prisma.order.findUnique({
+      where: { id },
+      select: { id: true, userId: true, orderStatus: true },
+    });
+
+    if (!order) return sendError(res, "Order not found", 404);
+    if (order.userId !== req.user!.userId) return sendError(res, "Not authorized", 403);
+    if (!EDITABLE_STATUSES.includes(order.orderStatus)) {
+      return sendError(res, `Cannot edit order with status "${order.orderStatus}". Only PENDING, CONFIRMED, or PROCESSING orders can be edited.`, 400);
+    }
+
+    const updateData: any = {};
+
+    if (deliveryAddress !== undefined) updateData.deliveryAddress = deliveryAddress;
+    if (deliveryDivision !== undefined) updateData.deliveryDivision = deliveryDivision;
+    if (deliveryDistrict !== undefined) updateData.deliveryDistrict = deliveryDistrict;
+    if (deliveryUpazila !== undefined) updateData.deliveryUpazila = deliveryUpazila;
+    if (deliveryLatitude !== undefined) updateData.deliveryLatitude = deliveryLatitude;
+    if (deliveryLongitude !== undefined) updateData.deliveryLongitude = deliveryLongitude;
+    if (paymentMethod !== undefined) updateData.paymentMethod = paymentMethod;
+    if (subtotal !== undefined) updateData.subtotal = subtotal;
+    if (total !== undefined) updateData.total = total;
+
+    if (items && Array.isArray(items)) {
+      await prisma.orderItem.deleteMany({ where: { orderId: id } });
+      if (items.length > 0) {
+        await prisma.orderItem.createMany({
+          data: items.map((item: any) => ({
+            orderId: id,
+            productId: item.productId,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            totalPrice: item.totalPrice,
+          })),
+        });
+      }
+    }
+
+    const updated = await prisma.order.update({
+      where: { id },
+      data: updateData,
+      include: {
+        items: { include: { product: true } },
+        user: { select: { id: true, name: true, email: true, phone: true } },
+      },
+    });
+
+    return sendSuccess(res, "Order updated", updated);
+  } catch (error: any) {
+    return sendError(res, error.message, 400);
+  }
+};
+
 export const assignRider = async (req: AuthRequest, res: Response) => {
   try {
     const { riderId } = req.body;

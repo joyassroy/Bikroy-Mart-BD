@@ -14,6 +14,7 @@ const handler = NextAuth({
         token.accessToken = account.access_token;
         token.userId = user.id;
         token.backendToken = user.backendToken || null;
+        token.backendRefreshToken = user.backendRefreshToken || null;
         token.backendUser = user.backendUser || null;
       }
       return token;
@@ -22,6 +23,7 @@ const handler = NextAuth({
       session.user.id = token.userId;
       session.accessToken = token.accessToken;
       session.user.backendToken = token.backendToken;
+      session.user.backendRefreshToken = token.backendRefreshToken;
       session.user.backendUser = token.backendUser;
       return session;
     },
@@ -44,6 +46,7 @@ const handler = NextAuth({
           const data = await res.json();
           if (data.success) {
             user.backendToken = data.data.accessToken;
+            user.backendRefreshToken = data.data.refreshToken;
             user.backendUser = data.data.user;
             return true;
           }

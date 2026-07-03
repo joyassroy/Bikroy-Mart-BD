@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useAuthChecked } from "@/helper/AuthInit";
-import { DELIVERY_AREAS } from "@/lib/constants";
+import { BANGLADESH_LOCATIONS, DELIVERY_AREAS, getUpazilas } from "@/lib/constants";
 import { ClipboardList, Upload, X, MapPin, Loader2, CheckCircle, Clock, Eye, Truck, XCircle } from "lucide-react";
 import dynamic from "next/dynamic";
 const DeliveryMapPicker = dynamic(() => import("@/components/checkout/DeliveryMapPicker"), { ssr: false });
@@ -67,6 +67,7 @@ export default function CustomRequestPage() {
   });
 
   const [districts, setDistricts] = useState([]);
+  const [upazilas, setUpazilas] = useState([]);
 
   useEffect(() => {
     if (authChecked && !user) {
@@ -83,6 +84,11 @@ export default function CustomRequestPage() {
       }
     }
   }, [form.division]);
+
+  useEffect(() => {
+    const ups = getUpazilas(form.division, form.district);
+    setUpazilas(ups);
+  }, [form.division, form.district]);
 
   const requestsFetched = useRef(false);
   useEffect(() => {
@@ -362,7 +368,9 @@ export default function CustomRequestPage() {
                   <select name="unit" value={form.unit} onChange={handleChange}
                     className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:border-[#EC008C] focus:ring-2 focus:ring-[#EC008C]/10 transition bg-white">
                     <option value="piece">{t.unitPiece}</option>
+                    <option value="ekok">{t.unitEkok}</option>
                     <option value="kg">{t.unitKg}</option>
+                    <option value="gram">{t.unitGram}</option>
                     <option value="litre">{t.unitLitre}</option>
                     <option value="dozen">{t.unitDozen}</option>
                     <option value="box">{t.unitBox}</option>
@@ -422,8 +430,11 @@ export default function CustomRequestPage() {
                       {(districts || []).map((d) => <option key={d} value={d}>{d}</option>)}
                     </select>
                   </div>
-                  <input type="text" name="upazila" value={form.upazila} onChange={handleChange} placeholder={t.selectUpazila}
-                    className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:border-[#EC008C] focus:ring-2 focus:ring-[#EC008C]/10 transition" />
+                  <select name="upazila" value={form.upazila} onChange={handleChange} disabled={!form.district}
+                    className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:border-[#EC008C] focus:ring-2 focus:ring-[#EC008C]/10 transition bg-white disabled:opacity-50">
+                    <option value="">{t.selectUpazila}</option>
+                    {(upazilas || []).map((u) => <option key={u} value={u}>{u}</option>)}
+                  </select>
                   <textarea name="fullAddress" value={form.fullAddress} onChange={handleChange} rows={2} placeholder={t.fullAddressPlaceholder}
                     className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:border-[#EC008C] focus:ring-2 focus:ring-[#EC008C]/10 transition resize-none" />
                   {!locationDetected && !detectingLocation && (

@@ -112,9 +112,10 @@ export default function AddProductPage() {
             <select value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })}
               className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none">
               <option value="piece">Piece</option>
+              <option value="ekok">Ekok (একক)</option>
               <option value="kg">Kilogram</option>
-              <option value="litre">Litre</option>
               <option value="gram">Gram</option>
+              <option value="litre">Litre</option>
             </select>
           </div>
           <div>

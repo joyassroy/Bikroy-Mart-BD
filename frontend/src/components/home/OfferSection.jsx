@@ -71,6 +71,7 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
     ? deals.map((deal) => {
         const product = deal.product || {};
         const discount = product.price ? Math.round(((product.price - deal.dealPrice) / product.price) * 100) : 0;
+        const stock = product.stock !== undefined ? product.stock : (deal.quantity - deal.sold);
         return {
           id: deal.id,
           slug: product.slug,
@@ -79,6 +80,7 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
           dealPrice: deal.dealPrice,
           image: product.images?.[0] || null,
           discount,
+          stock,
           isPlaceholder: false,
           badge: null,
         };
@@ -97,6 +99,7 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
           dealPrice: offer.offerPrice,
           image: firstItem?.images?.[0] || null,
           discount,
+          stock: firstItem?.stock,
           isPlaceholder: false,
           badge: type === "BOGO" ? `Buy ${offer.buyQuantity} Get ${offer.getQuantity}` : type === "COMBO" ? "Bundle Deal" : null,
           items: offer.items,
@@ -236,6 +239,11 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
                   {isBogo && (
                     <div className="text-[9px] sm:text-[10px] text-[#16A34A] font-semibold mb-1">
                       You save ৳{Math.max(0, item.price - item.dealPrice)}
+                    </div>
+                  )}
+                  {item.stock !== undefined && item.stock !== null && (
+                    <div className="text-[9px] sm:text-[10px] font-medium text-[#667085]">
+                      {item.stock > 0 ? `Stock: ${item.stock}` : "Out of Stock"}
                     </div>
                   )}
                 </div>

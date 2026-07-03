@@ -15,8 +15,8 @@ export const register = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
-    const result = await authService.login({ email, password });
+    const { identifier, password } = req.body;
+    const result = await authService.login({ identifier, password });
     return sendSuccess(res, "Login successful", result);
   } catch (error: any) {
     return sendError(res, error.message, 401);
@@ -77,5 +77,28 @@ export const googleSignIn = async (req: Request, res: Response) => {
     return sendSuccess(res, "Google sign-in successful", result);
   } catch (error: any) {
     return sendError(res, error.message, 401);
+  }
+};
+
+export const updateMe = async (req: AuthRequest, res: Response) => {
+  try {
+    const { name, phone } = req.body;
+    const result = await authService.updateMe(req.user!.userId, { name, phone });
+    return sendSuccess(res, "Profile updated", result);
+  } catch (error: any) {
+    return sendError(res, error.message, 400);
+  }
+};
+
+export const uploadAvatar = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.file) {
+      return sendError(res, "No image file provided", 400);
+    }
+    const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+    const result = await authService.updateAvatar(req.user!.userId, avatarUrl);
+    return sendSuccess(res, "Avatar updated", result);
+  } catch (error: any) {
+    return sendError(res, error.message, 400);
   }
 };

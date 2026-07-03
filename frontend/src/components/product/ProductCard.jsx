@@ -114,7 +114,7 @@ export default function ProductCard({ product, showActions, onDelete, onProductU
               <img
                 src={product.images[0]}
                 alt={product.name}
-                className="w-[65%] h-[65%] object-contain group-hover:scale-110 transition-transform duration-300 drop-shadow-sm"
+                className="w-[75%] h-[75%] object-contain group-hover:scale-110 transition-transform duration-300 drop-shadow-sm"
                 onError={() => setImgError(true)}
               />
             ) : (
@@ -130,7 +130,7 @@ export default function ProductCard({ product, showActions, onDelete, onProductU
         {/* Info Section */}
         <div className="p-2.5 sm:p-3 space-y-1.5">
           {/* Row 1: Product Name */}
-          <h3 className="text-[11px] sm:text-xs font-semibold text-[#364152] line-clamp-2 min-h-[28px] sm:min-h-[32px] leading-tight group-hover:text-[#EC008C] transition-colors">
+          <h3 className="text-xs sm:text-sm font-bold text-[#364152] line-clamp-2 min-h-[32px] sm:min-h-[36px] leading-tight group-hover:text-[#EC008C] transition-colors">
             {product.name}
           </h3>
 
@@ -154,20 +154,25 @@ export default function ProductCard({ product, showActions, onDelete, onProductU
                 <span className="text-[9px] font-medium">Only {product.stock} left</span>
               </span>
             )}
+            {product.stock !== undefined && product.stock > 10 && (
+              <span className="inline-flex items-center bg-[#F0FDF4] text-[#15803D] px-1.5 py-0.5 rounded-md">
+                <span className="text-[9px] font-medium">Stock: {product.stock}</span>
+              </span>
+            )}
           </div>
 
           {/* Row 3: Price + Discount badge — all inline */}
           <div className="flex items-center gap-1.5 flex-wrap">
             {hasDiscount ? (
               <>
-                <span className="text-[#EC008C] font-extrabold text-sm sm:text-base leading-none">৳{salePrice}</span>
-                <span className="text-[#99A0B4] text-[10px] line-through">৳{originalPrice}</span>
+                <span className="text-[#EC008C] font-extrabold text-base sm:text-lg leading-none">৳{salePrice}</span>
+                <span className="text-[#99A0B4] text-[11px] line-through">৳{originalPrice}</span>
                 <span className="text-[8px] font-bold text-white bg-gradient-to-r from-[#FF6B6B] to-[#FF4757] px-1.5 py-0.5 rounded-md leading-none">
                   -{discountPercent}%
                 </span>
               </>
             ) : (
-              <span className="text-[#000000] font-extrabold text-sm sm:text-base leading-none">৳{originalPrice}</span>
+              <span className="text-[#000000] font-extrabold text-base sm:text-lg leading-none">৳{originalPrice}</span>
             )}
           </div>
 
@@ -185,7 +190,7 @@ export default function ProductCard({ product, showActions, onDelete, onProductU
               <button
                 onClick={handleAddToCart}
                 disabled={isOutOfStock}
-                className="flex-1 py-1.5 sm:py-2 text-[10px] sm:text-[11px] font-bold text-white rounded-lg transition-all duration-200 flex items-center justify-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-[#EC008C] to-[#D60071] hover:from-[#D60071] hover:to-[#B80060] shadow-[0_2px_8px_rgba(236,0,140,0.3)]"
+                className="flex-1 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold text-white rounded-lg transition-all duration-200 flex items-center justify-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-[#EC008C] to-[#D60071] hover:from-[#D60071] hover:to-[#B80060] shadow-[0_2px_8px_rgba(236,0,140,0.3)]"
               >
                 <ShoppingCart size={12} />
                 {isOutOfStock ? t.outOfStock : t.addToCart}
@@ -201,7 +206,7 @@ export default function ProductCard({ product, showActions, onDelete, onProductU
             <button
               onClick={handleAddToCart}
               disabled={isOutOfStock}
-              className="w-full py-1.5 sm:py-2 text-[10px] sm:text-[11px] font-bold text-white rounded-lg transition-all duration-200 flex items-center justify-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-[#EC008C] to-[#D60071] hover:from-[#D60071] hover:to-[#B80060] shadow-[0_2px_8px_rgba(236,0,140,0.3)] pt-0.5"
+              className="w-full py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold text-white rounded-lg transition-all duration-200 flex items-center justify-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-[#EC008C] to-[#D60071] hover:from-[#D60071] hover:to-[#B80060] shadow-[0_2px_8px_rgba(236,0,140,0.3)] pt-0.5"
             >
               <ShoppingCart size={12} />
               {isOutOfStock ? t.outOfStock : t.addToCart}

@@ -10,6 +10,7 @@ router.get("/my-orders", authenticate, orderController.getMyOrders);
 router.get("/admin/all", authenticate, authorize("ADMIN"), orderController.getAllOrders);
 router.get("/manager/local", authenticate, authorize("MANAGER"), orderController.getLocalOrders);
 router.get("/:id", authenticate, orderController.getOrderById);
+router.put("/:id", authenticate, orderController.updateOrder);
 router.put("/:id/status", authenticate, authorize("ADMIN", "MANAGER"), orderController.updateOrderStatus);
 router.put("/:id/assign-rider", authenticate, authorize("ADMIN", "MANAGER"), orderController.assignRider);
 

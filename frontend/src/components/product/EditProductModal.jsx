@@ -250,9 +250,10 @@ export default function EditProductModal({ productId, onClose, onUpdated }) {
               <select value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })}
                 className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#EC008C]">
                 <option value="piece">Piece</option>
+                <option value="ekok">Ekok (একক)</option>
                 <option value="kg">Kilogram</option>
-                <option value="litre">Litre</option>
                 <option value="gram">Gram</option>
+                <option value="litre">Litre</option>
               </select>
             </div>
             <div>

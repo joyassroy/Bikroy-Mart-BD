@@ -3,12 +3,13 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
-import { Search, ShoppingCart, User, MapPin, Menu, X, ChevronDown, ChevronRight, Globe, ClipboardList, Loader2, LayoutDashboard, ChevronUp, Wheat, Apple, Beef, Egg, Coffee, Cookie, Droplets, ChefHat, Cake, Sparkles, SprayCan, Baby, Package } from "lucide-react";
-import { useSelector } from "react-redux";
+import { Search, ShoppingCart, User, MapPin, Menu, X, ChevronDown, ChevronRight, Globe, ClipboardList, Loader2, LayoutDashboard, ChevronUp, Wheat, Apple, Beef, Egg, Coffee, Cookie, Droplets, ChefHat, Cake, Sparkles, SprayCan, Baby, Package, Tag, Gift, TrendingUp } from "lucide-react";
+import { useSelector, useDispatch } from "react-redux";
 import LocationSelector from "./LocationSelector";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useAuthChecked } from "@/helper/AuthInit";
 import api from "@/lib/axios";
+import { setQuery, setShowDropdown, addRecentSearch, clearRecentSearches as clearAllRecentSearches, fetchSuggestions } from "@/redux/searchSlice";
 
 const CATEGORY_ICON_MAP = {
   Wheat, Apple, Beef, Egg, Coffee, Cookie, Droplets, ChefHat, Cake, Sparkles, SprayCan, Baby,
@@ -34,9 +35,15 @@ function CategoryIcon({ icon, size = 22, className = "" }) {
   if (!icon) return <Package size={size} className={className} />;
   const IconComp = CATEGORY_ICON_MAP[icon];
   if (IconComp) return <IconComp size={size} className={className} />;
-  if (icon.length <= 2) return <span className={`text-lg leading-none ${className}`}>{icon}</span>;
   return <Package size={size} className={className} />;
 }
+
+const NAV_OFFER_LINKS = [
+  { label: "Combo Offer", labelBn: "কম্বো অফার", href: "/shop?offer=COMBO", icon: Package },
+  { label: "Executive", labelBn: "এক্সিকিউটিভ", href: "/shop?offer=EXECUTIVE", icon: Sparkles },
+  { label: "Stock Clearance", labelBn: "স্টক ক্লিয়ারেন্স", href: "/shop?offer=STOCK_CLEARANCE", icon: Tag },
+  { label: "BOGO", labelBn: "বাই ওয়ান গেট ওয়ান", href: "/shop?offer=BOGO", icon: Gift },
+];
 
 export default function Header() {
   const router = useRouter();
@@ -46,22 +53,23 @@ export default function Header() {
   const [locationOpen, setLocationOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [apiCategories, setApiCategories] = useState([]);
   const [expandedCats, setExpandedCats] = useState({});
   const [promoTexts, setPromoTexts] = useState({ freeDelivery: "", deliveryCutoff: "" });
   const megaMenuRef = useRef(null);
+  const searchWrapperRef = useRef(null);
+  const searchDebounceRef = useRef(null);
   const cartItems = useSelector((state) => state.cart.items);
   const user = useSelector((state) => state.user.data);
   const location = useSelector((state) => state.location);
+  const { query: searchQuery, suggestions: searchSuggestions, recentSearches, showDropdown: showSuggestions, loadingSuggestions, isPopular } = useSelector((state) => state.search);
+  const dispatch = useDispatch();
   const { language, t, setLang } = useLanguage();
   const pathname = usePathname();
   const { authChecked } = useAuthChecked();
 
-  const categories = apiCategories.length > 0 ? apiCategories : FALLBACK_CATEGORIES;
-
   const cartCount = mounted ? cartItems.reduce((sum, item) => sum + item.quantity, 0) : 0;
-  const getCategoryName = (key) => t[key] || key;
+  const categories = apiCategories.length > 0 ? apiCategories : FALLBACK_CATEGORIES;
   const getDashboardHref = () => {
     if (!user) return "/signin";
     if (user.role === "ADMIN") return "/dashboard";
@@ -95,6 +103,24 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      dispatch(fetchSuggestions(searchQuery));
+    }, 300);
+    return () => { if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current); };
+  }, [searchQuery, dispatch]);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (searchWrapperRef.current && !searchWrapperRef.current.contains(e.target)) {
+        dispatch(setShowDropdown(false));
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [dispatch]);
+
+  useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === "Escape" && drawerOpen) setDrawerOpen(false);
     };
@@ -119,6 +145,22 @@ export default function Header() {
     document.body.style.overflow = drawerOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [drawerOpen]);
+
+  const handleSearchSelect = (term) => {
+    dispatch(setQuery(term));
+    dispatch(setShowDropdown(false));
+    dispatch(addRecentSearch(term));
+    router.push(`/shop?search=${encodeURIComponent(term)}`);
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      dispatch(setShowDropdown(false));
+      dispatch(addRecentSearch(searchQuery.trim()));
+      router.push(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
 
   return (
     <>
@@ -159,7 +201,7 @@ export default function Header() {
 
               {/* Logo - desktop only */}
               <Link href="/" className="hidden lg:flex flex-shrink-0 items-center">
-                <img src="/icon.png" alt="Bikroy-Mart-BD" className="h-9 w-auto" />
+                <img src="/icon.png" alt="Bikroy-Mart-BD" className="h-16 w-auto" />
               </Link>
 
               {/* Location - tablet+ */}
@@ -173,15 +215,17 @@ export default function Header() {
               </button>
 
               {/* Search */}
-              <div className="flex-1 min-w-0">
-                <form onSubmit={(e) => { e.preventDefault(); if (searchQuery.trim()) router.push(`/shop?search=${encodeURIComponent(searchQuery.trim())}`); }} className="relative flex">
+              <div className="flex-1 min-w-0 relative" ref={searchWrapperRef}>
+                <form onSubmit={handleSearchSubmit} className="relative flex">
                   <input
                     type="text"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => { dispatch(setQuery(e.target.value)); dispatch(setShowDropdown(true)); }}
+                    onFocus={() => dispatch(setShowDropdown(true))}
                     placeholder={t.searchPlaceholder}
                     className="w-full rounded-l-md px-3 sm:px-4 text-xs sm:text-[13px] bg-white text-[#000000] placeholder:text-[#99A0B4] border border-[#E5E7EB] border-r-0 focus:outline-none focus:border-transparent h-[38px] md:h-[42px] transition-all"
                     aria-label={t.searchPlaceholder}
+                    autoComplete="off"
                   />
                   <button
                     type="submit"
@@ -191,6 +235,80 @@ export default function Header() {
                     <Search size={16} />
                   </button>
                 </form>
+
+                {/* Suggestions Dropdown */}
+                {showSuggestions && (searchQuery.trim().length === 0 ? recentSearches.length > 0 || loadingSuggestions || isPopular : searchSuggestions.length > 0 || loadingSuggestions) && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#E5E7EB] rounded-lg shadow-[0_8px_30px_rgba(0,0,0,0.12)] z-50 max-h-[300px] overflow-y-auto">
+                    {searchQuery.trim().length === 0 ? (
+                      <div>
+                        {recentSearches.length > 0 && (
+                          <>
+                            <div className="flex items-center justify-between px-3 py-2 border-b border-[#E5E7EB]">
+                              <span className="text-[10px] font-semibold text-[#667085] uppercase tracking-wider">Recent Searches</span>
+                              <button onClick={() => dispatch(clearAllRecentSearches())} className="text-[10px] text-[#EC008C] font-semibold hover:underline">Clear all</button>
+                            </div>
+                            {recentSearches.map((term, idx) => (
+                              <button
+                                key={idx}
+                                onClick={() => handleSearchSelect(term)}
+                                className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-[#364152] hover:bg-[#F4F7FB] transition text-left"
+                              >
+                                <span className="text-[#99A0B4] flex-shrink-0"><Search size={12} /></span>
+                                <span className="truncate">{term}</span>
+                              </button>
+                            ))}
+                          </>
+                        )}
+                        {loadingSuggestions && (
+                          <div className="flex items-center justify-center py-4">
+                            <Loader2 size={16} className="animate-spin text-[#EC008C]" />
+                          </div>
+                        )}
+                        {!loadingSuggestions && isPopular && searchSuggestions.length > 0 && (
+                          <>
+                            <div className="flex items-center px-3 py-2 border-b border-[#E5E7EB]">
+                              <span className="text-[10px] font-semibold text-[#667085] uppercase tracking-wider">Popular Products</span>
+                            </div>
+                            {searchSuggestions.map((item, idx) => (
+                              <button
+                                key={idx}
+                                onClick={() => handleSearchSelect(typeof item === "string" ? item : item.name)}
+                                className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-[#364152] hover:bg-[#F4F7FB] transition text-left"
+                              >
+                                <span className="text-[#EC008C] flex-shrink-0"><TrendingUp size={12} /></span>
+                                <span className="truncate">{typeof item === "string" ? item : item.name}</span>
+                              </button>
+                            ))}
+                          </>
+                        )}
+                      </div>
+                    ) : (
+                      <div>
+                        <div className="px-3 py-2 border-b border-[#E5E7EB]">
+                          <span className="text-[10px] font-semibold text-[#667085] uppercase tracking-wider">Suggestions</span>
+                        </div>
+                        {loadingSuggestions ? (
+                          <div className="flex items-center justify-center py-4">
+                            <Loader2 size={16} className="animate-spin text-[#EC008C]" />
+                          </div>
+                        ) : searchSuggestions.length === 0 ? (
+                          <div className="px-3 py-4 text-center text-[11px] text-[#99A0B4]">No suggestions found</div>
+                        ) : (
+                          searchSuggestions.map((item, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => handleSearchSelect(typeof item === "string" ? item : item.name)}
+                              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-[#364152] hover:bg-[#F4F7FB] transition text-left"
+                            >
+                              <span className="text-[#99A0B4] flex-shrink-0"><Search size={12} /></span>
+                              <span className="truncate">{typeof item === "string" ? item : item.name}</span>
+                            </button>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Language */}
@@ -239,7 +357,11 @@ export default function Header() {
                 {authChecked ? (
                   user ? (
                     <Link href="/account" className="text-[#364152] hover:bg-[#F3F4F6] p-1.5 rounded-md transition" aria-label={t.myAccount}>
-                      <User size={18} />
+                      {user.avatar ? (
+                        <img src={user.avatar} alt={user.name} className="w-[18px] h-[18px] rounded-full object-cover" />
+                      ) : (
+                        <User size={18} />
+                      )}
                     </Link>
                   ) : (
                     <Link href="/signin" className="hidden sm:flex items-center gap-1.5 bg-[#EC008C] hover:bg-[#D60071] text-white px-3 py-1.5 rounded-md transition text-[11px] font-semibold" aria-label={t.signIn}>
@@ -255,8 +377,8 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Category nav - desktop only */}
-        <nav className="hidden lg:block bg-white">
+        {/* Category + Offer nav - desktop only */}
+        <nav className="hidden lg:block bg-white border-t border-[#E5E7EB]">
           <div className="max-w-[1200px] mx-auto px-10">
             <div className="flex items-center">
               {/* Mega Menu Trigger */}
@@ -361,8 +483,8 @@ export default function Header() {
                                   {sub.image ? (
                                     <img src={sub.image} alt={sub.name} className="w-9 h-9 rounded-lg object-contain flex-shrink-0 bg-[#F4F7FB] p-0.5" />
                                   ) : (
-                                    <span className="w-9 h-9 rounded-lg bg-[#F4F7FB] flex items-center justify-center text-[11px] font-bold text-[#00215B] flex-shrink-0 group-hover:bg-[#EC008C]/10 group-hover:text-[#EC008C] transition-colors">
-                                      {sub.name.charAt(0)}
+                                    <span className="w-9 h-9 rounded-lg bg-[#F4F7FB] flex items-center justify-center flex-shrink-0 group-hover:bg-[#EC008C]/10 group-hover:text-[#EC008C] transition-colors">
+                                      <Package size={14} className="text-[#00215B] group-hover:text-[#EC008C] transition-colors" />
                                     </span>
                                   )}
                                   <span className="truncate font-semibold">{sub.name}</span>
@@ -386,10 +508,10 @@ export default function Header() {
                 )}
               </div>
 
-              {/* Nav Links */}
-              {categories.slice(0, 6).map((cat) => (
-                <Link key={cat.slug} href={`/shop?category=${cat.slug}`} className="px-3 py-2.5 text-[11px] text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3] transition font-semibold">
-                  {cat.name}
+              {/* Nav Links - Offer Types */}
+              {NAV_OFFER_LINKS.map((link) => (
+                <Link key={link.href} href={link.href} className="px-3 py-2.5 text-[11px] text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3] transition font-semibold">
+                  {language === "bn" ? link.labelBn : link.label}
                 </Link>
               ))}
               <Link href="/shop" className="px-3 py-2.5 text-[11px] text-[#EC008C] font-semibold hover:bg-[#FCE8F3] transition">Shop</Link>
@@ -418,7 +540,7 @@ export default function Header() {
         >
           <div className="flex items-center justify-between p-4 border-b border-[#E5E7EB]">
             <Link href="/" onClick={() => setDrawerOpen(false)} className="flex items-center">
-              <img src="/icon.png" alt="Bikroy-Mart-BD" className="h-8 w-auto" />
+              <img src="/icon.png" alt="Bikroy-Mart-BD" className="h-14 w-auto" />
             </Link>
             <button onClick={() => setDrawerOpen(false)} className="p-2 rounded-full hover:bg-[#F3F4F6] transition text-[#364152]" aria-label="Close menu">
               <X size={22} />
@@ -428,8 +550,12 @@ export default function Header() {
           <div className="overflow-y-auto h-[calc(100%-64px)] pb-24 overscroll-contain">
             <div className="p-3 border-b border-[#E5E7EB]">
               <Link href={authChecked ? (user ? "/account" : "/signin") : "#"} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${user ? "bg-[#FCE8F3]" : "bg-[#F4F7FB]"}`}>
-                  <User size={20} className={user ? "text-[#EC008C]" : "text-[#667085]"} />
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center overflow-hidden ${user ? "bg-[#FCE8F3]" : "bg-[#F4F7FB]"}`}>
+                  {user?.avatar ? (
+                    <img src={user.avatar} alt={user.name} className="w-10 h-10 rounded-full object-cover" />
+                  ) : (
+                    <User size={20} className={user ? "text-[#EC008C]" : "text-[#667085]"} />
+                  )}
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-[#000000]">{authChecked ? (user ? user.name : t.signIn) : "..."}</p>
@@ -460,6 +586,28 @@ export default function Header() {
             </div>
 
             <div className="p-3">
+              <p className="text-[10px] font-semibold text-[#667085] uppercase tracking-wider mb-2 px-2">{language === "bn" ? "অফার" : "OFFERS"}</p>
+              <div className="space-y-0.5">
+                {NAV_OFFER_LINKS.map((link) => {
+                  const Icon = link.icon;
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setDrawerOpen(false)}
+                      className="flex items-center gap-3 px-2 py-3 hover:bg-[#F4F7FB] rounded-lg transition"
+                    >
+                      <span className="w-10 h-10 rounded-xl bg-[#FCE8F3] flex items-center justify-center text-[#EC008C] flex-shrink-0">
+                        <Icon size={18} />
+                      </span>
+                      <span className="text-[13px] font-semibold text-[#364152]">{language === "bn" ? link.labelBn : link.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="p-3 border-t border-[#E5E7EB]">
               <p className="text-[10px] font-semibold text-[#667085] uppercase tracking-wider mb-2 px-2">{t.allCategories}</p>
               <div className="space-y-0.5">
                 {categories.map((cat) => {
@@ -565,8 +713,12 @@ export default function Header() {
               <span className="text-[9px] font-semibold">{t.cart}</span>
             </Link>
             <Link href={authChecked ? (user ? "/account" : "/signin") : "#"} className={`flex flex-col items-center gap-0.5 min-w-[50px] ${pathname === "/account" || pathname === "/signin" ? "text-[#EC008C]" : "text-[#667085]"}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center transition ${pathname === "/account" || pathname === "/signin" ? "bg-[#FCE8F3]" : "bg-[#F4F7FB]"}`}>
-                <User size={18} />
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center overflow-hidden transition ${pathname === "/account" || pathname === "/signin" ? "bg-[#FCE8F3]" : "bg-[#F4F7FB]"}`}>
+                {user?.avatar ? (
+                  <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full object-cover" />
+                ) : (
+                  <User size={18} />
+                )}
               </div>
               <span className="text-[9px] font-semibold">{authChecked ? (user ? t.myAccount : t.signIn) : "..."}</span>
             </Link>

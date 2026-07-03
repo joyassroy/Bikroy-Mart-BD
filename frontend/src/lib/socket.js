@@ -16,6 +16,20 @@ export const getSocket = () => {
   return socket;
 };
 
+export const resetSocket = (newToken) => {
+  if (socket) {
+    socket.disconnect();
+    socket = undefined;
+  }
+  if (typeof window !== "undefined" && newToken) {
+    socket = io(SOCKET_URL, {
+      auth: { token: newToken },
+      transports: ["websocket", "polling"],
+    });
+  }
+  return socket;
+};
+
 export const disconnectSocket = () => {
   if (socket) {
     socket.disconnect();

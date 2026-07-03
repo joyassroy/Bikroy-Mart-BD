@@ -10,7 +10,7 @@ export const registerValidation = [
 ];
 
 export const loginValidation = [
-  body("email").isEmail().withMessage("Valid email is required"),
+  body("identifier").notEmpty().withMessage("Email or phone number is required"),
   body("password").notEmpty().withMessage("Password is required"),
 ];
 
@@ -24,4 +24,9 @@ export const verifyOtpValidation = [
   body("newPassword")
     .isLength({ min: 6 })
     .withMessage("Password must be at least 6 characters"),
+];
+
+export const updateMeValidation = [
+  body("name").optional().trim().notEmpty().withMessage("Name cannot be empty"),
+  body("phone").optional().isMobilePhone("bn-BD").withMessage("Valid Bangladeshi phone number required"),
 ];

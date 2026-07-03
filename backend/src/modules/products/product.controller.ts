@@ -23,6 +23,45 @@ function resolveDistrictPrice(product: any, district?: string) {
   };
 }
 
+export const getSearchSuggestions = async (req: Request, res: Response) => {
+  try {
+    const { q, popular } = req.query;
+
+    if (popular === "true" || !q || String(q).trim().length < 1) {
+      const popularProducts = await prisma.$queryRawUnsafe(`
+        SELECT p.name
+        FROM "Product" p
+        LEFT JOIN "OrderItem" oi ON oi."productId" = p.id
+        WHERE p."isActive" = true
+        GROUP BY p.id, p.name, p."createdAt"
+        ORDER BY COUNT(oi.id) DESC, p."createdAt" DESC
+        LIMIT 8
+      `);
+      return sendSuccess(res, "Suggestions fetched", (popularProducts as any[]).map((p) => p.name));
+    }
+
+    const searchTerm = String(q).trim();
+    const suggestions = await prisma.$queryRawUnsafe(`
+      SELECT p.name, GREATEST(
+        COALESCE(similarity(p.name, $1), 0),
+        COALESCE(similarity(p."nameBn", $1), 0)
+      ) AS sim
+      FROM "Product" p
+      WHERE p."isActive" = true
+        AND (
+          similarity(p.name, $1) > 0.1
+          OR similarity(p."nameBn", $1) > 0.1
+        )
+      ORDER BY sim DESC
+      LIMIT 8
+    `, searchTerm);
+    const names = (suggestions as any[]).map((s) => s.name);
+    return sendSuccess(res, "Suggestions fetched", names);
+  } catch (error: any) {
+    return sendError(res, error.message, 500);
+  }
+};
+
 export const getAllProducts = async (req: Request, res: Response) => {
   try {
     const {
