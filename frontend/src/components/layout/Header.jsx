@@ -201,7 +201,7 @@ export default function Header() {
 
               {/* Logo - desktop only */}
               <Link href="/" className="hidden lg:flex flex-shrink-0 items-center">
-                <img src="/icon.png" alt="Bikroy-Mart-BD" className="h-16 w-auto" />
+                <img src="/icon.png" alt="Bikroy-Mart-BD" className="h-20 w-auto" />
               </Link>
 
               {/* Location - tablet+ */}
@@ -378,7 +378,7 @@ export default function Header() {
         </div>
 
         {/* Category + Offer nav - desktop only */}
-        <nav className="hidden lg:block bg-white border-t border-[#E5E7EB]">
+        <nav className="hidden lg:block bg-white">
           <div className="max-w-[1200px] mx-auto px-10">
             <div className="flex items-center">
               {/* Mega Menu Trigger */}
@@ -540,7 +540,7 @@ export default function Header() {
         >
           <div className="flex items-center justify-between p-4 border-b border-[#E5E7EB]">
             <Link href="/" onClick={() => setDrawerOpen(false)} className="flex items-center">
-              <img src="/icon.png" alt="Bikroy-Mart-BD" className="h-14 w-auto" />
+              <img src="/icon.png" alt="Bikroy-Mart-BD" className="h-16 w-auto" />
             </Link>
             <button onClick={() => setDrawerOpen(false)} className="p-2 rounded-full hover:bg-[#F3F4F6] transition text-[#364152]" aria-label="Close menu">
               <X size={22} />

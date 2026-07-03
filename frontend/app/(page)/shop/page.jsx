@@ -1,10 +1,11 @@
 "use client";
-import { useState, useEffect, useRef, useCallback, Suspense, memo } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo, Suspense, memo } from "react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import ProductCard from "@/components/product/ProductCard";
+import ProductGroupRow from "@/components/product/ProductGroupRow";
 import api from "@/lib/axios";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { SlidersHorizontal, X, ChevronDown, Grid3X3, List, Search, Plus } from "lucide-react";
@@ -138,8 +139,11 @@ function ShopContent() {
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [viewMode, setViewMode] = useState("grid");
   const [offerType, setOfferType] = useState("");
+  const [groupedProducts, setGroupedProducts] = useState([]);
+  const [loadingGrouped, setLoadingGrouped] = useState(false);
   const { t } = useLanguage();
   const fetchIdRef = useRef(0);
+  const groupedFetchIdRef = useRef(0);
   const searchDebounceRef = useRef(null);
 
   const urlCategory = searchParams.get("category") || "";
@@ -174,7 +178,12 @@ function ShopContent() {
 
   useEffect(() => {
     fetchProducts();
-  }, [selectedCategory, selectedSubcategory, sortBy, minPrice, maxPrice, currentPage, offerType, district]);
+    if (!selectedSubcategory && !minPrice && !maxPrice && !activeSearch && !offerType) {
+      fetchGroupedProducts();
+    } else {
+      setGroupedProducts([]);
+    }
+  }, [selectedCategory, selectedSubcategory, sortBy, minPrice, maxPrice, currentPage, offerType, district, activeSearch]);
 
   const fetchCategories = async () => {
     try {
@@ -215,6 +224,26 @@ function ShopContent() {
     }
   };
 
+  const fetchGroupedProducts = async () => {
+    const currentId = ++groupedFetchIdRef.current;
+    try {
+      setLoadingGrouped(true);
+      const params = new URLSearchParams();
+      if (selectedCategory) params.set("category", selectedCategory);
+      if (district) params.set("district", district);
+      params.set("limit", "12");
+      const res = await api.get(`/products/grouped?${params.toString()}`);
+      if (currentId !== groupedFetchIdRef.current) return;
+      setGroupedProducts(res.data.data || []);
+    } catch (err) {
+      if (currentId !== groupedFetchIdRef.current) return;
+      console.error(err);
+      setGroupedProducts([]);
+    } finally {
+      if (currentId === groupedFetchIdRef.current) setLoadingGrouped(false);
+    }
+  };
+
   const handleSearch = (e) => {
     e.preventDefault();
     setCurrentPage(1);
@@ -248,7 +277,7 @@ function ShopContent() {
     router.push("/shop");
   };
 
-  const handleDeleteProduct = async (productId) => {
+  const handleDeleteProduct = useCallback(async (productId) => {
     try {
       await api.delete(`/products/${productId}`);
       setProducts((prev) => prev.filter((p) => p.id !== productId));
@@ -257,9 +286,9 @@ function ShopContent() {
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to delete product");
     }
-  };
+  }, []);
 
-  const sidebarProps = {
+  const sidebarProps = useMemo(() => ({
     categories,
     selectedCategory,
     selectedSubcategory,
@@ -271,7 +300,7 @@ function ShopContent() {
     onMaxPriceChange: setMaxPrice,
     onPriceFilter: handlePriceFilter,
     t,
-  };
+  }), [categories, selectedCategory, selectedSubcategory, minPrice, maxPrice, handleCategorySelect, handleSubcategorySelect, t]);
 
   return (
     <div className="min-h-screen bg-[#F0F2F5]">
@@ -415,10 +444,32 @@ function ShopContent() {
               </div>
             )}
 
-            {loading ? (
+            {loading || loadingGrouped ? (
               <div className={`grid gap-2.5 sm:gap-3 ${viewMode === "grid" ? "grid-cols-2 md:grid-cols-3 lg:grid-cols-4" : "grid-cols-1"}`}>
                 {[...Array(8)].map((_, i) => (
                   <div key={i} className="bg-[#E5E7EB] rounded-lg h-40 sm:h-48 animate-pulse"></div>
+                ))}
+              </div>
+            ) : !selectedSubcategory && groupedProducts.length > 0 && !minPrice && !maxPrice && !activeSearch && !offerType ? (
+              <div>
+                {groupedProducts.map((group) => (
+                  <div key={group.category.id} className="mb-6">
+                    <h2 className="text-base sm:text-lg font-bold text-[#00215B] mb-3 flex items-center gap-2">
+                      {group.category.icon && <span className="text-xl">{group.category.icon}</span>}
+                      {group.category.nameBn || group.category.name}
+                    </h2>
+                    {group.subcategories.map((subGroup) => (
+                      <ProductGroupRow
+                        key={subGroup.subcategory.id}
+                        categorySlug={group.category.slug}
+                        subcategory={subGroup.subcategory}
+                        products={subGroup.products}
+                        showActions={isAdminOrManager}
+                        onDelete={handleDeleteProduct}
+                        onProductUpdated={fetchProducts}
+                      />
+                    ))}
+                  </div>
                 ))}
               </div>
             ) : products.length === 0 ? (

@@ -1,12 +1,14 @@
 "use client";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo, memo } from "react";
 import { useDispatch } from "react-redux";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { addToCart } from "@/redux/cartSlice";
 import { ShoppingCart, Star, Pencil, Trash2, X, Flame, TrendingUp } from "lucide-react";
 import toast from "react-hot-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
-import EditProductModal from "./EditProductModal";
+
+const EditProductModal = dynamic(() => import("./EditProductModal"), { ssr: false });
 
 function DeleteModal({ product, onConfirm, onCancel }) {
   return (
@@ -38,12 +40,26 @@ function DeleteModal({ product, onConfirm, onCancel }) {
   );
 }
 
-export default function ProductCard({ product, showActions, onDelete, onProductUpdated }) {
+const ProductCard = memo(function ProductCard({ product, showActions, onDelete, onProductUpdated }) {
   const dispatch = useDispatch();
   const { t } = useLanguage();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [imgError, setImgError] = useState(false);
+
+  const { avgRating, isOutOfStock, originalPrice, salePrice, hasDiscount, discountPercent, savings, isTrending } = useMemo(() => {
+    const avg = product._count?.reviews > 0
+      ? (product.reviews?.reduce?.((sum, r) => sum + r.rating, 0) / product.reviews.length) || 0
+      : 0;
+    const outOfStock = product.stock !== undefined && product.stock <= 0;
+    const orig = product.effectivePrice || product.price;
+    const sale = product.effectiveDiscountPrice || product.discountPrice;
+    const disc = sale && orig && sale < orig;
+    const discPct = disc ? Math.round(((orig - sale) / orig) * 100) : 0;
+    const save = disc ? Math.round(orig - sale) : 0;
+    const trending = (product.totalSales || 0) >= 5;
+    return { avgRating: avg, isOutOfStock: outOfStock, originalPrice: orig, salePrice: sale, hasDiscount: disc, discountPercent: discPct, savings: save, isTrending: trending };
+  }, [product]);
 
   const handleAddToCart = useCallback((e) => {
     e.preventDefault();
@@ -76,23 +92,9 @@ export default function ProductCard({ product, showActions, onDelete, onProductU
     onDelete?.(product.id);
   }, [onDelete, product.id]);
 
-  const avgRating = product._count?.reviews > 0
-    ? (product.reviews?.reduce?.((sum, r) => sum + r.rating, 0) / product.reviews.length) || 0
-    : 0;
-
-  const isOutOfStock = product.stock !== undefined && product.stock <= 0;
-
-  const originalPrice = product.effectivePrice || product.price;
-  const salePrice = product.effectiveDiscountPrice || product.discountPrice;
-  const hasDiscount = salePrice && originalPrice && salePrice < originalPrice;
-  const discountPercent = hasDiscount ? Math.round(((originalPrice - salePrice) / originalPrice) * 100) : 0;
-  const savings = hasDiscount ? Math.round(originalPrice - salePrice) : 0;
-  const isTrending = (product.totalSales || 0) >= 5;
-
   return (
     <>
       <Link href={`/product/${product.slug}`} className="block bg-white rounded-xl overflow-hidden border border-[#E5E7EB] hover:border-[#EC008C]/30 hover:shadow-[0_8px_30px_rgba(236,0,140,0.12)] transition-all duration-300 hover:-translate-y-1 group cursor-pointer">
-        {/* Image Section */}
         <div className="relative bg-gradient-to-b from-[#F9FAFB] to-[#F4F7FB] flex items-center justify-center overflow-hidden" style={{ aspectRatio: "1/1" }}>
           {hasDiscount && discountPercent > 0 && (
             <span className="absolute top-2 left-2 bg-gradient-to-r from-[#FF6B6B] to-[#FF4757] text-white text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-lg z-10 shadow-sm">
@@ -127,14 +129,11 @@ export default function ProductCard({ product, showActions, onDelete, onProductU
           )}
         </div>
 
-        {/* Info Section */}
         <div className="p-2.5 sm:p-3 space-y-1.5">
-          {/* Row 1: Product Name */}
           <h3 className="text-xs sm:text-sm font-bold text-[#364152] line-clamp-2 min-h-[32px] sm:min-h-[36px] leading-tight group-hover:text-[#EC008C] transition-colors">
             {product.name}
           </h3>
 
-          {/* Row 2: Rating + Sold + Stock — all inline */}
           <div className="flex items-center gap-1 flex-wrap">
             {(product._count?.reviews > 0 || avgRating > 0) && (
               <span className="inline-flex items-center gap-0.5 bg-[#FFFBEB] px-1.5 py-0.5 rounded-md">
@@ -161,7 +160,6 @@ export default function ProductCard({ product, showActions, onDelete, onProductU
             )}
           </div>
 
-          {/* Row 3: Price + Discount badge — all inline */}
           <div className="flex items-center gap-1.5 flex-wrap">
             {hasDiscount ? (
               <>
@@ -176,7 +174,6 @@ export default function ProductCard({ product, showActions, onDelete, onProductU
             )}
           </div>
 
-          {/* Row 4: Save amount */}
           {hasDiscount && savings > 0 && (
             <p className="text-[9px] text-[#16A34A] font-semibold flex items-center gap-0.5">
               <TrendingUp size={9} />
@@ -184,7 +181,6 @@ export default function ProductCard({ product, showActions, onDelete, onProductU
             </p>
           )}
 
-          {/* Row 5: Cart Button */}
           {showActions ? (
             <div className="flex gap-1.5 pt-0.5">
               <button
@@ -227,4 +223,6 @@ export default function ProductCard({ product, showActions, onDelete, onProductU
       )}
     </>
   );
-}
+});
+
+export default ProductCard;

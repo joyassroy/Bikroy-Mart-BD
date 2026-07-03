@@ -189,6 +189,8 @@ const en = {
   listView: "List View",
   filterDrawerTitle: "Filter Products",
   clearAll: "Clear All",
+  seeAll: "See All",
+  noProductsInGroup: "No products in this category",
   resultsFound: "results found",
   rating: "Rating",
   reviews: "Reviews",

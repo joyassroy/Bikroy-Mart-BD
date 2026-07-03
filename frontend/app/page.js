@@ -1,7 +1,7 @@
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import HeroBanner from "@/components/home/HeroBanner";
-import MiddleBanner from "@/components/home/MiddleBanner";
+import OfferCarousel from "@/components/home/OfferCarousel";
 import CategoryGrid from "@/components/home/CategoryGrid";
 import TrustBadges from "@/components/home/TrustBadges";
 import FlashDeals from "@/components/home/FlashDeals";
@@ -19,7 +19,7 @@ export default function Home() {
       <FloatingChatButton />
       <main>
         <HeroBanner />
-        <MiddleBanner />
+        <OfferCarousel />
         <CategoryGrid />
         <SponsorsMarquee />
         <TrustBadges />

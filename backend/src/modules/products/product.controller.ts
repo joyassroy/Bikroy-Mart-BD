@@ -611,3 +611,141 @@ export const updateStock = async (req: Request, res: Response) => {
     return sendError(res, error.message, 400);
   }
 };
+
+export const getGroupedProducts = async (req: Request, res: Response) => {
+  try {
+    const { category, district, limit: limitStr = "12" } = req.query;
+    const limit = parseInt(String(limitStr), 10) || 12;
+
+    const conditions: string[] = [
+      'p."isActive" = true',
+      'sub."isActive" = true',
+      'cat."isActive" = true',
+      'p."subcategoryId" IS NOT NULL',
+    ];
+    const params: any[] = [];
+    let idx = 1;
+
+    if (category) {
+      conditions.push(`cat.slug = $${idx}`);
+      params.push(String(category));
+      idx++;
+    }
+
+    let districtPriceJoin = "";
+    let districtPriceSelect = "";
+    if (district) {
+      districtPriceJoin = `LEFT JOIN "DistrictPrice" dp ON dp."productId" = p.id AND dp.district = $${idx}`;
+      districtPriceSelect = `, dp.price AS dp_price, dp."discountPrice" AS dp_discount_price`;
+      params.push(String(district));
+      idx++;
+    }
+
+    const whereClause = conditions.join(" AND ");
+
+    const rows = await prisma.$queryRawUnsafe(`
+      SELECT
+        p.id, p.name, p."nameBn", p.slug, p.description, p."descriptionBn",
+        p.price, p."discountPrice", p.unit, p."minQuantity", p.stock,
+        p.sku, p.barcode, p.images, p."isFeatured", p."isActive",
+        p."deliveryTime", p.badges,
+        p."createdAt", p."updatedAt", p."managerId",
+        p."categoryId", p."subcategoryId",
+        cat.id AS cat_id, cat.name AS cat_name, cat."nameBn" AS cat_nameBn,
+        cat.slug AS cat_slug, cat.icon AS cat_icon, cat.image AS cat_image, cat."sortOrder" AS cat_sort,
+        sub.id AS sub_id, sub.name AS sub_name, sub."nameBn" AS sub_nameBn,
+        sub.slug AS sub_slug, sub.image AS sub_image
+        ${districtPriceSelect}
+      FROM "Product" p
+      JOIN "Subcategory" sub ON p."subcategoryId" = sub.id
+      JOIN "Category" cat ON p."categoryId" = cat.id
+      ${districtPriceJoin}
+      WHERE ${whereClause}
+      ORDER BY cat."sortOrder" ASC, sub.name ASC, p."createdAt" DESC
+    `, ...params);
+
+    const grouped = new Map<string, Map<string, any[]>>();
+
+    for (const row of rows as any[]) {
+      const catId = row.cat_id;
+      const subId = row.sub_id;
+
+      if (!grouped.has(catId)) grouped.set(catId, new Map());
+      const subMap = grouped.get(catId)!;
+      if (!subMap.has(subId)) subMap.set(subId, []);
+
+      if (subMap.get(subId)!.length >= limit) continue;
+
+      const product = {
+        id: row.id,
+        name: row.name,
+        nameBn: row.nameBn,
+        slug: row.slug,
+        description: row.description,
+        descriptionBn: row.descriptionBn,
+        price: row.price,
+        discountPrice: row.discountPrice,
+        unit: row.unit,
+        minQuantity: row.minQuantity,
+        stock: row.stock,
+        sku: row.sku,
+        barcode: row.barcode,
+        images: row.images,
+        isFeatured: row.isFeatured,
+        isActive: row.isActive,
+        deliveryTime: row.deliveryTime,
+        badges: row.badges,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+        managerId: row.managerId,
+        categoryId: row.categoryId,
+        subcategoryId: row.subcategoryId,
+        category: { id: row.cat_id, name: row.cat_name, nameBn: row.cat_nameBn, slug: row.cat_slug },
+        subcategory: { id: row.sub_id, name: row.sub_name, nameBn: row.sub_nameBn, slug: row.sub_slug },
+        effectivePrice: district && row.dp_price != null ? row.dp_price : row.price,
+        effectiveDiscountPrice: district && row.dp_discount_price != null ? row.dp_discount_price : row.discountPrice,
+      };
+
+      subMap.get(subId)!.push(product);
+    }
+
+    const result: any[] = [];
+    const sortedCats = [...grouped.entries()].sort((a, b) => {
+      const aSort = (rows as any[]).find((r: any) => r.cat_id === a[0])?.cat_sort ?? 0;
+      const bSort = (rows as any[]).find((r: any) => r.cat_id === b[0])?.cat_sort ?? 0;
+      return aSort - bSort;
+    });
+
+    for (const [catId, subMap] of sortedCats) {
+      const firstRow = (rows as any[]).find((r: any) => r.cat_id === catId);
+      const subcategories: any[] = [];
+
+      for (const [subId, products] of subMap) {
+        if (products.length === 0) continue;
+        const firstProduct = products[0];
+        subcategories.push({
+          subcategory: firstProduct.subcategory,
+          products,
+        });
+      }
+
+      if (subcategories.length === 0) continue;
+
+      result.push({
+        category: {
+          id: catId,
+          name: firstRow.cat_name,
+          nameBn: firstRow.cat_nameBn,
+          slug: firstRow.cat_slug,
+          icon: firstRow.cat_icon,
+          image: firstRow.cat_image,
+        },
+        subcategories,
+      });
+    }
+
+    return sendSuccess(res, "Grouped products fetched", result);
+  } catch (error: any) {
+    return sendError(res, error.message, 500);
+  }
+};

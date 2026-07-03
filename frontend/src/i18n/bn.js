@@ -189,6 +189,8 @@ const bn = {
   listView: "লিস্ট ভিউ",
   filterDrawerTitle: "পণ্য ফিল্টার করুন",
   clearAll: "সব মুছুন",
+  seeAll: "সব দেখুন",
+  noProductsInGroup: "এই ক্যাটাগরিতে কোনো পণ্য নেই",
   resultsFound: "টি ফলাফল পাওয়া গেছে",
   rating: "রেটিং",
   reviews: "রিভিউ",
