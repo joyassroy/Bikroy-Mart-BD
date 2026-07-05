@@ -157,9 +157,9 @@ export default function CheckoutPage() {
     toast.success("Tracking ID copied!");
   };
 
-  const downloadInvoice = () => {
+  const downloadInvoice = async (lang = "en") => {
     if (!placedOrderData) return;
-    generateInvoicePDF(placedOrderData);
+    await generateInvoicePDF(placedOrderData, lang);
     toast.success("Invoice downloaded!");
   };
 
@@ -300,7 +300,7 @@ export default function CheckoutPage() {
       </main>
 
       {showOrderSuccess && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 sm:p-8 text-center shadow-2xl">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle size={36} className="text-green-600" />
@@ -318,10 +318,16 @@ export default function CheckoutPage() {
               {t.copyTrackingId}
             </button>
 
-            <button onClick={downloadInvoice} className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-white border border-[#E5E7EB] hover:bg-[#F4F7FB] rounded-xl text-sm font-medium text-[#364152] transition mb-3">
-              <Download size={16} />
-              {t.downloadInvoice}
-            </button>
+            <div className="flex gap-2 mb-3">
+              <button onClick={() => downloadInvoice("en")} className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-white border border-[#E5E7EB] hover:bg-[#F4F7FB] rounded-xl text-sm font-medium text-[#364152] transition">
+                <Download size={16} />
+                {t.downloadInvoice} (EN)
+              </button>
+              <button onClick={() => downloadInvoice("bn")} className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-white border border-[#E5E7EB] hover:bg-[#F4F7FB] rounded-xl text-sm font-medium text-[#364152] transition">
+                <Download size={16} />
+                {t.downloadInvoice} (BN)
+              </button>
+            </div>
 
             <button onClick={() => router.push(`/track-order?order=${placedOrderNumber}`)} className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-[#EC008C] hover:bg-[#D60071] rounded-xl text-sm font-semibold text-white transition mb-3">
               <ExternalLink size={16} />

@@ -12,6 +12,7 @@ router.get("/manager/local", authenticate, authorize("MANAGER"), orderController
 router.get("/:id", authenticate, orderController.getOrderById);
 router.put("/:id", authenticate, orderController.updateOrder);
 router.put("/:id/status", authenticate, authorize("ADMIN", "MANAGER"), orderController.updateOrderStatus);
+router.put("/:id/cancel", authenticate, orderController.cancelOrder);
 router.put("/:id/assign-rider", authenticate, authorize("ADMIN", "MANAGER"), orderController.assignRider);
 
 export default router;

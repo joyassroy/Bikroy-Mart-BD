@@ -186,7 +186,7 @@ const ProductCard = memo(function ProductCard({ product, showActions, onDelete, 
               <button
                 onClick={handleAddToCart}
                 disabled={isOutOfStock}
-                className="flex-1 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold text-white rounded-lg transition-all duration-200 flex items-center justify-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-[#EC008C] to-[#D60071] hover:from-[#D60071] hover:to-[#B80060] shadow-[0_2px_8px_rgba(236,0,140,0.3)]"
+                className="flex-1 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold text-white rounded-lg transition-shadow duration-200 flex items-center justify-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-[#EC008C] to-[#D60071] hover:from-[#D60071] hover:to-[#B80060] shadow-[0_2px_8px_rgba(236,0,140,0.3)]"
               >
                 <ShoppingCart size={12} />
                 {isOutOfStock ? t.outOfStock : t.addToCart}
@@ -202,7 +202,7 @@ const ProductCard = memo(function ProductCard({ product, showActions, onDelete, 
             <button
               onClick={handleAddToCart}
               disabled={isOutOfStock}
-              className="w-full py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold text-white rounded-lg transition-all duration-200 flex items-center justify-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-[#EC008C] to-[#D60071] hover:from-[#D60071] hover:to-[#B80060] shadow-[0_2px_8px_rgba(236,0,140,0.3)] pt-0.5"
+              className="w-full py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold text-white rounded-lg transition-shadow duration-200 flex items-center justify-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-[#EC008C] to-[#D60071] hover:from-[#D60071] hover:to-[#B80060] shadow-[0_2px_8px_rgba(236,0,140,0.3)] pt-0.5"
             >
               <ShoppingCart size={12} />
               {isOutOfStock ? t.outOfStock : t.addToCart}

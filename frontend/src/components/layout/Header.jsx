@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
-import { Search, ShoppingCart, User, MapPin, Menu, X, ChevronDown, ChevronRight, Globe, ClipboardList, Loader2, LayoutDashboard, ChevronUp, Wheat, Apple, Beef, Egg, Coffee, Cookie, Droplets, ChefHat, Cake, Sparkles, SprayCan, Baby, Package, Tag, Gift, TrendingUp } from "lucide-react";
+import { Search, ShoppingCart, User, MapPin, Menu, X, ChevronDown, ChevronRight, Globe, ClipboardList, Loader2, LayoutDashboard, ChevronUp, Wheat, Apple, Beef, Egg, Coffee, Cookie, Droplets, ChefHat, Cake, Sparkles, SprayCan, Baby, Package, Tag, Gift, TrendingUp, Building2 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import LocationSelector from "./LocationSelector";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -111,14 +111,26 @@ export default function Header() {
   }, [searchQuery, dispatch]);
 
   useEffect(() => {
-    const handleClickOutside = (e) => {
+    const closeDropdown = (e) => {
       if (searchWrapperRef.current && !searchWrapperRef.current.contains(e.target)) {
         dispatch(setShowDropdown(false));
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    const closeOnScroll = () => dispatch(setShowDropdown(false));
+    document.addEventListener("mousedown", closeDropdown);
+    document.addEventListener("touchstart", closeDropdown);
+    window.addEventListener("scroll", closeOnScroll, { passive: true });
+    return () => {
+      document.removeEventListener("mousedown", closeDropdown);
+      document.removeEventListener("touchstart", closeDropdown);
+      window.removeEventListener("scroll", closeOnScroll);
+    };
   }, [dispatch]);
+
+  useEffect(() => {
+    dispatch(setShowDropdown(false));
+    dispatch(setQuery(""));
+  }, [pathname, dispatch]);
 
   useEffect(() => {
     const handleEscape = (e) => {
@@ -510,12 +522,13 @@ export default function Header() {
 
               {/* Nav Links - Offer Types */}
               {NAV_OFFER_LINKS.map((link) => (
-                <Link key={link.href} href={link.href} className="px-3 py-2.5 text-[11px] text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3] transition font-semibold">
+                <Link key={link.href} href={link.href} className="px-3 py-2.5 text-[12px] text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3] transition font-semibold">
                   {language === "bn" ? link.labelBn : link.label}
                 </Link>
               ))}
-              <Link href="/shop" className="px-3 py-2.5 text-[11px] text-[#EC008C] font-semibold hover:bg-[#FCE8F3] transition">Shop</Link>
-              <Link href="/custom-request" className="px-3 py-2.5 text-[11px] text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3] transition font-semibold flex items-center gap-1">
+              <Link href="/shop" className="px-3 py-2.5 text-[12px] text-[#EC008C] font-semibold hover:bg-[#FCE8F3] transition">Shop</Link>
+              <Link href="/about" className="px-3 py-2.5 text-[12px] text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3] transition font-semibold">About</Link>
+              <Link href="/custom-request" className="px-3 py-2.5 text-[12px] text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3] transition font-semibold flex items-center gap-1">
                 <ClipboardList size={12} />{t.customRequest}
               </Link>
             </div>
@@ -576,6 +589,9 @@ export default function Header() {
               </Link>
               <Link href="/custom-request" onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 py-2 text-xs text-[#364152] font-medium hover:text-[#EC008C] transition">
                 <ClipboardList size={16} className="text-[#EC008C]" />{t.customRequest}
+              </Link>
+              <Link href="/about" onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 py-2 text-xs text-[#364152] font-medium hover:text-[#EC008C] transition">
+                <Building2 size={16} className="text-[#EC008C]" />{language === "bn" ? "আমাদের সম্পর্কে" : "About Us"}
               </Link>
               {authChecked && user && user.role && user.role !== "CUSTOMER" && (user.role === "ADMIN" || user.role === "MANAGER" || user.role === "RIDER") && (
                 <Link href={getDashboardHref()} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 py-2 text-xs text-[#364152] font-medium hover:text-[#EC008C] transition">

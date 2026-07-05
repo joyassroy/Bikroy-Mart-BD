@@ -1,323 +1,284 @@
 import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
-export function generateInvoicePDF(order) {
-  const doc = new jsPDF();
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = 14;
-  const contentWidth = pageWidth - margin * 2;
+const STATUS_MAP = {
+  PENDING: { en: "PENDING", bn: "অপেক্ষমান", color: [245, 158, 11] },
+  CONFIRMED: { en: "CONFIRMED", bn: "নিশ্চিত", color: [0, 172, 204] },
+  PROCESSING: { en: "PROCESSING", bn: "প্রক্রিয়াকরণ", color: [99, 102, 241] },
+  SHIPPED: { en: "SHIPPED", bn: "পাঠানো হয়েছে", color: [139, 92, 246] },
+  OUT_FOR_DELIVERY: { en: "OUT FOR DELIVERY", bn: "ডেলিভারি হচ্ছে", color: [236, 0, 140] },
+  DELIVERED: { en: "DELIVERED", bn: "ডেলিভারি সম্পন্ন", color: [22, 163, 74] },
+  CANCELLED: { en: "CANCELLED", bn: "বাতিল", color: [220, 38, 38] },
+  RETURNED: { en: "RETURNED", bn: "ফেরত", color: [234, 88, 12] },
+};
 
-  // Data extraction
-  const orderNumber = order.orderNumber || "N/A";
-  const customerName = order.name || order.user?.name || "N/A";
-  const customerPhone = order.phone || order.user?.phone || "N/A";
-  const address = order.address || order.deliveryAddress || "";
-  const district = order.district || order.deliveryDistrict || "";
-  const division = order.division || order.deliveryDivision || "";
-  const upazila = order.upazila || order.deliveryUpazila || "";
-  const paymentMethod = order.paymentMethod || "COD";
-  const subtotal = order.subtotal ?? order.total - (order.deliveryCharge ?? 0);
-  const deliveryCharge = order.deliveryCharge ?? 0;
-  const total = order.total || 0;
-  const date = order.date || new Date(order.createdAt).toLocaleDateString("en-BD", { day: "numeric", month: "short", year: "numeric" });
-  const items = (order.items || []).map((item, i) => ({
-    index: i + 1,
-    name: item.name || item.product?.name || "Item",
-    quantity: item.quantity,
-    price: item.unitPrice || item.price || (item.totalPrice ? item.totalPrice / item.quantity : 0),
-    totalPrice: item.totalPrice || (item.unitPrice || item.price || 0) * item.quantity,
-  }));
+function extractOrderData(order) {
+  return {
+    orderNumber: order.orderNumber || "N/A",
+    customerName: order.name || order.user?.name || "N/A",
+    customerPhone: order.phone || order.user?.phone || "N/A",
+    address: order.address || order.deliveryAddress || "",
+    district: order.district || order.deliveryDistrict || "",
+    division: order.division || order.deliveryDivision || "",
+    upazila: order.upazila || order.deliveryUpazila || "",
+    paymentMethod: order.paymentMethod || "COD",
+    orderStatus: order.orderStatus || "CONFIRMED",
+    subtotal: order.subtotal ?? order.total - (order.deliveryCharge ?? 0),
+    deliveryCharge: order.deliveryCharge ?? 0,
+    discount: order.discount || 0,
+    total: order.total || 0,
+    cancelReason: order.cancelReason || "",
+    date: order.date || new Date(order.createdAt).toLocaleDateString("en-BD", { day: "numeric", month: "short", year: "numeric" }),
+    items: (order.items || []).map((item, i) => ({
+      index: i + 1,
+      name: item.name || item.product?.name || "Item",
+      quantity: item.quantity,
+      price: item.unitPrice || item.price || (item.totalPrice ? item.totalPrice / item.quantity : 0),
+      totalPrice: item.totalPrice || (item.unitPrice || item.price || 0) * item.quantity,
+    })),
+  };
+}
 
-  // ── Colors ──────────────────────────────────────────────────────
-  const navy = [0, 33, 91];
-  const magenta = [236, 0, 140];
-  const green = [22, 163, 74];
-  const blue = [0, 172, 204];
-  const darkText = [30, 30, 30];
-  const mutedText = [102, 112, 133];
-  const lightBg = [245, 247, 251];
-  const white = [255, 255, 255];
-  const border = [220, 225, 235];
+const LABELS = {
+  bn: {
+    tagline: "ডেলিভারির ধরনে বিশ্বস্ত অনলাইন গ্রসারি স্টোর",
+    invoiceTitle: "চালান",
+    orderDetails: "অর্ডার বিবরণ",
+    orderNumber: "অর্ডার নম্বর:",
+    orderDate: "তারিখ:",
+    payment: "পেমেন্ট:",
+    status: "স্ট্যাটাস:",
+    shipTo: "পাঠানো হবে",
+    name: "নাম:",
+    phone: "ফোন:",
+    address: "ঠিকানা:",
+    upazila: "উপজেলা:",
+    district: "জেলা:",
+    division: "বিভাগ:",
+    itemHeader: "পদার্ততা",
+    qtyHeader: "পরিমাণ",
+    unitPriceHeader: "একক মূল্য",
+    totalHeader: "মোট",
+    subtotal: "উপমোট",
+    delivery: "ডেলিভারি",
+    discount: "ছাড়",
+    grandTotal: "মোট",
+    cancelReason: "বাতিলের কারণ:",
+    thankYou: "বিক্রয়-মার্ট-বিডি দিয়ে কেনাকাটার জন্য ধন্যবাদ!",
+    footerNote: "এটি একটি কম্পিউটার-জনিত চালান। স্বাক্ষরের প্রয়োজন নেই।",
+    currency: "৳",
+    font: "'Noto Sans Bengali','Hind Siliguri','Kalpurush',sans-serif",
+  },
+  en: {
+    tagline: "Your Trusted Online Grocery Store",
+    invoiceTitle: "INVOICE",
+    orderDetails: "ORDER DETAILS",
+    orderNumber: "Order Number:",
+    orderDate: "Order Date:",
+    payment: "Payment:",
+    status: "Status:",
+    shipTo: "SHIP TO",
+    name: "Name:",
+    phone: "Phone:",
+    address: "Address:",
+    upazila: "Upazila:",
+    district: "District:",
+    division: "Division:",
+    itemHeader: "Item",
+    qtyHeader: "Qty",
+    unitPriceHeader: "Unit Price",
+    totalHeader: "Total",
+    subtotal: "Subtotal",
+    delivery: "Delivery",
+    discount: "Discount",
+    grandTotal: "TOTAL",
+    cancelReason: "Cancel Reason:",
+    thankYou: "Thank you for shopping with Bikroy-Mart-BD!",
+    footerNote: "This is a computer-generated invoice. No signature required.",
+    currency: "Tk",
+    font: "Inter,system-ui,-apple-system,sans-serif",
+  },
+};
 
-  let y = 0;
+function getBadgeHTML(status, lang) {
+  const info = STATUS_MAP[status] || STATUS_MAP.CONFIRMED;
+  const label = lang === "bn" ? info.bn : info.en;
+  const [r, g, b] = info.color;
+  return `<span style="background:rgb(${r},${g},${b});color:#fff;padding:3px 12px;border-radius:12px;font-size:11px;font-weight:600;letter-spacing:0.3px;display:inline-block">${label}</span>`;
+}
 
-  // ── HEADER ──────────────────────────────────────────────────────
-  doc.setFillColor(...navy);
-  doc.rect(0, 0, pageWidth, 38, "F");
+function getPaymentBadgeHTML(method) {
+  const isCOD = method === "COD" || method === "Cash on Delivery";
+  const label = isCOD ? "COD" : "PAID";
+  const [r, g, b] = isCOD ? [245, 158, 11] : [22, 163, 74];
+  return `<span style="background:rgb(${r},${g},${b});color:#fff;padding:3px 12px;border-radius:12px;font-size:11px;font-weight:600;display:inline-block">${label}</span>`;
+}
 
-  // Company logo
-  const logoBase64 = "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";
-  doc.addImage(logoBase64, "PNG", margin, 4, 14, 14);
+function buildInvoiceHTML(order, lang) {
+  const L = LABELS[lang] || LABELS.en;
+  const d = extractOrderData(order);
 
-  // Company name
-  doc.setTextColor(...white);
-  doc.setFontSize(22);
-  doc.setFont("helvetica", "bold");
-  doc.text("Bikroy-Mart-BD", margin + 18, 16);
+  const currency = L.currency;
 
-  // Tagline
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(180, 195, 230);
-  doc.text("Your Trusted Online Grocery Store", margin + 18, 23);
+  const itemsHTML = d.items.map((item, i) => `
+    <tr style="background:${i % 2 === 0 ? "#f9fafb" : "#fff"}">
+      <td style="padding:10px 14px;border-bottom:1px solid #e5e7eb;color:#374151;font-size:13px;font-family:${L.font}">${item.index}</td>
+      <td style="padding:10px 14px;border-bottom:1px solid #e5e7eb;color:#111827;font-size:13px;font-weight:500;font-family:${L.font}">${item.name}</td>
+      <td style="padding:10px 14px;border-bottom:1px solid #e5e7eb;color:#374151;font-size:13px;text-align:center;font-family:${L.font}">${item.quantity}</td>
+      <td style="padding:10px 14px;border-bottom:1px solid #e5e7eb;color:#374151;font-size:13px;text-align:right;font-family:${L.font}">${currency} ${item.price.toLocaleString()}</td>
+      <td style="padding:10px 14px;border-bottom:1px solid #e5e7eb;color:#111827;font-size:13px;text-align:right;font-weight:600;font-family:${L.font}">${currency} ${item.totalPrice.toLocaleString()}</td>
+    </tr>
+  `).join("");
 
-  // Contact info
-  doc.setFontSize(7.5);
-  doc.setTextColor(150, 170, 210);
-  doc.text("bikroymart.com  |  info@bikroymart.com  |  16469", margin + 18, 29);
+  const discountRow = d.discount > 0 ? `
+    <tr>
+      <td colspan="4" style="padding:8px 14px;text-align:right;color:#6b7280;font-size:13px;font-family:${L.font}">${L.discount}</td>
+      <td style="padding:8px 14px;text-align:right;color:#dc2626;font-size:13px;font-weight:600;font-family:${L.font}">-${currency} ${d.discount.toLocaleString()}</td>
+    </tr>
+  ` : "";
 
-  // INVOICE badge
-  doc.setFillColor(...magenta);
-  doc.roundedRect(pageWidth - 52, 8, 38, 12, 2, 2, "F");
-  doc.setTextColor(...white);
-  doc.setFontSize(13);
-  doc.setFont("helvetica", "bold");
-  doc.text("INVOICE", pageWidth - 33, 16.5, { align: "center" });
+  const cancelReasonHTML = d.cancelReason && d.orderStatus === "CANCELLED" ? `
+    <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px 16px;margin-top:12px">
+      <span style="color:#991b1b;font-size:12px;font-weight:600;font-family:${L.font}">${L.cancelReason}</span>
+      <span style="color:#991b1b;font-size:12px;margin-left:6px;font-family:${L.font}">${d.cancelReason}</span>
+    </div>
+  ` : "";
 
-  // Order number under badge
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(180, 195, 230);
-  doc.text(orderNumber, pageWidth - 33, 27, { align: "center" });
+  return `
+    <div id="invoice-capture" style="width:794px;background:#fff;padding:0;margin:0;font-family:${L.font};-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale">
+      <!-- Header -->
+      <div style="background:linear-gradient(135deg,#00215B 0%,#001845 100%);padding:32px 44px;display:flex;justify-content:space-between;align-items:center">
+        <div style="display:flex;align-items:center;gap:14px">
+          <img src="/favicon.ico" style="width:44px;height:44px;border-radius:10px;background:#fff;padding:4px;box-shadow:0 2px 8px rgba(0,0,0,0.15)" alt="logo" />
+          <div>
+            <div style="color:#fff;font-size:26px;font-weight:800;letter-spacing:0.3px;line-height:1.1">Bikroy-Mart-BD</div>
+            <div style="color:#94b3e0;font-size:12px;margin-top:3px;letter-spacing:0.2px">${L.tagline}</div>
+            <div style="color:#7090c0;font-size:10.5px;margin-top:3px">bikroymart.com &nbsp;|&nbsp; info@bikroymart.com &nbsp;|&nbsp; 16469</div>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div style="background:#ec008c;color:#fff;padding:8px 28px;border-radius:10px;font-size:15px;font-weight:700;letter-spacing:1.5px;box-shadow:0 2px 8px rgba(236,0,140,0.3)">${L.invoiceTitle}</div>
+          <div style="color:#94b3e0;font-size:11px;margin-top:8px;letter-spacing:0.3px">#${d.orderNumber}</div>
+        </div>
+      </div>
 
-  y = 44;
+      <!-- Body -->
+      <div style="padding:32px 44px">
+        <!-- Info Cards -->
+        <div style="display:flex;gap:20px;margin-bottom:28px">
+          <div style="flex:1;background:#f4f7fb;border-radius:12px;padding:20px 22px;border:1px solid #e8ecf3">
+            <div style="color:#00215B;font-size:13px;font-weight:700;margin-bottom:14px;text-transform:uppercase;letter-spacing:0.8px;font-family:${L.font}">${L.orderDetails}</div>
+            <table style="width:100%;border-collapse:collapse">
+              <tr><td style="padding:5px 0;color:#6b7280;font-size:12.5px;width:110px;font-family:${L.font}">${L.orderNumber}</td><td style="padding:5px 0;color:#111827;font-size:12.5px;font-weight:600">${d.orderNumber}</td></tr>
+              <tr><td style="padding:5px 0;color:#6b7280;font-size:12.5px;font-family:${L.font}">${L.orderDate}</td><td style="padding:5px 0;color:#111827;font-size:12.5px;font-weight:600">${d.date}</td></tr>
+              <tr><td style="padding:5px 0;color:#6b7280;font-size:12.5px;font-family:${L.font}">${L.payment}</td><td style="padding:5px 0;font-size:12.5px">${getPaymentBadgeHTML(d.paymentMethod)}</td></tr>
+              <tr><td style="padding:5px 0;color:#6b7280;font-size:12.5px;font-family:${L.font}">${L.status}</td><td style="padding:5px 0;font-size:12.5px">${getBadgeHTML(d.orderStatus, lang)}</td></tr>
+            </table>
+          </div>
+          <div style="flex:1;background:#f4f7fb;border-radius:12px;padding:20px 22px;border:1px solid #e8ecf3">
+            <div style="color:#00215B;font-size:13px;font-weight:700;margin-bottom:14px;text-transform:uppercase;letter-spacing:0.8px;font-family:${L.font}">${L.shipTo}</div>
+            <table style="width:100%;border-collapse:collapse">
+              <tr><td style="padding:5px 0;color:#6b7280;font-size:12.5px;width:85px;font-family:${L.font}">${L.name}</td><td style="padding:5px 0;color:#111827;font-size:12.5px;font-weight:600">${d.customerName}</td></tr>
+              <tr><td style="padding:5px 0;color:#6b7280;font-size:12.5px;font-family:${L.font}">${L.phone}</td><td style="padding:5px 0;color:#111827;font-size:12.5px">${d.customerPhone}</td></tr>
+              <tr><td style="padding:5px 0;color:#6b7280;font-size:12.5px;font-family:${L.font}">${L.address}</td><td style="padding:5px 0;color:#111827;font-size:12.5px">${d.address || "N/A"}</td></tr>
+              <tr><td style="padding:5px 0;color:#6b7280;font-size:12.5px;font-family:${L.font}">${L.upazila}</td><td style="padding:5px 0;color:#111827;font-size:12.5px">${d.upazila || "N/A"}</td></tr>
+              <tr><td style="padding:5px 0;color:#6b7280;font-size:12.5px;font-family:${L.font}">${L.district}</td><td style="padding:5px 0;color:#111827;font-size:12.5px">${d.district || "N/A"}</td></tr>
+              <tr><td style="padding:5px 0;color:#6b7280;font-size:12.5px;font-family:${L.font}">${L.division}</td><td style="padding:5px 0;color:#111827;font-size:12.5px">${d.division || "N/A"}</td></tr>
+            </table>
+          </div>
+        </div>
 
-  // ── ORDER INFO + SHIPPING (2 columns) ──────────────────────────
-  const colLeft = margin;
-  const colRight = pageWidth / 2 + 5;
-  const colRightWidth = contentWidth / 2 - 5;
+        <!-- Items Table -->
+        <table style="width:100%;border-collapse:collapse;margin-bottom:20px;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06)">
+          <thead>
+            <tr style="background:linear-gradient(135deg,#00215B,#003087)">
+              <th style="padding:12px 14px;text-align:left;color:#fff;font-size:11.5px;font-weight:600;width:36px;letter-spacing:0.5px;border-radius:8px 0 0 0;font-family:${L.font}">#</th>
+              <th style="padding:12px 14px;text-align:left;color:#fff;font-size:11.5px;font-weight:600;letter-spacing:0.5px;font-family:${L.font}">${L.itemHeader}</th>
+              <th style="padding:12px 14px;text-align:center;color:#fff;font-size:11.5px;font-weight:600;width:60px;letter-spacing:0.5px;font-family:${L.font}">${L.qtyHeader}</th>
+              <th style="padding:12px 14px;text-align:right;color:#fff;font-size:11.5px;font-weight:600;width:100px;letter-spacing:0.5px;font-family:${L.font}">${L.unitPriceHeader}</th>
+              <th style="padding:12px 14px;text-align:right;color:#fff;font-size:11.5px;font-weight:600;width:100px;letter-spacing:0.5px;border-radius:0 8px 0 0;font-family:${L.font}">${L.totalHeader}</th>
+            </tr>
+          </thead>
+          <tbody>${itemsHTML}</tbody>
+        </table>
 
-  // Left column - Order Details
-  doc.setFillColor(...lightBg);
-  doc.roundedRect(colLeft, y, contentWidth / 2 - 5, 48, 2, 2, "F");
+        <!-- Totals -->
+        <div style="display:flex;justify-content:flex-end">
+          <div style="background:#f4f7fb;border-radius:12px;padding:18px 22px;min-width:280px;border:1px solid #e8ecf3">
+            <table style="width:100%;border-collapse:collapse">
+              <tr>
+                <td style="padding:6px 0;color:#6b7280;font-size:13px;font-family:${L.font}">${L.subtotal}</td>
+                <td style="padding:6px 0;text-align:right;color:#374151;font-size:13px;font-family:${L.font}">${currency} ${d.subtotal.toLocaleString()}</td>
+              </tr>
+              <tr>
+                <td style="padding:6px 0;color:#6b7280;font-size:13px;font-family:${L.font}">${L.delivery}</td>
+                <td style="padding:6px 0;text-align:right;color:#374151;font-size:13px;font-family:${L.font}">${d.deliveryCharge === 0 ? '<span style="background:#16a34a;color:#fff;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:600">FREE</span>' : `${currency} ${d.deliveryCharge.toLocaleString()}`}</td>
+              </tr>
+              ${discountRow}
+            </table>
+            <div style="border-top:2px solid #00215B;margin-top:10px;padding-top:10px;display:flex;justify-content:space-between;align-items:center">
+              <span style="color:#00215B;font-size:15px;font-weight:700;font-family:${L.font}">${L.grandTotal}</span>
+              <span style="color:#ec008c;font-size:20px;font-weight:800;letter-spacing:0.3px;font-family:${L.font}">${currency} ${d.total.toLocaleString()}</span>
+            </div>
+            ${cancelReasonHTML}
+          </div>
+        </div>
+      </div>
 
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(...navy);
-  doc.text("ORDER DETAILS", colLeft + 5, y + 8);
+      <!-- Footer -->
+      <div style="background:linear-gradient(135deg,#00215B 0%,#001845 100%);padding:22px 44px;text-align:center">
+        <div style="color:#fff;font-size:13px;font-weight:600;letter-spacing:0.2px;font-family:${L.font}">${L.thankYou}</div>
+        <div style="color:#7090c0;font-size:10.5px;margin-top:5px">bikroymart.com &nbsp;|&nbsp; Support: WhatsApp / Messenger &nbsp;|&nbsp; 16469</div>
+        <div style="color:#4a6590;font-size:9.5px;margin-top:4px;font-family:${L.font}">${L.footerNote}</div>
+      </div>
+    </div>
+  `;
+}
 
-  doc.setFontSize(8.5);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(...darkText);
+export async function generateInvoicePDF(order, lang = "en") {
+  const d = extractOrderData(order);
+  const L = LABELS[lang] || LABELS.en;
 
-  doc.text("Order Number:", colLeft + 5, y + 17);
-  doc.setFont("helvetica", "bold");
-  doc.text(orderNumber, colLeft + 38, y + 17);
+  const html = buildInvoiceHTML(order, lang);
 
-  doc.setFont("helvetica", "normal");
-  doc.text("Order Date:", colLeft + 5, y + 24);
-  doc.setFont("helvetica", "bold");
-  doc.text(date, colLeft + 38, y + 24);
+  const container = document.createElement("div");
+  container.style.cssText = "position:fixed;left:-9999px;top:0;z-index:-1;background:#fff";
+  container.innerHTML = html;
+  document.body.appendChild(container);
 
-  doc.setFont("helvetica", "normal");
-  doc.text("Payment:", colLeft + 5, y + 31);
-  // Payment badge
-  const isCOD = paymentMethod === "COD" || paymentMethod === "Cash on Delivery";
-  const payLabel = isCOD ? "COD" : "PAID";
-  const payColor = isCOD ? [245, 158, 11] : green;
-  const payLabelWidth = doc.getTextWidth(payLabel) + 8;
-  doc.setFillColor(...payColor);
-  doc.roundedRect(colLeft + 38, y + 26, payLabelWidth, 5.5, 1.5, 1.5, "F");
-  doc.setTextColor(...white);
-  doc.setFontSize(7.5);
-  doc.setFont("helvetica", "bold");
-  doc.text(payLabel, colLeft + 38 + payLabelWidth / 2, y + 30.2, { align: "center" });
+  const el = container.querySelector("#invoice-capture");
 
-  doc.setFontSize(8.5);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(...darkText);
-  doc.text("Status:", colLeft + 5, y + 38);
-  doc.setFillColor(...green);
-  const statusLabel = "CONFIRMED";
-  const statusWidth = doc.getTextWidth(statusLabel) + 8;
-  doc.roundedRect(colLeft + 38, y + 33.5, statusWidth, 5.5, 1.5, 1.5, "F");
-  doc.setTextColor(...white);
-  doc.setFontSize(7.5);
-  doc.setFont("helvetica", "bold");
-  doc.text(statusLabel, colLeft + 38 + statusWidth / 2, y + 37.7, { align: "center" });
-
-  // Right column - Ship To
-  doc.setFillColor(...lightBg);
-  doc.roundedRect(colRight, y, colRightWidth, 48, 2, 2, "F");
-
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(...navy);
-  doc.text("SHIP TO", colRight + 5, y + 8);
-
-  const labelX = colRight + 5;
-  const valueX = colRight + 30;
-  let shipY = y + 16;
-
-  // Name
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(...mutedText);
-  doc.text("Name:", labelX, shipY);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(...darkText);
-  doc.text(customerName, valueX, shipY);
-
-  // Phone
-  shipY += 6;
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(...mutedText);
-  doc.text("Phone:", labelX, shipY);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(...darkText);
-  doc.text(customerPhone, valueX, shipY);
-
-  // Address
-  shipY += 6;
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(...mutedText);
-  doc.text("Address:", labelX, shipY);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(...darkText);
-  const addrLines = doc.splitTextToSize(address || "N/A", colRightWidth - 35);
-  doc.text(addrLines[0] || "N/A", valueX, shipY);
-
-  // Upazila
-  shipY += 6;
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(...mutedText);
-  doc.text("Upazila:", labelX, shipY);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(...darkText);
-  doc.text(upazila || "N/A", valueX, shipY);
-
-  // District
-  shipY += 6;
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(...mutedText);
-  doc.text("District:", labelX, shipY);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(...darkText);
-  doc.text(district || "N/A", valueX, shipY);
-
-  // Division
-  shipY += 6;
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(...mutedText);
-  doc.text("Division:", labelX, shipY);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(...darkText);
-  doc.text(division || "N/A", valueX, shipY);
-
-  y += 54;
-
-  // ── ITEMS TABLE ─────────────────────────────────────────────────
-  // Table header
-  doc.setFillColor(...navy);
-  doc.roundedRect(margin, y, contentWidth, 8, 1, 1, "F");
-
-  doc.setTextColor(...white);
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "bold");
-  doc.text("#", margin + 4, y + 5.5);
-  doc.text("Item", margin + 14, y + 5.5);
-  doc.text("Qty", margin + 110, y + 5.5);
-  doc.text("Unit Price", margin + 130, y + 5.5);
-  doc.text("Total", margin + contentWidth - 4, y + 5.5, { align: "right" });
-
-  y += 10;
-
-  // Table rows
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
-  items.forEach((item, i) => {
-    // Alternating row bg
-    if (i % 2 === 0) {
-      doc.setFillColor(249, 250, 252);
-      doc.rect(margin, y - 3, contentWidth, 8, "F");
-    }
-
-    doc.setTextColor(...darkText);
-    const itemName = item.name.length > 38 ? item.name.substring(0, 38) + "..." : item.name;
-    doc.text(String(item.index), margin + 5, y + 2);
-    doc.text(itemName, margin + 14, y + 2);
-    doc.text(String(item.quantity), margin + 112, y + 2);
-    doc.text(`Tk ${item.price.toLocaleString()}`, margin + 130, y + 2);
-    doc.setFont("helvetica", "bold");
-    doc.text(`Tk ${item.totalPrice.toLocaleString()}`, margin + contentWidth - 4, y + 2, { align: "right" });
-    doc.setFont("helvetica", "normal");
-
-    // Row border
-    doc.setDrawColor(...border);
-    doc.setLineWidth(0.2);
-    doc.line(margin, y + 5, margin + contentWidth, y + 5);
-
-    y += 8;
+  const canvas = await html2canvas(el, {
+    scale: 2,
+    useCORS: true,
+    allowTaint: true,
+    backgroundColor: "#ffffff",
+    logging: false,
+    width: 794,
+    windowWidth: 794,
   });
 
-  y += 4;
+  document.body.removeChild(container);
 
-  // ── TOTALS ──────────────────────────────────────────────────────
-  const totalsX = margin + contentWidth - 75;
-  const totalsValX = margin + contentWidth - 4;
+  const imgData = canvas.toDataURL("image/png");
+  const pdf = new jsPDF("p", "mm", "a4");
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const imgWidth = pageWidth;
+  const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-  // Totals box
-  doc.setFillColor(245, 247, 251);
-  doc.roundedRect(totalsX - 5, y - 3, 75, 38, 2, 2, "F");
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  let heightLeft = imgHeight;
+  let position = 0;
 
-  doc.setFontSize(8.5);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(...mutedText);
-  doc.text("Subtotal", totalsX, y + 3);
-  doc.setTextColor(...darkText);
-  doc.text(`Tk ${subtotal.toLocaleString()}`, totalsValX, y + 3, { align: "right" });
+  pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+  heightLeft -= pageHeight;
 
-  y += 9;
-  doc.setTextColor(...mutedText);
-  doc.text("Delivery", totalsX, y + 3);
-  if (deliveryCharge === 0) {
-    doc.setFillColor(...green);
-    doc.roundedRect(totalsValX - 16, y - 0.5, 16, 5, 1.5, 1.5, "F");
-    doc.setTextColor(...white);
-    doc.setFontSize(7);
-    doc.setFont("helvetica", "bold");
-    doc.text("FREE", totalsValX - 8, y + 3, { align: "center" });
-  } else {
-    doc.setTextColor(...darkText);
-    doc.setFontSize(8.5);
-    doc.text(`Tk ${deliveryCharge.toLocaleString()}`, totalsValX, y + 3, { align: "right" });
+  while (heightLeft > 0) {
+    position = -(pageHeight * (Math.ceil(imgHeight / pageHeight) - Math.ceil(heightLeft / pageHeight)));
+    pdf.addPage();
+    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
   }
 
-  y += 8;
-  // Divider line
-  doc.setDrawColor(...navy);
-  doc.setLineWidth(0.5);
-  doc.line(totalsX, y, totalsValX, y);
-
-  y += 5;
-  doc.setFontSize(12);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(...navy);
-  doc.text("TOTAL", totalsX, y + 3);
-  doc.setTextColor(...magenta);
-  doc.text(`Tk ${total.toLocaleString()}`, totalsValX, y + 3, { align: "right" });
-
-  // ── FOOTER ──────────────────────────────────────────────────────
-  const footerY = pageHeight - 22;
-
-  // Thank you bar
-  doc.setFillColor(...navy);
-  doc.rect(0, footerY - 8, pageWidth, 28, "F");
-
-  doc.setTextColor(...white);
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "bold");
-  doc.text("Thank you for shopping with Bikroy-Mart-BD!", pageWidth / 2, footerY - 1, { align: "center" });
-
-  doc.setFontSize(7.5);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(150, 170, 210);
-  doc.text("bikroymart.com  |  Support: WhatsApp / Messenger  |  16469", pageWidth / 2, footerY + 6, { align: "center" });
-
-  doc.setFontSize(6.5);
-  doc.setTextColor(100, 120, 160);
-  doc.text("This is a computer-generated invoice. No signature required.", pageWidth / 2, footerY + 12, { align: "center" });
-
-  // Save
-  doc.save(`invoice-${orderNumber}.pdf`);
+  pdf.save(`invoice-${d.orderNumber}.pdf`);
 }

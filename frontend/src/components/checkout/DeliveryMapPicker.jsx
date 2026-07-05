@@ -189,7 +189,7 @@ export default function DeliveryMapPicker({ coords, onCoordsChange, onLocationDe
           </span>
         )}
       </div>
-      <div className="relative" style={{ height: "250px" }}>
+      <div className="relative" style={{ height: "250px", isolation: "isolate" }}>
         <div className="map-search-bar">
           <Search size={16} className="search-icon" />
           <input

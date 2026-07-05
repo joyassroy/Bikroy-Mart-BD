@@ -304,3 +304,53 @@ export const getLocalOrders = async (req: AuthRequest, res: Response) => {
     return sendError(res, error.message);
   }
 };
+
+const CANCELLABLE_STATUSES = ["PENDING", "CONFIRMED", "PROCESSING"];
+
+export const cancelOrder = async (req: AuthRequest, res: Response) => {
+  try {
+    const id = String(req.params.id);
+    const { cancelReason } = req.body;
+
+    if (!cancelReason || typeof cancelReason !== "string" || !cancelReason.trim()) {
+      return sendError(res, "Cancellation reason is required", 400);
+    }
+
+    const order = await prisma.order.findUnique({
+      where: { id },
+      select: { id: true, userId: true, orderStatus: true },
+    });
+
+    if (!order) return sendError(res, "Order not found", 404);
+    if (order.userId !== req.user!.userId) return sendError(res, "Not authorized", 403);
+
+    if (!CANCELLABLE_STATUSES.includes(order.orderStatus)) {
+      return sendError(res, `Cannot cancel order with status "${order.orderStatus}". Only PENDING, CONFIRMED, or PROCESSING orders can be cancelled.`, 400);
+    }
+
+    const updated = await prisma.order.update({
+      where: { id },
+      data: { orderStatus: "CANCELLED", cancelReason: cancelReason.trim() },
+      include: {
+        items: { include: { product: true } },
+        user: { select: { id: true, name: true, email: true, phone: true } },
+      },
+    });
+
+    try {
+      const { getIO } = await import("../../socket/socketHandler");
+      const io = getIO();
+      io.to(`order-${updated.id}`).emit("order-status", {
+        orderId: updated.id,
+        status: "CANCELLED",
+        timestamp: new Date().toISOString(),
+      });
+    } catch (err) {
+      console.error("Socket broadcast failed for order cancellation:", err);
+    }
+
+    return sendSuccess(res, "Order cancelled successfully", updated);
+  } catch (error: any) {
+    return sendError(res, error.message, 400);
+  }
+};

@@ -8,7 +8,8 @@ const LiveRiderMap = dynamic(() => import("@/components/tracking/LiveRiderMap"),
 const LocationMapModal = dynamic(() => import("@/components/ui/LocationMapModal"), { ssr: false });
 import useSocket from "@/helper/useSocket";
 import api from "@/lib/axios";
-import { Search, Package, Truck, CheckCircle, Clock, MapPin, Phone, User, Navigation } from "lucide-react";
+import toast from "react-hot-toast";
+import { Search, Package, Truck, CheckCircle, Clock, MapPin, Phone, User, Navigation, Ban, Loader2 } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 
 function TrackOrderContent() {
@@ -21,6 +22,11 @@ function TrackOrderContent() {
   const { t } = useLanguage();
   const { liveRiderLocation, connected, orderStatus } = useSocket(order?.id);
   const [showRiderMap, setShowRiderMap] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancellingLoading, setCancellingLoading] = useState(false);
+
+  const CANCELLABLE_STATUSES = ["PENDING", "CONFIRMED", "PROCESSING"];
 
   const statusSteps = [
     { key: "PENDING", label: t.orderPlaced, icon: Package, color: "#00215B" },
@@ -58,6 +64,22 @@ function TrackOrderContent() {
   const handleSearch = (e) => {
     e.preventDefault();
     fetchOrder(orderNumber);
+  };
+
+  const handleCancelOrder = async () => {
+    if (!cancelReason.trim()) return;
+    setCancellingLoading(true);
+    try {
+      await api.put(`/orders/${order.id}/cancel`, { cancelReason: cancelReason.trim() });
+      await fetchOrder(order.orderNumber);
+      setShowCancelModal(false);
+      setCancelReason("");
+      toast.success("Order cancelled successfully");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to cancel order");
+    } finally {
+      setCancellingLoading(false);
+    }
   };
 
   const getStatusIndex = (status) => {
@@ -203,6 +225,17 @@ function TrackOrderContent() {
                   {order.items?.length || 0} items
                 </span>
               </div>
+
+              {CANCELLABLE_STATUSES.includes(order.orderStatus) && (
+                <div className="px-4 sm:px-6 py-3 border-t border-[#F0F2F5]">
+                  <button
+                    onClick={() => setShowCancelModal(true)}
+                    className="flex items-center gap-1.5 text-xs sm:text-sm text-red-500 hover:text-red-700 font-semibold transition"
+                  >
+                    <Ban size={14} /> Cancel Order
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Rider Info */}
@@ -348,6 +381,53 @@ function TrackOrderContent() {
           label="Rider Location"
           title="Rider Location"
         />
+      )}
+
+      {showCancelModal && order && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => { setShowCancelModal(false); setCancelReason(""); }}>
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="p-5 border-b border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0">
+                  <Ban size={20} className="text-red-500" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">Cancel Order</h2>
+                  <p className="text-sm text-gray-500">Order {order.orderNumber}</p>
+                </div>
+              </div>
+            </div>
+            <div className="p-5 space-y-4">
+              <p className="text-sm text-gray-600">Are you sure you want to cancel this order? This action cannot be undone.</p>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Reason for cancellation *</label>
+                <textarea
+                  value={cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                  placeholder="Please tell us why you want to cancel..."
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#00215B] resize-none"
+                />
+              </div>
+            </div>
+            <div className="p-5 border-t border-gray-100 flex gap-3">
+              <button
+                onClick={() => { setShowCancelModal(false); setCancelReason(""); }}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+              >
+                Keep Order
+              </button>
+              <button
+                onClick={handleCancelOrder}
+                disabled={cancellingLoading || !cancelReason.trim()}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-red-500 text-white hover:bg-red-600 transition disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {cancellingLoading ? <Loader2 size={16} className="animate-spin" /> : <Ban size={16} />}
+                {cancellingLoading ? "Cancelling..." : "Cancel Order"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -1,11 +1,13 @@
 "use client";
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { Clock } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import api from "@/lib/axios";
 
 export default function DeliveryBanner() {
   const { t, language } = useLanguage();
+  const pathname = usePathname();
   const [texts, setTexts] = useState({ deliveryCutoff: "", freeDelivery: "" });
 
   useEffect(() => {
@@ -20,6 +22,8 @@ export default function DeliveryBanner() {
       })
       .catch(() => {});
   }, [language]);
+
+  if (pathname.startsWith("/dashboard") || pathname.startsWith("/manager") || pathname.startsWith("/rider")) return null;
 
   return (
     <div className="fixed bottom-[60px] left-0 right-0 z-[80] md:hidden pointer-events-none px-3 pb-2">

@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import api from "@/lib/axios";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { User, Package, MapPin, LogOut, Loader2, ExternalLink, X, Plus, Pencil, Trash2, Star, ChevronDown, Camera, Copy, Check } from "lucide-react";
+import { User, Package, MapPin, LogOut, Loader2, ExternalLink, X, Plus, Pencil, Trash2, Star, ChevronDown, Camera, Copy, Check, Ban } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { updateUser, clearUser } from "@/redux/userSlice";
 import { useRouter } from "next/navigation";
@@ -52,6 +52,9 @@ export default function AccountPage() {
   const [productSearchResults, setProductSearchResults] = useState([]);
   const [searchingProducts, setSearchingProducts] = useState(false);
   const [savingOrder, setSavingOrder] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancellingLoading, setCancellingLoading] = useState(false);
 
   useEffect(() => {
     const div = BANGLADESH_LOCATIONS.find((d) => d.division === addressForm.division);
@@ -312,6 +315,26 @@ export default function AccountPage() {
       toast.error(err.response?.data?.message || "Failed to update order");
     } finally {
       setSavingOrder(false);
+    }
+  };
+
+  const handleCancelOrder = async () => {
+    if (!cancelReason.trim()) {
+      toast.error("Please provide a reason for cancellation");
+      return;
+    }
+    setCancellingLoading(true);
+    try {
+      const res = await api.put(`/orders/${selectedOrder.id}/cancel`, { cancelReason: cancelReason.trim() });
+      setSelectedOrder(res.data.data);
+      setOrders((prev) => prev.map((o) => (o.id === selectedOrder.id ? res.data.data : o)));
+      setShowCancelModal(false);
+      setCancelReason("");
+      toast.success("Order cancelled successfully");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to cancel order");
+    } finally {
+      setCancellingLoading(false);
     }
   };
 
@@ -643,9 +666,14 @@ export default function AccountPage() {
               </div>
 
               {EDITABLE_STATUSES.includes(selectedOrder.orderStatus) && !editingOrder && (
-                <button onClick={startEditOrder} className="flex items-center gap-1.5 text-sm text-[#0067A0] hover:text-[#00215B] font-medium transition">
-                  <Pencil size={14} /> Edit Order
-                </button>
+                <div className="flex items-center gap-3">
+                  <button onClick={startEditOrder} className="flex items-center gap-1.5 text-sm text-[#0067A0] hover:text-[#00215B] font-medium transition">
+                    <Pencil size={14} /> Edit Order
+                  </button>
+                  <button onClick={() => setShowCancelModal(true)} className="flex items-center gap-1.5 text-sm text-red-500 hover:text-red-700 font-medium transition">
+                    <Ban size={14} /> Cancel Order
+                  </button>
+                </div>
               )}
               {editingOrder && (
                 <button onClick={() => setEditingOrder(false)} className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 font-medium transition">
@@ -819,6 +847,53 @@ export default function AccountPage() {
                   <ExternalLink size={16} /> Track Order
                 </button>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCancelModal && selectedOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => { setShowCancelModal(false); setCancelReason(""); }}>
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="p-5 border-b border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0">
+                  <Ban size={20} className="text-red-500" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">Cancel Order</h2>
+                  <p className="text-sm text-gray-500">Order {selectedOrder.orderNumber}</p>
+                </div>
+              </div>
+            </div>
+            <div className="p-5 space-y-4">
+              <p className="text-sm text-gray-600">Are you sure you want to cancel this order? This action cannot be undone.</p>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Reason for cancellation *</label>
+                <textarea
+                  value={cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                  placeholder="Please tell us why you want to cancel..."
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#0067A0] resize-none"
+                />
+              </div>
+            </div>
+            <div className="p-5 border-t border-gray-100 flex gap-3">
+              <button
+                onClick={() => { setShowCancelModal(false); setCancelReason(""); }}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+              >
+                Keep Order
+              </button>
+              <button
+                onClick={handleCancelOrder}
+                disabled={cancellingLoading || !cancelReason.trim()}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-red-500 text-white hover:bg-red-600 transition disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {cancellingLoading ? <Loader2 size={16} className="animate-spin" /> : <Ban size={16} />}
+                {cancellingLoading ? "Cancelling..." : "Cancel Order"}
+              </button>
             </div>
           </div>
         </div>
