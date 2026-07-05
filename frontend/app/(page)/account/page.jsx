@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import api from "@/lib/axios";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { User, Package, MapPin, LogOut, Loader2, ExternalLink, X, Plus, Pencil, Trash2, Star, ChevronDown, Camera, Copy, Check, Ban } from "lucide-react";
+import { User, Package, MapPin, LogOut, Loader2, ExternalLink, X, Plus, Pencil, Trash2, Star, ChevronDown, Camera, Copy, Check, Ban, Download } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { updateUser, clearUser } from "@/redux/userSlice";
 import { useRouter } from "next/navigation";
@@ -13,6 +13,7 @@ import { disconnectSocket } from "@/lib/socket";
 import { BANGLADESH_LOCATIONS, getUpazilas } from "@/lib/constants";
 import toast from "react-hot-toast";
 import FloatingChatButton from "@/components/layout/FloatingChatButton";
+import { generateInvoicePDF } from "@/lib/generateInvoice";
 
 const statusSteps = ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED"];
 
@@ -494,12 +495,21 @@ export default function AccountPage() {
                         </div>
                         <div className="mt-3 flex items-center justify-between">
                           <p className="text-base font-medium text-gray-900">Total: ৳{order.total}</p>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); router.push(`/track-order?order=${order.orderNumber}`); }}
-                            className="flex items-center gap-1 text-sm text-[#0067A0] hover:underline font-medium"
-                          >
-                            <ExternalLink size={14} /> Track
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); generateInvoicePDF(order); toast.success("Invoice downloaded!"); }}
+                              className="flex items-center gap-1 text-sm text-gray-500 hover:text-[#0067A0] font-medium transition"
+                              title="Download Invoice"
+                            >
+                              <Download size={14} /> Invoice
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); router.push(`/track-order?order=${order.orderNumber}`); }}
+                              className="flex items-center gap-1 text-sm text-[#0067A0] hover:underline font-medium"
+                            >
+                              <ExternalLink size={14} /> Track
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -843,9 +853,14 @@ export default function AccountPage() {
                   {savingOrder ? "Saving..." : "Save Changes"}
                 </button>
               ) : (
-                <button onClick={() => { setSelectedOrder(null); router.push(`/track-order?order=${selectedOrder.orderNumber}`); }} className="w-full flex items-center justify-center gap-2 bg-[#00215B] text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-[#001845] transition mt-2">
-                  <ExternalLink size={16} /> Track Order
-                </button>
+                <div className="flex gap-2 mt-2">
+                  <button onClick={() => { generateInvoicePDF(selectedOrder); toast.success("Invoice downloaded!"); }} className="flex-1 flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50 transition">
+                    <Download size={16} /> Download Invoice
+                  </button>
+                  <button onClick={() => { setSelectedOrder(null); router.push(`/track-order?order=${selectedOrder.orderNumber}`); }} className="flex-1 flex items-center justify-center gap-2 bg-[#00215B] text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-[#001845] transition">
+                    <ExternalLink size={16} /> Track Order
+                  </button>
+                </div>
               )}
             </div>
           </div>

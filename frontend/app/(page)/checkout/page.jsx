@@ -142,6 +142,10 @@ export default function CheckoutPage() {
         division: form.division,
         upazila: form.upazila,
         paymentMethod: form.paymentMethod,
+        paymentStatus: res.data.data.paymentStatus || "PENDING",
+        transactionId: res.data.data.transactionId || "",
+        estimatedDelivery: res.data.data.estimatedDelivery || null,
+        createdAt: res.data.data.createdAt,
         date: new Date().toLocaleDateString("en-BD"),
       });
       setShowOrderSuccess(true);
