@@ -8,7 +8,7 @@ import api from "@/lib/axios";
 export default function CategoryGrid() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const scrollRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -80,7 +80,7 @@ export default function CategoryGrid() {
     <section className="max-w-[1200px] mx-auto mt-2 md:mt-4">
       <div className="flex items-center justify-between pl-2 pr-1 sm:pr-0 mb-2 md:mb-3">
         <h2 className="text-base sm:text-lg md:text-xl font-semibold text-[#181717]">
-          {t.shop} {t.home === "হোম" ? "শাকসবজি" : "by Category"}
+          {t.shop} {t.byCategory}
         </h2>
         <div className="flex gap-1">
           <button
@@ -130,7 +130,7 @@ export default function CategoryGrid() {
                 {cat.name}
               </span>
               {cat.count > 0 && (
-                <span className="text-[8px] sm:text-[9px] text-[#667085] mt-0.5">{cat.count} items</span>
+                <span className="text-[8px] sm:text-[9px] text-[#667085] mt-0.5">{cat.count} {t.itemsCount}</span>
               )}
             </Link>
           ))}

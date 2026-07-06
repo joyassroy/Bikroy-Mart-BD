@@ -4,6 +4,7 @@ import api from "@/lib/axios";
 import toast from "react-hot-toast";
 import { X, Truck, Search, Package, Clock, CheckCircle, MapPin, Phone, User, ChevronDown, RefreshCw, Printer } from "lucide-react";
 import { generateInvoicePDF } from "@/lib/generateInvoice";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const statusColors = {
   PENDING: "bg-yellow-100 text-yellow-700",
@@ -15,25 +16,8 @@ const statusColors = {
   CANCELLED: "bg-red-100 text-red-700",
 };
 
-const statusLabels = {
-  PENDING: "Pending",
-  CONFIRMED: "Confirmed",
-  PROCESSING: "Processing",
-  SHIPPED: "Shipped",
-  OUT_FOR_DELIVERY: "Out for Delivery",
-  DELIVERED: "Delivered",
-  CANCELLED: "Cancelled",
-};
-
-const filterTabs = [
-  { key: "ALL", label: "All" },
-  { key: "PENDING", label: "Pending" },
-  { key: "CONFIRMED", label: "Confirmed" },
-  { key: "OUT_FOR_DELIVERY", label: "Out for Delivery" },
-  { key: "DELIVERED", label: "Delivered" },
-];
-
 export default function ManagerOrdersPage() {
+  const { t } = useLanguage();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [riders, setRiders] = useState([]);
@@ -42,6 +26,24 @@ export default function ManagerOrdersPage() {
   const [filter, setFilter] = useState("ALL");
   const [search, setSearch] = useState("");
   const [updatingStatus, setUpdatingStatus] = useState(null);
+
+  const statusLabels = {
+    PENDING: t.pending,
+    CONFIRMED: t.confirmed,
+    PROCESSING: t.processing,
+    SHIPPED: t.shipped,
+    OUT_FOR_DELIVERY: t.outForDelivery,
+    DELIVERED: t.delivered,
+    CANCELLED: t.cancelled,
+  };
+
+  const filterTabs = [
+    { key: "ALL", label: t.all },
+    { key: "PENDING", label: t.pending },
+    { key: "CONFIRMED", label: t.confirmed },
+    { key: "OUT_FOR_DELIVERY", label: t.outForDelivery },
+    { key: "DELIVERED", label: t.delivered },
+  ];
 
   useEffect(() => { fetchOrders(); fetchRiders(); }, []);
 
@@ -67,8 +69,8 @@ export default function ManagerOrdersPage() {
 
   const updateStatus = async (orderId, status) => {
     setUpdatingStatus(orderId);
-    try { await api.put(`/orders/${orderId}/status`, { status }); toast.success("Status updated"); fetchOrders(); }
-    catch (err) { toast.error("Failed to update"); }
+    try { await api.put(`/orders/${orderId}/status`, { status }); toast.success(t.statusUpdatedSuccess); fetchOrders(); }
+    catch (err) { toast.error(t.failedToUpdate); }
     finally { setUpdatingStatus(null); }
   };
 
@@ -80,12 +82,12 @@ export default function ManagerOrdersPage() {
   const assignRider = async (riderId) => {
     try {
       await api.put(`/orders/${selectedOrder.id}/assign-rider`, { riderId });
-      toast.success("Rider assigned successfully!");
+      toast.success(t.riderAssignedSuccess);
       setShowRiderModal(false);
       setSelectedOrder(null);
       fetchOrders();
     } catch (err) {
-      toast.error("Failed to assign rider");
+      toast.error(t.riderAssignError);
     }
   };
 
@@ -101,19 +103,19 @@ export default function ManagerOrdersPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h1 className="text-base sm:text-lg md:text-xl font-semibold text-[#00215B]">Local Orders</h1>
+        <h1 className="text-base sm:text-lg md:text-xl font-semibold text-[#00215B]">{t.localOrders}</h1>
         <button onClick={fetchOrders} className="flex items-center gap-1.5 text-[11px] text-[#667085] hover:text-[#EC008C] transition">
-          <RefreshCw size={14} /> Refresh
+          <RefreshCw size={14} /> {t.refresh}
         </button>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-4">
         {[
-          { label: "Total Orders", value: stats.total, icon: Package, color: "text-[#00AFCC] bg-[#E8F4F8]" },
-          { label: "Pending", value: stats.pending, icon: Clock, color: "text-[#D4A017] bg-[#FFF8E1]" },
-          { label: "Out for Delivery", value: stats.active, icon: Truck, color: "text-orange-500 bg-orange-50" },
-          { label: "Delivered", value: stats.delivered, icon: CheckCircle, color: "text-green-500 bg-green-50" },
+          { label: t.totalOrders, value: stats.total, icon: Package, color: "text-[#00AFCC] bg-[#E8F4F8]" },
+          { label: t.pending, value: stats.pending, icon: Clock, color: "text-[#D4A017] bg-[#FFF8E1]" },
+          { label: t.outForDelivery, value: stats.active, icon: Truck, color: "text-orange-500 bg-orange-50" },
+          { label: t.delivered, value: stats.delivered, icon: CheckCircle, color: "text-green-500 bg-green-50" },
         ].map((s) => (
           <div key={s.label} className="bg-white rounded-lg p-2.5 sm:p-3 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">
             <div className="flex items-center justify-between">
@@ -135,7 +137,7 @@ export default function ManagerOrdersPage() {
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
-            placeholder="Search by order #, customer name, or phone..."
+            placeholder={t.searchPlaceholder}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-9 pr-3 py-2 border border-[#E5E7EB] rounded-lg text-[11px] sm:text-xs focus:outline-none focus:border-[#EC008C] transition"
@@ -164,22 +166,22 @@ export default function ManagerOrdersPage() {
         <table className="w-full min-w-[640px]">
           <thead>
             <tr className="text-left text-[10px] sm:text-[11px] text-[#667085] border-b border-[#E5E7EB]">
-              <th className="px-3 py-2.5 font-medium">Order #</th>
-              <th className="px-3 py-2.5 font-medium">Customer</th>
-              <th className="px-3 py-2.5 font-medium">Items</th>
-              <th className="px-3 py-2.5 font-medium">Total</th>
-              <th className="px-3 py-2.5 font-medium">Status</th>
-              <th className="px-3 py-2.5 font-medium">Rider</th>
-              <th className="px-3 py-2.5 font-medium text-right">Action</th>
+              <th className="px-3 py-2.5 font-medium">{t.orderHash}</th>
+              <th className="px-3 py-2.5 font-medium">{t.customer}</th>
+              <th className="px-3 py-2.5 font-medium">{t.items}</th>
+              <th className="px-3 py-2.5 font-medium">{t.total}</th>
+              <th className="px-3 py-2.5 font-medium">{t.status}</th>
+              <th className="px-3 py-2.5 font-medium">{t.rider}</th>
+              <th className="px-3 py-2.5 font-medium text-right">{t.action}</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={7} className="px-3 py-8 text-center text-[11px] text-gray-400">Loading orders...</td></tr>
+              <tr><td colSpan={7} className="px-3 py-8 text-center text-[11px] text-gray-400">{t.loadingOrders}</td></tr>
             ) : filtered.length === 0 ? (
               <tr><td colSpan={7} className="px-3 py-8 text-center text-[11px] text-gray-400">
                 <Package size={24} className="mx-auto mb-2 text-gray-300" />
-                <p>{search ? "No orders match your search" : "No orders found"}</p>
+                <p>{search ? t.noSearchResults : t.noOrdersFound}</p>
               </td></tr>
             ) : (
               filtered.map((order) => (
@@ -188,7 +190,7 @@ export default function ManagerOrdersPage() {
                   <td className="px-3 py-2.5">
                     <p className="text-[11px] sm:text-xs text-[#000000] font-medium">{order.user?.name}</p>
                     <p className="text-[10px] text-[#667085] flex items-center gap-1 mt-0.5">
-                      <Phone size={9} />{order.user?.phone || "N/A"}
+                      <Phone size={9} />{order.user?.phone || t.notAvailable}
                     </p>
                   </td>
                   <td className="px-3 py-2.5 text-[11px] sm:text-xs text-[#000000]">{order.items?.length || 0}</td>
@@ -208,7 +210,7 @@ export default function ManagerOrdersPage() {
                   <td className="px-3 py-2.5">
                     {order.rider ? (
                       <span className="text-[10px] sm:text-[11px] text-green-600 font-medium flex items-center gap-1">
-                        <Truck size={10} /> {order.rider?.user?.name || "Assigned"}
+                        <Truck size={10} /> {order.rider?.user?.name || t.assigned}
                       </span>
                     ) : (
                       <span className="text-[10px] sm:text-[11px] text-[#667085]">—</span>
@@ -216,17 +218,17 @@ export default function ManagerOrdersPage() {
                   </td>
                   <td className="px-3 py-2.5 text-right">
                     <div className="flex items-center justify-end gap-1.5">
-                      <button onClick={() => generateInvoicePDF(order)} className="p-1.5 text-[#667085] hover:text-[#00215B] hover:bg-[#F4F7FB] rounded-lg transition" title="Print Invoice">
+                      <button onClick={() => generateInvoicePDF(order)} className="p-1.5 text-[#667085] hover:text-[#00215B] hover:bg-[#F4F7FB] rounded-lg transition" title={t.printInvoice}>
                         <Printer size={14} />
                       </button>
                       {!order.riderId && order.orderStatus !== "DELIVERED" && order.orderStatus !== "CANCELLED" && (
                         <button onClick={() => openRiderModal(order)}
                           className="flex items-center gap-1 text-[10px] sm:text-[11px] bg-[#00215B] text-white px-3 py-1.5 rounded-lg hover:bg-[#001A4A] transition">
-                          <Truck size={11} /> Assign Rider
+                          <Truck size={11} /> {t.assignRider}
                         </button>
                       )}
                       {order.riderId && (
-                        <span className="text-[10px] sm:text-[11px] text-green-600 font-medium">Assigned</span>
+                        <span className="text-[10px] sm:text-[11px] text-green-600 font-medium">{t.assigned}</span>
                       )}
                     </div>
                   </td>
@@ -243,7 +245,7 @@ export default function ManagerOrdersPage() {
           <div className="bg-white rounded-lg max-w-md w-full max-h-[80vh] overflow-hidden shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between p-3 border-b border-[#E5E7EB]">
               <div>
-                <h3 className="font-bold text-[#00215B] text-sm">Assign Rider</h3>
+                <h3 className="font-bold text-[#00215B] text-sm">{t.assignRider}</h3>
                 <p className="text-[10px] text-[#667085] mt-0.5">{selectedOrder.orderNumber} — ৳{selectedOrder.total}</p>
               </div>
               <button onClick={() => setShowRiderModal(false)} className="p-1 hover:bg-[#F4F7FB] rounded-lg transition">
@@ -254,7 +256,7 @@ export default function ManagerOrdersPage() {
               {riders.length === 0 ? (
                 <div className="text-center py-8">
                   <Truck size={24} className="mx-auto mb-2 text-gray-300" />
-                  <p className="text-[11px] text-gray-400">No riders available in your district</p>
+                  <p className="text-[11px] text-gray-400">{t.noRidersAvailable}</p>
                 </div>
               ) : (
                 <div className="space-y-1.5">
@@ -275,7 +277,7 @@ export default function ManagerOrdersPage() {
                         <span className={`w-1.5 h-1.5 rounded-full ${rider.isAvailable ? "bg-green-500" : "bg-gray-400"}`}></span>
                         <button onClick={() => assignRider(rider.id)}
                           className="bg-[#00215B] text-white px-3 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold hover:bg-[#001A4A] transition">
-                          Assign
+                          {t.assign}
                         </button>
                       </div>
                     </div>

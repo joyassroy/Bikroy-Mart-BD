@@ -10,19 +10,20 @@ const LiveRiderMap = dynamic(() => import("@/components/tracking/LiveRiderMap"),
 const LocationMapModal = dynamic(() => import("@/components/ui/LocationMapModal"), { ssr: false });
 import useSocket from "@/helper/useSocket";
 
-const statusConfig = {
-  PENDING: { color: "bg-yellow-50 text-yellow-700 border-yellow-200", dot: "bg-yellow-500", label: "Pending" },
-  CONFIRMED: { color: "bg-blue-50 text-blue-700 border-blue-200", dot: "bg-blue-500", label: "Confirmed" },
-  PROCESSING: { color: "bg-indigo-50 text-indigo-700 border-indigo-200", dot: "bg-indigo-500", label: "Processing" },
-  SHIPPED: { color: "bg-purple-50 text-purple-700 border-purple-200", dot: "bg-purple-500", label: "Shipped" },
-  OUT_FOR_DELIVERY: { color: "bg-orange-50 text-orange-700 border-orange-200", dot: "bg-orange-500", label: "Out for Delivery" },
-  DELIVERED: { color: "bg-emerald-50 text-emerald-700 border-emerald-200", dot: "bg-emerald-500", label: "Delivered" },
-};
-
 const deliverySteps = ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED"];
 
 export default function RiderDashboard() {
   const { t } = useLanguage();
+
+  const statusConfig = {
+    PENDING: { color: "bg-yellow-50 text-yellow-700 border-yellow-200", dot: "bg-yellow-500", label: t.pending },
+    CONFIRMED: { color: "bg-blue-50 text-blue-700 border-blue-200", dot: "bg-blue-500", label: t.confirmed },
+    PROCESSING: { color: "bg-indigo-50 text-indigo-700 border-indigo-200", dot: "bg-indigo-500", label: t.processing },
+    SHIPPED: { color: "bg-purple-50 text-purple-700 border-purple-200", dot: "bg-purple-500", label: t.shipped },
+    OUT_FOR_DELIVERY: { color: "bg-orange-50 text-orange-700 border-orange-200", dot: "bg-orange-500", label: t.outForDelivery },
+    DELIVERED: { color: "bg-emerald-50 text-emerald-700 border-emerald-200", dot: "bg-emerald-500", label: t.delivered },
+  };
+
   const user = useSelector((state) => state.user?.data);
   const [stats, setStats] = useState(null);
   const [activeDelivery, setActiveDelivery] = useState(null);
@@ -262,7 +263,7 @@ export default function RiderDashboard() {
                   {connected && (
                     <div className="absolute top-2 left-2 z-[1000] flex items-center gap-1.5 bg-white/95 backdrop-blur rounded-lg px-2 py-1 shadow border border-[#E5E7EB]">
                       <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                      <span className="text-[9px] font-semibold text-emerald-600">Live</span>
+                      <span className="text-[9px] font-semibold text-emerald-600">{t.live}</span>
                     </div>
                   )}
                   <LiveRiderMap
@@ -336,8 +337,8 @@ export default function RiderDashboard() {
           onClose={() => setShowDeliveryMap(false)}
           lat={activeDelivery.deliveryLatitude}
           lng={activeDelivery.deliveryLongitude}
-          label="Delivery Location"
-          title="Delivery Location"
+          label={t.deliveryLocation}
+          title={t.deliveryLocation}
         />
       )}
     </div>

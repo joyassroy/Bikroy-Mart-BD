@@ -3,8 +3,10 @@ import { useState, useEffect } from "react";
 import api from "@/lib/axios";
 import { Settings, Store, CreditCard, Truck, Shield, Save, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function SettingsPage() {
+  const { t } = useLanguage();
   const [settings, setSettings] = useState({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(null);
@@ -18,7 +20,7 @@ export default function SettingsPage() {
       setSettings(res.data.data || {});
     } catch (err) {
       console.error(err);
-      toast.error("Failed to load settings");
+      toast.error(t.failedToLoadSettings);
     } finally { setLoading(false); }
   };
 
@@ -34,17 +36,17 @@ export default function SettingsPage() {
         data[key] = settings[key] || "";
       }
       await api.put("/settings", data);
-      toast.success("Settings saved");
+      toast.success(t.settingsSaved);
     } catch (err) {
-      toast.error("Failed to save");
+      toast.error(t.failedToSave);
     } finally { setSaving(null); }
   };
 
   const tabs = [
-    { id: "general", label: "General", icon: Store },
-    { id: "payment", label: "Payment", icon: CreditCard },
-    { id: "delivery", label: "Delivery", icon: Truck },
-    { id: "security", label: "Security", icon: Shield },
+    { id: "general", label: t.general, icon: Store },
+    { id: "payment", label: t.payment, icon: CreditCard },
+    { id: "delivery", label: t.delivery, icon: Truck },
+    { id: "security", label: t.security, icon: Shield },
   ];
 
   if (loading) {
@@ -57,7 +59,7 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Settings</h1>
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">{t.settings}</h1>
 
       <div className="flex gap-2 mb-6 overflow-x-auto">
         {tabs.map((tab) => (
@@ -79,36 +81,36 @@ export default function SettingsPage() {
       {activeTab === "general" && (
         <div className="bg-white rounded-xl p-6 shadow-sm">
           <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <Store size={20} className="text-pink-500" /> General Settings
+            <Store size={20} className="text-pink-500" /> {t.generalSettings}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Store Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t.storeName}</label>
               <input type="text" value={settings.storeName || ""} onChange={(e) => handleChange("storeName", e.target.value)}
                 className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Contact Phone</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t.contactPhone}</label>
               <input type="text" value={settings.storePhone || ""} onChange={(e) => handleChange("storePhone", e.target.value)}
                 className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t.email}</label>
               <input type="email" value={settings.storeEmail || ""} onChange={(e) => handleChange("storeEmail", e.target.value)}
                 className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t.address}</label>
               <input type="text" value={settings.storeAddress || ""} onChange={(e) => handleChange("storeAddress", e.target.value)}
                 className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t.currency}</label>
               <input type="text" value={settings.currency || "BDT"} onChange={(e) => handleChange("currency", e.target.value)}
                 className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Timezone</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t.timezone}</label>
               <input type="text" value={settings.timezone || "Asia/Dhaka"} onChange={(e) => handleChange("timezone", e.target.value)}
                 className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" />
             </div>
@@ -117,7 +119,7 @@ export default function SettingsPage() {
             disabled={saving === "storeName"}
             className="mt-4 bg-pink-600 text-white px-6 py-2 rounded-lg text-sm hover:bg-pink-700 disabled:opacity-50 flex items-center gap-2 transition">
             {saving === "storeName" ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-            Save General Settings
+            {t.saveGeneralSettings}
           </button>
         </div>
       )}
@@ -125,25 +127,25 @@ export default function SettingsPage() {
       {activeTab === "payment" && (
         <div className="bg-white rounded-xl p-6 shadow-sm">
           <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <CreditCard size={20} className="text-green-500" /> Payment Settings
+            <CreditCard size={20} className="text-green-500" /> {t.paymentSettings}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">SSLCommerz Store ID</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t.sslCommerzStoreId}</label>
               <input type="text" value={settings.sslcommerzStoreId || ""} onChange={(e) => handleChange("sslcommerzStoreId", e.target.value)}
                 className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" placeholder="Your store ID" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">SSLCommerz Store Password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t.sslCommerzStorePassword}</label>
               <input type="password" value={settings.sslcommerzStorePassword || ""} onChange={(e) => handleChange("sslcommerzStorePassword", e.target.value)}
                 className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" placeholder="Your store password" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Sandbox Mode</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t.sandboxMode}</label>
               <select value={settings.sslcommerzSandbox || "true"} onChange={(e) => handleChange("sslcommerzSandbox", e.target.value)}
                 className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none">
-                <option value="true">Enabled (Testing)</option>
-                <option value="false">Disabled (Live)</option>
+                <option value="true">{t.enabledTesting}</option>
+                <option value="false">{t.disabledLive}</option>
               </select>
             </div>
           </div>
@@ -151,7 +153,7 @@ export default function SettingsPage() {
             disabled={saving === "sslcommerzStoreId"}
             className="mt-4 bg-pink-600 text-white px-6 py-2 rounded-lg text-sm hover:bg-pink-700 disabled:opacity-50 flex items-center gap-2 transition">
             {saving === "sslcommerzStoreId" ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-            Save Payment Settings
+            {t.savePaymentSettings}
           </button>
         </div>
       )}
@@ -159,26 +161,26 @@ export default function SettingsPage() {
       {activeTab === "delivery" && (
         <div className="bg-white rounded-xl p-6 shadow-sm">
           <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <Truck size={20} className="text-amber-500" /> Delivery Settings
+            <Truck size={20} className="text-amber-500" /> {t.deliverySettings}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Free Delivery Minimum (৳)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t.freeDeliveryMinimum}</label>
               <input type="number" value={settings.freeDeliveryMinimum || ""} onChange={(e) => handleChange("freeDeliveryMinimum", e.target.value)}
                 className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Default Delivery Charge (৳)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t.defaultDeliveryCharge}</label>
               <input type="number" value={settings.defaultDeliveryCharge || ""} onChange={(e) => handleChange("defaultDeliveryCharge", e.target.value)}
                 className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Within District Delivery (৳)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t.withinDistrictDelivery}</label>
               <input type="number" value={settings.deliveryWithinDistrict || ""} onChange={(e) => handleChange("deliveryWithinDistrict", e.target.value)}
                 className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Outside District Delivery (৳)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t.outsideDistrictDelivery}</label>
               <input type="number" value={settings.deliveryOutsideDistrict || ""} onChange={(e) => handleChange("deliveryOutsideDistrict", e.target.value)}
                 className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" />
             </div>
@@ -187,7 +189,7 @@ export default function SettingsPage() {
             disabled={saving === "freeDeliveryMinimum"}
             className="mt-4 bg-pink-600 text-white px-6 py-2 rounded-lg text-sm hover:bg-pink-700 disabled:opacity-50 flex items-center gap-2 transition">
             {saving === "freeDeliveryMinimum" ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-            Save Delivery Settings
+            {t.saveDeliverySettings}
           </button>
         </div>
       )}
@@ -195,31 +197,31 @@ export default function SettingsPage() {
       {activeTab === "security" && (
         <div className="bg-white rounded-xl p-6 shadow-sm">
           <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <Shield size={20} className="text-purple-500" /> Security & Email Settings
+            <Shield size={20} className="text-purple-500" /> {t.securityEmailSettings}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">JWT Secret</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t.jwtSecret}</label>
               <input type="password" value={settings.jwtSecret || ""} onChange={(e) => handleChange("jwtSecret", e.target.value)}
                 className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" placeholder="Your JWT secret" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">SMTP Host</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t.smtpHost}</label>
               <input type="text" value={settings.smtpHost || ""} onChange={(e) => handleChange("smtpHost", e.target.value)}
                 className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" placeholder="smtp.gmail.com" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">SMTP Port</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t.smtpPort}</label>
               <input type="text" value={settings.smtpPort || "587"} onChange={(e) => handleChange("smtpPort", e.target.value)}
                 className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">SMTP User</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t.smtpUser}</label>
               <input type="text" value={settings.smtpUser || ""} onChange={(e) => handleChange("smtpUser", e.target.value)}
                 className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" placeholder="your@email.com" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">SMTP Password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t.smtpPassword}</label>
               <input type="password" value={settings.smtpPassword || ""} onChange={(e) => handleChange("smtpPassword", e.target.value)}
                 className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" placeholder="Your SMTP password" />
             </div>
@@ -228,7 +230,7 @@ export default function SettingsPage() {
             disabled={saving === "jwtSecret"}
             className="mt-4 bg-pink-600 text-white px-6 py-2 rounded-lg text-sm hover:bg-pink-700 disabled:opacity-50 flex items-center gap-2 transition">
             {saving === "jwtSecret" ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-            Save Security Settings
+            {t.saveSecuritySettings}
           </button>
         </div>
       )}

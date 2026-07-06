@@ -5,8 +5,10 @@ import { ALL_DISTRICTS } from "@/lib/constants";
 import { Plus, Trash2, X, Pencil, Search } from "lucide-react";
 import toast from "react-hot-toast";
 import EditManagerModal from "@/components/manager/EditManagerModal";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function ManagersPage() {
+  const { t } = useLanguage();
   const [managers, setManagers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -37,31 +39,31 @@ export default function ManagersPage() {
     e.preventDefault();
     try {
       await api.post("/managers", form);
-      toast.success("Manager created");
+      toast.success(t.managerCreated);
       resetForm();
       fetchManagers();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to create manager");
+      toast.error(err.response?.data?.message || t.failedToCreateManager);
     }
   };
 
   const handleDelete = async (id) => {
-    if (!confirm("Delete this manager? This will also delete the associated user account.")) return;
+    if (!confirm(t.confirmDeleteManager)) return;
     try {
       await api.delete(`/managers/${id}`);
-      toast.success("Manager deleted");
+      toast.success(t.managerDeleted);
       fetchManagers();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to delete manager");
+      toast.error(err.response?.data?.message || t.failedToDeleteManager);
     }
   };
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Zila Managers</h1>
+        <h1 className="text-2xl font-bold text-gray-800">{t.zilaManagers}</h1>
         <button onClick={() => setShowForm(!showForm)} className="bg-[#EC008C] text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-[#D60071] transition flex items-center gap-2">
-          <Plus size={14} /> Add Manager
+          <Plus size={14} /> {t.addManager}
         </button>
       </div>
 
@@ -69,7 +71,7 @@ export default function ManagersPage() {
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
         <input
           type="text"
-          placeholder="Search managers by name, email, or phone..."
+          placeholder={t.searchManagers}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full pl-9 pr-3 py-2 border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:border-[#EC008C] transition"
@@ -79,47 +81,47 @@ export default function ManagersPage() {
       {showForm && (
         <form onSubmit={handleSubmit} className="bg-white rounded-xl p-6 shadow-sm mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-gray-800">Create New Manager</h3>
+            <h3 className="font-semibold text-gray-800">{t.createNewManager}</h3>
             <button type="button" onClick={resetForm} className="text-gray-500 hover:text-gray-700 text-sm flex items-center gap-1">
-              <X size={14} /> Cancel
+              <X size={14} /> {t.cancel}
             </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Full Name *</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">{t.fullName}</label>
               <input type="text" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" placeholder="Manager name" />
+                className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" placeholder={t.managerName} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Email *</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">{t.email}</label>
               <input type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
                 className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" placeholder="manager@email.com" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Phone</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">{t.phone}</label>
               <input type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })}
                 className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" placeholder="01XXXXXXXXX" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Password *</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">{t.password}</label>
               <input type="password" required minLength={6} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })}
-                className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" placeholder="Min 6 characters" />
+                className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" placeholder={t.min6Characters} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Assigned District *</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">{t.assignedDistrict}</label>
               <select required value={form.assignedDistrict} onChange={(e) => setForm({ ...form, assignedDistrict: e.target.value })}
                 className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none">
                 {ALL_DISTRICTS.map((d) => <option key={d.name} value={d.name}>{d.name}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Assigned Zila *</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">{t.assignedZila}</label>
               <input type="text" required value={form.assignedZila} onChange={(e) => setForm({ ...form, assignedZila: e.target.value })}
                 className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" placeholder="e.g. Savar, Mirpur" />
             </div>
           </div>
           <button type="submit" className="mt-6 bg-[#EC008C] text-white rounded-lg px-6 py-2.5 text-sm font-medium hover:bg-[#D60071] transition flex items-center gap-2">
-            <Plus size={14} /> Create Manager
+            <Plus size={14} /> {t.createManager}
           </button>
         </form>
       )}
@@ -128,7 +130,7 @@ export default function ManagersPage() {
         {loading ? (
           [...Array(3)].map((_, i) => <div key={i} className="bg-white rounded-xl h-40 animate-pulse shadow-sm"></div>)
         ) : managers.length === 0 ? (
-          <div className="bg-white rounded-xl p-8 text-center text-gray-400 col-span-3">No managers found. Click "Add Manager" to create one.</div>
+          <div className="bg-white rounded-xl p-8 text-center text-gray-400 col-span-3">{t.noManagersFound}</div>
         ) : (
           managers.map((manager) => (
             <div key={manager.id} className="bg-white rounded-xl p-5 shadow-sm">
@@ -139,10 +141,10 @@ export default function ManagersPage() {
                   {manager.user?.phone && <p className="text-xs text-gray-400">{manager.user?.phone}</p>}
                 </div>
                 <div className="flex items-center gap-1">
-                  <button onClick={() => setEditManager(manager)} className="text-blue-400 hover:text-blue-600 transition p-1" title="Edit manager">
+                  <button onClick={() => setEditManager(manager)} className="text-blue-400 hover:text-blue-600 transition p-1" title={t.editManager}>
                     <Pencil size={16} />
                   </button>
-                  <button onClick={() => handleDelete(manager.id)} className="text-red-400 hover:text-red-600 transition p-1" title="Delete manager">
+                  <button onClick={() => handleDelete(manager.id)} className="text-red-400 hover:text-red-600 transition p-1" title={t.deleteManager}>
                     <Trash2 size={16} />
                   </button>
                 </div>
@@ -154,7 +156,7 @@ export default function ManagersPage() {
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <span className="text-green-500">📦</span>
-                  {manager._count?.products || 0} products
+                  {manager._count?.products || 0} {t.products}
                 </div>
               </div>
             </div>

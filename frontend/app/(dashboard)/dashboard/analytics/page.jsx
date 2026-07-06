@@ -80,7 +80,7 @@ export default function AnalyticsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Analytics</h1>
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">{t.analytics}</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {summaryCards.map((card, i) => (
@@ -110,7 +110,7 @@ export default function AnalyticsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="bg-white rounded-xl p-6 shadow-sm">
           <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <TrendingUp size={20} className="text-pink-500" /> Sales Trend (30 Days)
+            <TrendingUp size={20} className="text-pink-500" /> {t.salesTrend30Days}
           </h3>
           {salesTrend.length > 0 ? (
             <ResponsiveContainer width="100%" height={280}>
@@ -118,18 +118,18 @@ export default function AnalyticsPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={(v) => v.slice(5)} />
                 <YAxis tick={{ fontSize: 10 }} />
-                <Tooltip formatter={(value) => [`৳${value.toLocaleString()}`, "Revenue"]} />
+                <Tooltip formatter={(value) => [`৳${value.toLocaleString()}`, t.revenue]} />
                 <Line type="monotone" dataKey="revenue" stroke="#EC008C" strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-64 flex items-center justify-center text-gray-400 text-sm">No sales data yet</div>
+            <div className="h-64 flex items-center justify-center text-gray-400 text-sm">{t.noSalesDataYet}</div>
           )}
         </div>
 
         <div className="bg-white rounded-xl p-6 shadow-sm">
           <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <BarChart3 size={20} className="text-blue-500" /> Orders by Status
+            <BarChart3 size={20} className="text-blue-500" /> {t.ordersByStatus}
           </h3>
           {ordersByStatus.length > 0 ? (
             <ResponsiveContainer width="100%" height={280}>
@@ -144,7 +144,7 @@ export default function AnalyticsPage() {
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-64 flex items-center justify-center text-gray-400 text-sm">No orders yet</div>
+            <div className="h-64 flex items-center justify-center text-gray-400 text-sm">{t.noOrdersYet}</div>
           )}
         </div>
       </div>
@@ -152,7 +152,7 @@ export default function AnalyticsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="bg-white rounded-xl p-6 shadow-sm">
           <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <Package size={20} className="text-purple-500" /> Top Selling Categories
+            <Package size={20} className="text-purple-500" /> {t.topSellingCategories}
           </h3>
           {topCategories.length > 0 ? (
             <ResponsiveContainer width="100%" height={280}>
@@ -165,13 +165,13 @@ export default function AnalyticsPage() {
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-64 flex items-center justify-center text-gray-400 text-sm">No category data</div>
+            <div className="h-64 flex items-center justify-center text-gray-400 text-sm">{t.noCategoryData}</div>
           )}
         </div>
 
         <div className="bg-white rounded-xl p-6 shadow-sm">
           <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <DollarSign size={20} className="text-green-500" /> Revenue by Zila
+            <DollarSign size={20} className="text-green-500" /> {t.revenueByZila}
           </h3>
           {revenueByDistrict.length > 0 ? (
             <ResponsiveContainer width="100%" height={280}>
@@ -179,12 +179,12 @@ export default function AnalyticsPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="district" tick={{ fontSize: 10 }} />
                 <YAxis tick={{ fontSize: 10 }} />
-                <Tooltip formatter={(value) => [`৳${value.toLocaleString()}`, "Revenue"]} />
+                <Tooltip formatter={(value) => [`৳${value.toLocaleString()}`, t.revenue]} />
                 <Bar dataKey="revenue" fill="#10B981" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-64 flex items-center justify-center text-gray-400 text-sm">No zila data</div>
+            <div className="h-64 flex items-center justify-center text-gray-400 text-sm">{t.noZilaData}</div>
           )}
         </div>
       </div>
@@ -192,7 +192,7 @@ export default function AnalyticsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="bg-white rounded-xl p-6 shadow-sm">
           <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <MapPin size={20} className="text-[#EC008C]" /> Orders by Zila
+            <MapPin size={20} className="text-[#EC008C]" /> {t.ordersByZila}
           </h3>
           {zilaBarData.length > 0 ? (
             <ResponsiveContainer width="100%" height={280}>
@@ -200,20 +200,20 @@ export default function AnalyticsPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="zila" tick={{ fontSize: 10 }} />
                 <YAxis tick={{ fontSize: 10 }} />
-                <Tooltip formatter={(value, name) => name === "revenue" ? [`৳${value.toLocaleString()}`, "Revenue"] : [value, "Orders"]} />
+                <Tooltip formatter={(value, name) => name === "revenue" ? [`৳${value.toLocaleString()}`, t.revenue] : [value, t.orders]} />
                 <Legend />
-                <Bar dataKey="orders" fill="#00215B" radius={[4, 4, 0, 0]} name="Orders" />
-                <Bar dataKey="revenue" fill="#EC008C" radius={[4, 4, 0, 0]} name="Revenue" />
+                <Bar dataKey="orders" fill="#00215B" radius={[4, 4, 0, 0]} name={t.orders} />
+                <Bar dataKey="revenue" fill="#EC008C" radius={[4, 4, 0, 0]} name={t.revenue} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-64 flex items-center justify-center text-gray-400 text-sm">No zila order data</div>
+            <div className="h-64 flex items-center justify-center text-gray-400 text-sm">{t.noZilaOrderData}</div>
           )}
         </div>
 
         <div className="bg-white rounded-xl p-6 shadow-sm">
           <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <Package size={20} className="text-[#00AFCC]" /> Products Sold by Zila
+            <Package size={20} className="text-[#00AFCC]" /> {t.productsSoldByZila}
           </h3>
           {productsByZila.length > 0 ? (
             <div className="overflow-y-auto max-h-[320px]">
@@ -226,8 +226,8 @@ export default function AnalyticsPage() {
                     </div>
                     <div className="flex items-center gap-3 text-[11px] text-gray-500">
                       <span className="font-semibold text-green-600">৳{zilaData.totalRevenue.toLocaleString()}</span>
-                      <span>{zilaData.totalQuantity} items</span>
-                      <span>{zilaData.totalProducts} products</span>
+                      <span>{zilaData.totalQuantity} {t.itemsCount}</span>
+                      <span>{zilaData.totalProducts} {t.products}</span>
                     </div>
                   </div>
                   <div className="space-y-1.5 pl-5">
@@ -245,7 +245,7 @@ export default function AnalyticsPage() {
               ))}
             </div>
           ) : (
-            <div className="h-64 flex items-center justify-center text-gray-400 text-sm">No product sales data yet</div>
+            <div className="h-64 flex items-center justify-center text-gray-400 text-sm">{t.noProductSalesDataYet}</div>
           )}
         </div>
       </div>

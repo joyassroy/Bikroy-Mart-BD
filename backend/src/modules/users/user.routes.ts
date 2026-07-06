@@ -59,7 +59,12 @@ router.put("/:id", authenticate, authorize("ADMIN"), async (req: AuthRequest, re
     if (name !== undefined) data.name = name;
     if (email !== undefined) data.email = email;
     if (phone !== undefined) data.phone = phone;
-    if (role !== undefined) data.role = role;
+    if (role !== undefined) {
+      if (!["ADMIN", "MANAGER", "RIDER", "CUSTOMER"].includes(role)) {
+        return sendError(res, "Invalid role", 400);
+      }
+      data.role = role;
+    }
 
     const user = await prisma.user.update({
       where: { id: String(req.params.id) },
@@ -80,11 +85,53 @@ router.put("/:id/role", authenticate, authorize("ADMIN"), async (req: AuthReques
       return sendError(res, "Invalid role", 400);
     }
 
+    const id = String(req.params.id);
+
+    if (req.user!.userId === id && role !== "ADMIN") {
+      return sendError(res, "Cannot change your own role", 400);
+    }
+
+    const targetUser = await prisma.user.findUnique({
+      where: { id },
+      select: { role: true, district: true },
+    });
+    if (!targetUser) return sendError(res, "User not found", 404);
+
+    if (targetUser.role === "ADMIN" && role !== "ADMIN") {
+      const adminCount = await prisma.user.count({ where: { role: "ADMIN" } });
+      if (adminCount <= 1) {
+        return sendError(res, "Cannot demote the last admin user", 400);
+      }
+    }
+
     const user = await prisma.user.update({
-      where: { id: String(req.params.id) },
+      where: { id },
       data: { role },
       select: { id: true, name: true, email: true, role: true },
     });
+
+    if (role === "MANAGER") {
+      const existing = await prisma.managerProfile.findUnique({ where: { userId: id } });
+      if (!existing) {
+        await prisma.managerProfile.create({
+          data: {
+            userId: id,
+            assignedDistrict: targetUser.district || "Dhaka",
+            assignedZila: "",
+          },
+        });
+      }
+    }
+
+    if (role === "RIDER") {
+      const existing = await prisma.riderProfile.findUnique({ where: { userId: id } });
+      if (!existing) {
+        await prisma.riderProfile.create({
+          data: { userId: id },
+        });
+      }
+    }
+
     return sendSuccess(res, "User role updated", user);
   } catch (error: any) {
     if (error.code === "P2025") return sendError(res, "User not found", 404);
@@ -96,7 +143,13 @@ router.delete("/:id", authenticate, authorize("ADMIN"), async (req: AuthRequest,
   try {
     const user = await prisma.user.findUnique({ where: { id: String(req.params.id) } });
     if (!user) return sendError(res, "User not found", 404);
-    if (user.role === "ADMIN") return sendError(res, "Cannot delete admin user", 400);
+
+    if (user.role === "ADMIN") {
+      const adminCount = await prisma.user.count({ where: { role: "ADMIN" } });
+      if (adminCount <= 1) {
+        return sendError(res, "Cannot delete the last admin user", 400);
+      }
+    }
 
     await prisma.user.delete({ where: { id: String(req.params.id) } });
     return sendSuccess(res, "User deleted");

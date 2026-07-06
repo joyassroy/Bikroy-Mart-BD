@@ -25,7 +25,7 @@ const bn = {
 
   // Hero
   shopNow: "এখনই কিনুন",
-  discoverMore: "আরও আবিষ্কার করুন",
+  discoverMore: "আরও দেখুন",
 
   // Categories
   food: "খাদ্য",
@@ -37,11 +37,11 @@ const bn = {
   cooking: "রান্না",
   beauty: "সৌন্দর্য",
   homeCleaning: "বাড়ি",
-  baby: "বেবি",
+  baby: "শিশু",
 
   // Trust Badges
   fastDelivery: "দ্রুত ডেলিভারি",
-  fastDeliveryDesc: "আপনার অর্ডার দ্রুত পৌঁছে দিন",
+  fastDeliveryDesc: "আপনার অর্ডার দ্রুত পৌঁছে দেওয়া হয়",
   securePayment: "নিরাপদ পেমেন্ট",
   securePaymentDesc: "১০০% নিরাপদ পেমেন্ট পদ্ধতি",
   customerSupport: "কাস্টমার সাপোর্ট",
@@ -62,7 +62,7 @@ const bn = {
   seconds: "সেকেন্ড",
   shopNowFlash: "এখনই কিনুন",
   viewAllDeals: "সব ডিল দেখুন",
-  claimed: "দাবি করা হয়েছে",
+  claimed: "নেওয়া হয়েছে",
   saveUpto: "সর্বোচ্চ সাশ্রয়",
 
   // Product
@@ -273,6 +273,7 @@ const bn = {
   viewReports: "রিপোর্ট দেখুন",
 
   // Manager
+  managerPanel: "ম্যানেজার প্যানেল",
   managerDashboard: "ম্যানেজার ড্যাশবোর্ড",
   districtOverview: "জেলা সারসংক্ষেপ",
   localProducts: "স্থানীয় পণ্য",
@@ -284,6 +285,8 @@ const bn = {
   assignRider: "রাইডার নির্ধারণ করুন",
   viewLocalOrders: "স্থানীয় অর্ডার দেখুন",
   manageLocalProducts: "স্থানীয় পণ্য পরিচালনা করুন",
+  pendingOrders: "মুলতুবি অর্ডার",
+  outForDeliveryOrders: "ডেলিভারিতে বের হয়েছে",
 
   // Rider
   riderDashboard: "রাইডার ড্যাশবোর্ড",
@@ -310,6 +313,7 @@ const bn = {
   success: "সফল",
   warning: "সতর্কতা",
   info: "তথ্য",
+  live: "লাইভ",
   close: "বন্ধ",
   confirm: "নিশ্চিত করুন",
   yes: "হ্যাঁ",
@@ -441,7 +445,6 @@ const bn = {
   backToLogin: "লগইনে ফিরুন",
 
   // Dashboard Sidebar
-  allProducts: "সব পণ্য",
   subcategories: "সাবক্যাটাগরি",
   offers: "অফার",
   customers: "কাস্টমার",
@@ -492,6 +495,16 @@ const bn = {
   district: "জেলা",
   statusUpdated: "স্ট্যাটাস আপডেট হয়েছে",
   failedToUpdate: "আপডেট করতে ব্যর্থ",
+  printInvoice: "চালান প্রিন্ট করুন",
+  customerLabel: "কাস্টমার:",
+  phoneLabel: "ফোন:",
+  addressLabel: "ঠিকানা:",
+  districtLabel: "জেলা:",
+  paymentLabel: "পেমেন্ট:",
+  totalLabel: "মোট:",
+  customRequirementLabel: "কাস্টম চাহিদা:",
+  itemsLabel: "পণ্য:",
+  allDistricts: "সব জেলা",
 
   // Products Admin
   active: "সক্রিয়",
@@ -580,7 +593,6 @@ const bn = {
 
   // Settings
   general: "সাধারণ",
-  payment: "পেমেন্ট",
   delivery: "ডেলিভারি",
   security: "নিরাপত্তা",
   storeName: "দোকানের নাম",
@@ -656,7 +668,6 @@ const bn = {
   deleted: "মুছে ফেলা হয়েছে",
   deactivated: "নিষ্ক্রিয় করা হয়েছে",
   activated: "সক্রিয় করা হয়েছে",
-  update: "আপডেট",
   create: "তৈরি করুন",
   buy: "কিনুন",
   get: "পান",
@@ -797,10 +808,8 @@ const bn = {
   // Manager Panel Additional
   noPendingOrders: "কোনো মুলতুবি অর্ডার নেই",
   refresh: "রিফ্রেশ",
-  searchPlaceholder: "অর্ডার #, কাস্টমারের নাম, বা ফোন দিয়ে খুঁজুন...",
   loadingOrders: "অর্ডার লোড হচ্ছে...",
   noSearchResults: "আপনার অনুসন্ধানের সাথে কোনো অর্ডার মিলেনি",
-  noOrdersFound: "কোনো অর্ডার পাওয়া যায়নি",
   assigned: "নির্ধারিত",
   noRidersAvailable: "আপনার জেলায় কোনো রাইডার উপলব্ধ নেই",
   riderAssignedSuccess: "রাইডার সফলভাবে নির্ধারিত হয়েছে!",
@@ -852,7 +861,6 @@ const bn = {
   rejected: "প্রত্যাখ্যাত",
   pageTitle: "কাস্টম অনুরোধ",
   action: "পদক্ষেপ",
-  notFound: "কোনো কাস্টম অনুরোধ পাওয়া যায়নি",
   startReview: "পর্যালোচনা শুরু করুন",
   setQuote: "কোট সেট করুন",
   detailsTitle: "অনুরোধের বিস্তারিত",
@@ -902,25 +910,16 @@ const bn = {
   deliveriesCompleted: "আজকে ডেলিভারি সম্পন্ন হয়েছে",
   customerInfo: "কাস্টমার তথ্য",
   paymentInfo: "পেমেন্ট তথ্য",
-  orderTotal: "অর্ডার মোট",
   callCustomer: "কাস্টমারকে কল করুন",
   navigate: "নেভিগেট",
   deliveryProgress: "ডেলিভারি অগ্রগতি",
   deliveryLocation: "ডেলিভারি অবস্থান",
   noLocationAvailable: "কোনো অবস্থান পাওয়া যায়নি",
-  orderNotFound: "অর্ডার পাওয়া যায়নি",
-  processing: "প্রক্রিয়াকরণ...",
   thisMonth: "এই মাসে",
-  totalEarnings: "মোট আয়",
   tryDifferentSearch: "ভিন্ন সার্চ টার্ম চেষ্টা করুন",
   completedDeliveriesWillAppear: "সম্পন্ন ডেলিভারি এখানে দেখা যাবে",
   personalInfo: "ব্যক্তিগত তথ্য",
-  delivered: "ডেলিভারি সম্পন্ন",
-  available: "উপলব্ধ",
-  status: "স্ট্যাটাস",
   productImages: "পণ্যের ছবি",
-  outForDelivery: "ডেলিভারির জন্য বের হয়েছে",
-  shipped: "পাঠানো হয়েছে",
 
   // Misc
   somethingWentWrong: "কিছু ভুল হয়েছে",
@@ -936,13 +935,44 @@ const bn = {
   admin: "অ্যাডমিন",
   loggedOut: "লগ আউট হয়েছে",
   addressUpdated: "ঠিকানা আপডেট হয়েছে!",
-  addressSaved: "ঠিকানা সংরক্ষিত হয়েছে!",
   failedToSaveAddress: "ঠিকানা সংরক্ষণ করতে ব্যর্থ",
   confirmDeleteAddress: "এই ঠিকানা মুছে ফেলবেন?",
-  addressDeleted: "ঠিকানা মুছে ফেলা হয়েছে!",
   failedToDeleteAddress: "ঠিকানা মুছে ফেলতে ব্যর্থ",
   defaultAddressUpdated: "ডিফল্ট ঠিকানা আপডেট হয়েছে!",
   failedToUpdateDefault: "ডিফল্ট আপডেট করতে ব্যর্থ",
+
+  // Home Page
+  stockClearanceSale: "স্টক ক্লিয়ারেন্স সেল",
+  stockClearanceDesc: "অতিরিক্ত ইনভেন্টরিতে বিশাল ছাড় - শেষ আগে নিন!",
+  executiveOffer: "এক্সিকিউটিভ অফার",
+  executiveOfferDesc: "আমাদের মূল্যবান গ্রাহকদের জন্য একচেটিয়া মূল্যে প্রিমিয়াম পণ্য",
+  comboOfferDesc: "একসাথে বেশি কিনুন, বেশি সাশ্রয় করুন! জনপ্রিয় পণ্যে বান্ডেল ডিল",
+  bogoOffer: "একটি কিনুন একটি ফ্রি পান",
+  bogoOfferDesc: "যেকোনো পণ্য কিনুন এবং দ্বিতীয়টি ৫০% ছাড়ে পান!",
+  trustedPartners: "বিশ্বস্ত অংশীদার",
+  ourSponsors: "আমাদের স্পনসর ও অংশীদার",
+  sponsorsDesc: "আপনাকে আরও ভালো সেবা দিতে শিল্পের নেতাদের সাথে সহযোগিতা করছি",
+  myCart: "আমার কার্ট",
+  browseProducts: "পণ্য ব্রাউজ করুন",
+  viewFullCart: "সম্পূর্ণ কার্ট দেখুন",
+  addMoreForFreeDelivery: "ফ্রি ডেলিভারির জন্য আরো {amount} যোগ করুন",
+  hotDeal: "হট ডিল",
+  bundleDeal: "বান্ডেল ডিল",
+  onlyLeft: "মাত্র {count} বাকি",
+  stockLabel: "স্টক: {count}",
+  youSave: "আপনি {amount} সাশ্রয় করেছেন",
+  buyXGetY: "কিনুন {buy} পান {get}",
+  freeLabel: "ফ্রি",
+  chatWithUs: "আমাদের সাথে চ্যাট করুন",
+  byCategory: "ক্যাটাগরি অনুযায়ী",
+  itemsCount: "টি পণ্য",
+  dealBadge: "ডিল",
+  assignedLocation: "নিয়োজিত অবস্থান",
+  navigateToDelivery: "ডেলিভারিতে যান",
+  noProductsAssigned: "কোনো পণ্য নির্ধারিত হয়নি",
+  failedToLoadInventory: "ইনভেন্টরি লোড করতে ব্যর্থ",
+  invalidStockValue: "অবৈধ স্টক মান",
+  failedToUpdateStock: "স্টক আপডেট করতে ব্যর্থ",
 };
 
 export default bn;

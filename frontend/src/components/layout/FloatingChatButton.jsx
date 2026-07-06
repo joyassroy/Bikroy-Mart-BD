@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { FaWhatsapp, FaFacebookMessenger } from "react-icons/fa";
 import { MessageCircle, X } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const WHATSAPP_NUMBER = "8801XXXXXXXXX";
 const MESSENGER_LINK = "https://m.me/yourpage";
@@ -9,6 +10,7 @@ const MESSENGER_LINK = "https://m.me/yourpage";
 export default function FloatingChatButton() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const { t } = useLanguage();
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -49,7 +51,7 @@ export default function FloatingChatButton() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-14 h-14 rounded-full bg-[#00215B] text-white flex items-center justify-center shadow-[0_4px_16px_rgba(0,33,91,0.4)] hover:bg-[#001A4A] hover:scale-110 transition-all"
-        aria-label="Chat with us"
+        aria-label={t.chatWithUs}
       >
         {isOpen ? <X size={22} /> : <MessageCircle size={22} />}
       </button>

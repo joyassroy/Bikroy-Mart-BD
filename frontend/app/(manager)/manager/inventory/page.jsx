@@ -3,8 +3,10 @@ import { useState, useEffect, useMemo } from "react";
 import api from "@/lib/axios";
 import { Package, AlertTriangle, TrendingUp, Search, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function ManagerInventoryPage() {
+  const { t } = useLanguage();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -20,7 +22,7 @@ export default function ManagerInventoryPage() {
       const res = await api.get("/managers/products");
       setProducts(res.data.data || []);
     } catch (err) {
-      toast.error("Failed to load inventory");
+      toast.error(t.failedToLoadInventory);
     } finally {
       setLoading(false);
     }
@@ -44,24 +46,24 @@ export default function ManagerInventoryPage() {
   }, [products, searchTerm]);
 
   const getStockStatus = (stock) => {
-    if (stock === 0) return { label: "Out of Stock", color: "bg-red-100 text-red-600" };
-    if (stock <= lowStockThreshold) return { label: "Low Stock", color: "bg-orange-100 text-orange-600" };
-    return { label: "In Stock", color: "bg-green-100 text-green-600" };
+    if (stock === 0) return { label: t.outOfStock, color: "bg-red-100 text-red-600" };
+    if (stock <= lowStockThreshold) return { label: t.lowStock, color: "bg-orange-100 text-orange-600" };
+    return { label: t.inStock, color: "bg-green-100 text-green-600" };
   };
 
   const handleStockUpdate = async (productId, newStock) => {
     const stock = parseInt(newStock, 10);
     if (isNaN(stock) || stock < 0) {
-      toast.error("Invalid stock value");
+      toast.error(t.invalidStockValue);
       return;
     }
     setUpdatingId(productId);
     try {
       await api.put(`/products/${productId}/stock`, { stock });
       setProducts((prev) => prev.map((p) => (p.id === productId ? { ...p, stock } : p)));
-      toast.success("Stock updated");
+      toast.success(t.stockUpdatedSuccess);
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to update stock");
+      toast.error(err.response?.data?.message || t.failedToUpdateStock);
     } finally {
       setUpdatingId(null);
     }
@@ -69,13 +71,13 @@ export default function ManagerInventoryPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Inventory Management</h1>
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">{t.inventoryDashboard}</h1>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-500 mb-1">In Stock</p>
+            <p className="text-sm font-medium text-gray-500 mb-1">{t.inStock}</p>
             <h3 className="text-3xl font-bold text-gray-800">{stats.inStock}</h3>
           </div>
           <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center text-green-500">
@@ -84,7 +86,7 @@ export default function ManagerInventoryPage() {
         </div>
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-500 mb-1">Low Stock</p>
+            <p className="text-sm font-medium text-gray-500 mb-1">{t.lowStock}</p>
             <h3 className="text-3xl font-bold text-gray-800">{stats.lowStock}</h3>
           </div>
           <div className="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center text-orange-500">
@@ -93,7 +95,7 @@ export default function ManagerInventoryPage() {
         </div>
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-500 mb-1">Out of Stock</p>
+            <p className="text-sm font-medium text-gray-500 mb-1">{t.outOfStock}</p>
             <h3 className="text-3xl font-bold text-gray-800">{stats.outOfStock}</h3>
           </div>
           <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center text-red-500">
@@ -108,7 +110,7 @@ export default function ManagerInventoryPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
           <input
             type="text"
-            placeholder="Search by name or SKU..."
+            placeholder={t.searchByNameOrSku}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-[#E5E7EB] rounded-lg focus:outline-none focus:border-[#E5E7EB] text-sm"
@@ -122,12 +124,12 @@ export default function ManagerInventoryPage() {
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50 text-left text-xs uppercase tracking-wider text-gray-500 border-b">
-                <th className="px-6 py-4 font-medium">Product</th>
-                <th className="px-6 py-4 font-medium">SKU</th>
-                <th className="px-6 py-4 font-medium">Stock Level</th>
-                <th className="px-6 py-4 font-medium">Status</th>
-                <th className="px-6 py-4 font-medium">Price</th>
-                <th className="px-6 py-4 font-medium text-right">Update Stock</th>
+                <th className="px-6 py-4 font-medium">{t.product}</th>
+                <th className="px-6 py-4 font-medium">{t.sku}</th>
+                <th className="px-6 py-4 font-medium">{t.stockLevel}</th>
+                <th className="px-6 py-4 font-medium">{t.status}</th>
+                <th className="px-6 py-4 font-medium">{t.price}</th>
+                <th className="px-6 py-4 font-medium text-right">{t.updateStock}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -135,13 +137,13 @@ export default function ManagerInventoryPage() {
                 <tr>
                   <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
                     <Loader2 size={20} className="animate-spin mx-auto mb-2 text-[#EC008C]" />
-                    Loading inventory...
+                    {t.loadingInventory}
                   </td>
                 </tr>
               ) : filteredProducts.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
-                    {products.length === 0 ? "No products assigned yet." : "No products match your search."}
+                    {products.length === 0 ? t.noProductsAssigned : t.noResults}
                   </td>
                 </tr>
               ) : (
@@ -162,15 +164,15 @@ export default function ManagerInventoryPage() {
                           )}
                           <div>
                             <p className="font-medium text-sm text-gray-800">{product.name}</p>
-                            <p className="text-xs text-gray-500">{product.category?.name || "Uncategorized"}</p>
+                            <p className="text-xs text-gray-500">{product.category?.name || t.uncategorized}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm font-mono text-gray-500">{product.sku || "N/A"}</td>
+                      <td className="px-6 py-4 text-sm font-mono text-gray-500">{product.sku || t.notAvailable}</td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <span className="font-semibold text-gray-800">{product.stock}</span>
-                          <span className="text-xs text-gray-500">units</span>
+                          <span className="text-xs text-gray-500">{t.units}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4">

@@ -177,7 +177,7 @@ export default function FlashDeals() {
                 <span className="absolute top-2 left-2 bg-[#FF6B6B] text-white text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full z-10">{deal.badge}</span>
                 {deal.stock <= 5 && deal.stock > 0 && (
                   <span className="absolute top-2 right-2 bg-yellow-400 text-yellow-900 text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full z-10">
-                    Only {deal.stock} left
+                    {t.onlyLeft.replace("{count}", deal.stock)}
                   </span>
                 )}
                 <ProductImage src={deal.image} alt={deal.name} />

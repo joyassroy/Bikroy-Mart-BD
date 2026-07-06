@@ -5,8 +5,10 @@ import { Plus, Search, Edit, Trash2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import EditProductModal from "@/components/product/EditProductModal";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function ProductsPage() {
+  const { t } = useLanguage();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -27,17 +29,17 @@ export default function ProductsPage() {
     setDeleteModal(null);
     try {
       await api.delete(`/products/${id}`);
-      toast.success("Product deleted");
+      toast.success(t.productDeleted);
       fetchProducts();
-    } catch (err) { toast.error("Failed to delete"); }
+    } catch (err) { toast.error(t.failedToDelete); }
   };
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Products</h1>
+        <h1 className="text-2xl font-bold text-gray-800">{t.products}</h1>
         <Link href="/dashboard/products/add" className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-primary-700 flex items-center gap-2">
-          <Plus size={16} /> Add Product
+          <Plus size={16} /> {t.addProduct}
         </Link>
       </div>
 
@@ -46,7 +48,7 @@ export default function ProductsPage() {
           <div className="relative max-w-sm">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
-              type="text" placeholder="Search products..."
+              type="text" placeholder={t.searchProducts}
               value={search} onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && fetchProducts()}
               className="w-full pl-9 pr-4 py-2 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:border-[#E5E7EB]"
@@ -57,19 +59,19 @@ export default function ProductsPage() {
           <table className="w-full">
             <thead>
               <tr className="text-left text-sm text-gray-500 border-b">
-                <th className="px-4 py-3 font-medium">Product</th>
-                <th className="px-4 py-3 font-medium">Category</th>
-                <th className="px-4 py-3 font-medium">Price</th>
-                <th className="px-4 py-3 font-medium">Stock</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Actions</th>
+                <th className="px-4 py-3 font-medium">{t.product}</th>
+                <th className="px-4 py-3 font-medium">{t.category}</th>
+                <th className="px-4 py-3 font-medium">{t.price}</th>
+                <th className="px-4 py-3 font-medium">{t.stock}</th>
+                <th className="px-4 py-3 font-medium">{t.status}</th>
+                <th className="px-4 py-3 font-medium">{t.actions}</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">Loading...</td></tr>
+                <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">{t.loading}</td></tr>
               ) : products.length === 0 ? (
-                <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">No products found</td></tr>
+                <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">{t.noProductsFound}</td></tr>
               ) : (
                 products.map((p) => (
                   <tr key={p.id} className="border-b hover:bg-gray-50">
@@ -95,7 +97,7 @@ export default function ProductsPage() {
                     <td className="px-4 py-3 text-sm">{p.stock}</td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${p.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
-                        {p.isActive ? "Active" : "Inactive"}
+                        {p.isActive ? t.active : t.inactive}
                       </span>
                     </td>
                     <td className="px-4 py-3">
@@ -124,16 +126,16 @@ export default function ProductsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setDeleteModal(null)} />
           <div className="relative bg-white rounded-xl shadow-xl w-full max-w-sm p-5 z-10">
-            <h3 className="text-sm font-semibold text-[#000000] mb-1">Delete Product</h3>
+            <h3 className="text-sm font-semibold text-[#000000] mb-1">{t.deleteProduct}</h3>
             <p className="text-xs text-[#667085] mb-4">
-              Are you sure you want to delete <span className="font-medium text-[#000000]">{deleteModal.name}</span>?
+              {t.areYouSureDelete} <span className="font-medium text-[#000000]">{deleteModal.name}</span>?
             </p>
             <div className="flex gap-2">
               <button onClick={() => setDeleteModal(null)} className="flex-1 px-4 py-2 text-xs font-semibold border border-[#E5E7EB] rounded-lg text-[#364152] hover:bg-[#F4F7FB] transition">
-                Cancel
+                {t.cancel}
               </button>
               <button onClick={() => handleDelete(deleteModal.id)} className="flex-1 px-4 py-2 text-xs font-semibold bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
-                Delete
+                {t.delete}
               </button>
             </div>
           </div>

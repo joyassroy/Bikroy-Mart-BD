@@ -1,8 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
 import api from "@/lib/axios";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function SponsorsMarquee() {
+  const { t } = useLanguage();
   const [sponsors, setSponsors] = useState([]);
   const [paused, setPaused] = useState(false);
 
@@ -39,16 +41,16 @@ export default function SponsorsMarquee() {
         <div className="inline-flex items-center gap-2 bg-[#00215B]/[0.06] rounded-full px-4 py-1.5 mb-4">
           <span className="w-1.5 h-1.5 rounded-full bg-[#00AFCC] animate-pulse" />
           <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#00215B]/60">
-            Trusted Partners
+            {t.trustedPartners}
           </span>
         </div>
 
         {/* Heading */}
         <h2 className="text-2xl sm:text-3xl font-extrabold text-[#181717] tracking-tight">
-          Our Sponsors & Partners
+          {t.ourSponsors}
         </h2>
         <p className="text-sm text-[#667085] mt-2 max-w-sm mx-auto">
-          Collaborating with industry leaders to serve you better
+          {t.sponsorsDesc}
         </p>
       </div>
 

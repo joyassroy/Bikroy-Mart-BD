@@ -5,15 +5,7 @@ import { LayoutDashboard, Package, ShoppingCart, Users, MapPin, Menu, X, Clipboa
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useAuthChecked } from "@/helper/AuthInit";
-
-const menu = [
-  { label: "Dashboard", href: "/manager", icon: LayoutDashboard },
-  { label: "Products", href: "/manager/products", icon: Package },
-  { label: "Orders", href: "/manager/orders", icon: ShoppingCart },
-  { label: "Custom Requests", href: "/manager/custom-requests", icon: ClipboardList },
-  { label: "Inventory", href: "/manager/inventory", icon: Package },
-  { label: "Riders", href: "/manager/riders", icon: Users },
-];
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function ManagerLayout({ children }) {
   const pathname = usePathname();
@@ -21,6 +13,16 @@ export default function ManagerLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { authChecked } = useAuthChecked();
   const user = useSelector((state) => state.user?.data);
+  const { t } = useLanguage();
+
+  const menu = [
+    { label: t.dashboard, href: "/manager", icon: LayoutDashboard },
+    { label: t.products, href: "/manager/products", icon: Package },
+    { label: t.orders, href: "/manager/orders", icon: ShoppingCart },
+    { label: t.customRequest, href: "/manager/custom-requests", icon: ClipboardList },
+    { label: t.inventory, href: "/manager/inventory", icon: Package },
+    { label: t.riders, href: "/manager/riders", icon: Users },
+  ];
 
   useEffect(() => {
     if (authChecked && (!user || user.role !== "MANAGER")) {
@@ -46,7 +48,7 @@ export default function ManagerLayout({ children }) {
         <div className="p-3 border-b border-[#001A4A] flex items-center justify-between">
           <Link href="/" className="block">
             <h2 className="text-xs font-bold">Bikroy<span className="text-[#EC008C]">-Mart</span>-BD</h2>
-            <p className="text-[9px] text-white/50">Manager Panel</p>
+            <p className="text-[9px] text-white/50">{t.managerPanel}</p>
           </Link>
           <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-white/60 hover:text-white p-1">
             <X size={16} />

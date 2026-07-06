@@ -4,8 +4,10 @@ import { useSelector, useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import { ShoppingCart, X, Plus, Minus, Trash2, ShoppingBag } from "lucide-react";
 import { updateQuantity, removeFromCart } from "@/redux/cartSlice";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function FloatingCartButton() {
+  const { t } = useLanguage();
   const dispatch = useDispatch();
   const router = useRouter();
   const cartItems = useSelector((state) => state.cart.items);
@@ -37,7 +39,7 @@ export default function FloatingCartButton() {
       >
         <span className="relative flex items-center justify-center gap-1.5 rounded-t-[5px] bg-[#00215B] px-3 pb-1.5 pt-6">
           <ShoppingCart size={16} className="absolute top-1.5 left-1/2 -translate-x-1/2" />
-          {cartCount} items
+          {cartCount} {t.itemsCount}
         </span>
         <span className="relative block rounded-b-[5px] bg-black px-3 py-1.5">
           ৳{subtotal.toLocaleString()}
@@ -62,7 +64,7 @@ export default function FloatingCartButton() {
         <div className="flex items-center justify-between px-5 py-4 border-b border-[#E5E7EB]">
           <div className="flex items-center gap-2">
             <ShoppingCart size={18} className="text-[#00215B]" />
-            <h2 className="font-semibold text-sm text-[#000000]">My Cart</h2>
+            <h2 className="font-semibold text-sm text-[#000000]">{t.myCart}</h2>
             <span className="bg-[#EC008C] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
               {cartCount}
             </span>
@@ -82,13 +84,13 @@ export default function FloatingCartButton() {
               <div className="w-16 h-16 rounded-2xl bg-[#F4F7FB] flex items-center justify-center mb-3">
                 <ShoppingBag size={28} className="text-[#D0D5DD]" />
               </div>
-              <p className="text-sm font-medium text-[#667085]">Your cart is empty</p>
-              <p className="text-[11px] text-[#D0D5DD] mt-1">Add items to get started</p>
+              <p className="text-sm font-medium text-[#667085]">{t.cartEmpty}</p>
+              <p className="text-[11px] text-[#D0D5DD] mt-1">{t.cartEmptyDesc}</p>
               <button
                 onClick={() => { setOpen(false); router.push("/shop"); }}
                 className="btn-primary mt-4 text-xs"
               >
-                Browse Products
+                {t.browseProducts}
               </button>
             </div>
           ) : (
@@ -148,24 +150,24 @@ export default function FloatingCartButton() {
           <div className="border-t border-[#E5E7EB] px-5 py-4 space-y-3 bg-white">
             {subtotal < 1500 && (
               <p className="text-[10px] text-[#00AFCC] font-semibold text-center">
-                Add ৳{(1500 - subtotal).toLocaleString()} more for free delivery
+                {t.addMoreForFreeDelivery.replace("{amount}", `৳${(1500 - subtotal).toLocaleString()}`)}
               </p>
             )}
             <div className="flex items-center justify-between text-xs">
-              <span className="text-[#667085]">Subtotal</span>
+              <span className="text-[#667085]">{t.subtotal}</span>
               <span className="font-bold text-sm text-[#000000]">৳{subtotal.toLocaleString()}</span>
             </div>
             <button
               onClick={() => { setOpen(false); router.push("/checkout"); }}
               className="btn-primary w-full text-center"
             >
-              Proceed to Checkout
+              {t.proceedToCheckout}
             </button>
             <button
               onClick={() => { setOpen(false); router.push("/cart"); }}
               className="btn-secondary w-full text-center"
             >
-              View Full Cart
+              {t.viewFullCart}
             </button>
           </div>
         )}

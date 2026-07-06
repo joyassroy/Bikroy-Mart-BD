@@ -2,25 +2,32 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { convertToWords } from "./numberToWords";
 
-const STATUS_MAP = {
-  PENDING: { en: "PENDING", bn: "অপেক্ষমান", color: [245, 158, 11] },
-  CONFIRMED: { en: "CONFIRMED", bn: "নিশ্চিত", color: [0, 172, 204] },
-  PROCESSING: { en: "PROCESSING", bn: "প্রক্রিয়াকরণ", color: [99, 102, 241] },
-  SHIPPED: { en: "SHIPPED", bn: "পাঠানো হয়েছে", color: [139, 92, 246] },
-  OUT_FOR_DELIVERY: { en: "OUT FOR DELIVERY", bn: "ডেলিভারি হচ্ছে", color: [236, 0, 140] },
-  DELIVERED: { en: "DELIVERED", bn: "ডেলিভারি সম্পন্ন", color: [22, 163, 74] },
-  CANCELLED: { en: "CANCELLED", bn: "বাতিল", color: [220, 38, 38] },
-  RETURNED: { en: "RETURNED", bn: "ফেরত", color: [234, 88, 12] },
+const STATUS_LABELS = {
+  PENDING: { en: "PENDING", bn: "অপেক্ষমান" },
+  CONFIRMED: { en: "CONFIRMED", bn: "নিশ্চিত" },
+  PROCESSING: { en: "PROCESSING", bn: "প্রক্রিয়াকরণ" },
+  SHIPPED: { en: "SHIPPED", bn: "পাঠানো হয়েছে" },
+  OUT_FOR_DELIVERY: { en: "OUT FOR DELIVERY", bn: "ডেলিভারি হচ্ছে" },
+  DELIVERED: { en: "DELIVERED", bn: "ডেলিভারি সম্পন্ন" },
+  CANCELLED: { en: "CANCELLED", bn: "বাতিল" },
+  RETURNED: { en: "RETURNED", bn: "ফেরত" },
 };
 
-const PAYMENT_STATUS_MAP = {
-  PAID: { en: "PAID", bn: "পরিশোধিত", color: [22, 163, 74] },
-  PENDING: { en: "PENDING", bn: "অপেক্ষমান", color: [245, 158, 11] },
-  FAILED: { en: "FAILED", bn: "ব্যর্থ", color: [220, 38, 38] },
-  REFUNDED: { en: "REFUNDED", bn: "ফেরত দেওয়া হয়েছে", color: [139, 92, 246] },
+const PAYMENT_STATUS_LABELS = {
+  PAID: { en: "PAID", bn: "পরিশোধিত" },
+  PENDING: { en: "PENDING", bn: "অপেক্ষমান" },
+  FAILED: { en: "FAILED", bn: "ব্যর্থ" },
+  REFUNDED: { en: "REFUNDED", bn: "ফেরত দেওয়া হয়েছে" },
 };
 
-function extractOrderData(order) {
+const PAYMENT_METHOD_LABELS = {
+  COD: { en: "COD", bn: "ক্যাশ অন ডেলিভারি" },
+  SSLCOMMERZ: { en: "Online Payment", bn: "অনলাইন পেমেন্ট" },
+  BKASH: { en: "bKash", bn: "বিকাশ" },
+  NAGAD: { en: "Nagad", bn: "নগদ" },
+};
+
+function extractOrderData(order, lang = "en") {
   return {
     orderNumber: order.orderNumber || "N/A",
     customerName: order.name || order.user?.name || "N/A",
@@ -40,7 +47,7 @@ function extractOrderData(order) {
     cancelReason: order.cancelReason || "",
     customRequirement: order.customRequirement || "",
     estimatedDelivery: order.estimatedDelivery || null,
-    date: order.date || new Date(order.createdAt).toLocaleDateString("en-BD", { day: "numeric", month: "short", year: "numeric" }),
+    date: order.date || new Date(order.createdAt).toLocaleDateString(lang === "bn" ? "bn-BD" : "en-BD", { day: "numeric", month: "short", year: "numeric" }),
     items: (order.items || []).map((item, i) => ({
       index: i + 1,
       name: item.name || item.product?.name || "Item",
@@ -151,30 +158,24 @@ const LABELS = {
   },
 };
 
-function getBadgeHTML(status, lang) {
-  const info = STATUS_MAP[status] || STATUS_MAP.CONFIRMED;
-  const label = lang === "bn" ? info.bn : info.en;
-  const [r, g, b] = info.color;
-  return `<div style="display:inline-block;background:rgba(${r},${g},${b},0.15);color:rgb(${r},${g},${b});border:1px solid rgba(${r},${g},${b},0.3);padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.3px;white-space:nowrap;line-height:1.2">${label}</div>`;
+function getStatusText(status, lang) {
+  const info = STATUS_LABELS[status] || STATUS_LABELS.CONFIRMED;
+  return lang === "bn" ? info.bn : info.en;
 }
 
-function getPaymentBadgeHTML(method) {
-  const isCOD = method === "COD" || method === "Cash on Delivery";
-  const label = isCOD ? "COD" : "PAID";
-  const [r, g, b] = isCOD ? [245, 158, 11] : [22, 163, 74];
-  return `<div style="display:inline-block;background:rgba(${r},${g},${b},0.15);color:rgb(${r},${g},${b});border:1px solid rgba(${r},${g},${b},0.3);padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.3px;white-space:nowrap;line-height:1.2">${label}</div>`;
+function getPaymentMethodText(method, lang = "en") {
+  const info = PAYMENT_METHOD_LABELS[method] || PAYMENT_METHOD_LABELS.COD;
+  return lang === "bn" ? info.bn : info.en;
 }
 
-function getPaymentStatusBadgeHTML(status, lang) {
-  const info = PAYMENT_STATUS_MAP[status] || PAYMENT_STATUS_MAP.PENDING;
-  const label = lang === "bn" ? info.bn : info.en;
-  const [r, g, b] = info.color;
-  return `<div style="display:inline-block;background:rgba(${r},${g},${b},0.15);color:rgb(${r},${g},${b});border:1px solid rgba(${r},${g},${b},0.3);padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.3px;white-space:nowrap;line-height:1.2">${label}</div>`;
+function getPaymentStatusText(status, lang) {
+  const info = PAYMENT_STATUS_LABELS[status] || PAYMENT_STATUS_LABELS.PENDING;
+  return lang === "bn" ? info.bn : info.en;
 }
 
 function buildInvoiceHTML(order, lang) {
   const L = LABELS[lang] || LABELS.en;
-  const d = extractOrderData(order);
+  const d = extractOrderData(order, lang);
   const currency = L.currency;
 
   const trackingUrl = `https://bikroymart.com/track/${d.orderNumber}`;
@@ -261,8 +262,8 @@ function buildInvoiceHTML(order, lang) {
             <table style="width:100%;border-collapse:collapse">
               <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;width:130px;font-family:${L.font}">${L.orderNumber}</td><td style="padding:6px 0;color:#111827;font-size:12px;font-weight:600">${d.orderNumber}</td></tr>
               <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;font-family:${L.font}">${L.orderDate}</td><td style="padding:6px 0;color:#111827;font-size:12px;font-weight:600">${d.date}</td></tr>
-              <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;font-family:${L.font}">${L.payment}</td><td style="padding:6px 0;font-size:12px;text-align:left">${getPaymentBadgeHTML(d.paymentMethod)}</td></tr>
-              <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;font-family:${L.font}">${L.status}</td><td style="padding:6px 0;font-size:12px;text-align:left">${getBadgeHTML(d.orderStatus, lang)}</td></tr>
+              <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;font-family:${L.font}">${L.payment}</td><td style="padding:6px 0;color:#111827;font-size:12px;font-weight:600;font-family:${L.font}">${getPaymentMethodText(d.paymentMethod, lang)}</td></tr>
+              <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;font-family:${L.font}">${L.status}</td><td style="padding:6px 0;color:#111827;font-size:12px;font-weight:600;font-family:${L.font}">${getStatusText(d.orderStatus, lang)}</td></tr>
               ${estDeliveryHTML}
             </table>
           </div>
@@ -285,10 +286,10 @@ function buildInvoiceHTML(order, lang) {
           <div style="color:#00215B;font-size:12px;font-weight:700;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.8px;font-family:${L.font}">${L.paymentInfo}</div>
           <div style="display:flex;gap:40px">
             <table style="border-collapse:collapse">
-              <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;width:130px;font-family:${L.font}">${L.paymentMethod}</td><td style="padding:6px 0;font-size:12px;text-align:left">${getPaymentBadgeHTML(d.paymentMethod)}</td></tr>
+              <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;width:130px;font-family:${L.font}">${L.paymentMethod}</td><td style="padding:6px 0;color:#111827;font-size:12px;font-weight:600;font-family:${L.font}">${getPaymentMethodText(d.paymentMethod, lang)}</td></tr>
             </table>
             <table style="border-collapse:collapse">
-              <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;width:130px;font-family:${L.font}">${L.paymentStatus}</td><td style="padding:6px 0;font-size:12px;text-align:left">${getPaymentStatusBadgeHTML(d.paymentStatus, lang)}</td></tr>
+              <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;width:130px;font-family:${L.font}">${L.paymentStatus}</td><td style="padding:6px 0;color:#111827;font-size:12px;font-weight:600;font-family:${L.font}">${getPaymentStatusText(d.paymentStatus, lang)}</td></tr>
             </table>
             ${transactionIdHTML ? `<table style="border-collapse:collapse">${transactionIdHTML}</table>` : ""}
           </div>
@@ -371,31 +372,38 @@ function buildInvoiceHTML(order, lang) {
 }
 
 export async function generateInvoicePDF(order, lang = "en") {
-  const d = extractOrderData(order);
+  const d = extractOrderData(order, lang);
   const L = LABELS[lang] || LABELS.en;
 
   const html = buildInvoiceHTML(order, lang);
 
   const container = document.createElement("div");
-  container.style.cssText = "position:fixed;left:-9999px;top:0;z-index:-1;background:#fff";
+  container.style.cssText = "position:fixed;left:-9999px;top:0;z-index:-1;background:#fff;width:794px";
   container.innerHTML = html;
   document.body.appendChild(container);
 
   const el = container.querySelector("#invoice-capture");
 
+  await document.fonts.ready;
+  await new Promise((r) => setTimeout(r, 200));
+
   const canvas = await html2canvas(el, {
     scale: 2,
     useCORS: true,
-    allowTaint: true,
+    allowTaint: false,
     backgroundColor: "#ffffff",
     logging: false,
     width: 794,
     windowWidth: 794,
+    windowHeight: el.scrollHeight,
+    height: el.scrollHeight,
+    imageTimeout: 15000,
+    removeContainer: false,
   });
 
   document.body.removeChild(container);
 
-  const imgData = canvas.toDataURL("image/png");
+  const imgData = canvas.toDataURL("image/png", 1.0);
   const pdf = new jsPDF("p", "mm", "a4");
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
@@ -404,28 +412,24 @@ export async function generateInvoicePDF(order, lang = "en") {
 
   const totalPages = Math.ceil(imgHeight / pageHeight);
 
-  let heightLeft = imgHeight;
-  let position = 0;
+  for (let i = 0; i < totalPages; i++) {
+    if (i > 0) pdf.addPage();
 
-  pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-  heightLeft -= pageHeight;
+    const srcY = (i * canvas.height) / totalPages;
+    const srcH = canvas.height / totalPages;
+    const pageCanvas = document.createElement("canvas");
+    pageCanvas.width = canvas.width;
+    pageCanvas.height = srcH;
+    const ctx = pageCanvas.getContext("2d");
+    ctx.drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
 
-  while (heightLeft > 0) {
-    position = -(pageHeight * (totalPages - Math.ceil(heightLeft / pageHeight)));
-    pdf.addPage();
-    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+    const pageImgData = pageCanvas.toDataURL("image/png", 1.0);
+    const pageImgHeight = (srcH * imgWidth) / canvas.width;
+    pdf.addImage(pageImgData, "PNG", 0, 0, imgWidth, pageImgHeight);
 
     pdf.setFontSize(8);
     pdf.setTextColor(150);
-    pdf.text(`${L.page} ${totalPages - Math.ceil(heightLeft / pageHeight) + 1} ${L.of} ${totalPages}`, pageWidth / 2, pageHeight - 5, { align: "center" });
-
-    heightLeft -= pageHeight;
-  }
-
-  if (totalPages === 1) {
-    pdf.setFontSize(8);
-    pdf.setTextColor(150);
-    pdf.text(`${L.page} 1 ${L.of} 1`, pageWidth / 2, pageHeight - 5, { align: "center" });
+    pdf.text(`${L.page} ${i + 1} ${L.of} ${totalPages}`, pageWidth / 2, pageHeight - 5, { align: "center" });
   }
 
   pdf.save(`invoice-${d.orderNumber}.pdf`);

@@ -3,15 +3,9 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import api from "@/lib/axios";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const IMG_BASE = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5004/api").replace("/api", "");
-
-const TYPE_LABELS = {
-  STOCK_CLEARANCE: "Stock Clearance",
-  EXECUTIVE: "Executive",
-  COMBO: "Combo",
-  BOGO: "Buy One Get One",
-};
 
 const PLACEHOLDER_PRODUCTS = [
   { name: "Premium Basmati Rice 5kg", price: 650, emoji: "🍚" },
@@ -21,6 +15,13 @@ const PLACEHOLDER_PRODUCTS = [
 ];
 
 export default function OfferSection({ type, title, subtitle, bgColor = "from-[#00215B] to-[#00AFCC]", badgeColor = "bg-[#EC008C]" }) {
+  const { t } = useLanguage();
+  const TYPE_LABELS = {
+    STOCK_CLEARANCE: t.stockClearance,
+    EXECUTIVE: t.executive,
+    COMBO: t.comboOffer,
+    BOGO: t.buyOneGetOne,
+  };
   const [deals, setDeals] = useState([]);
   const [promoOffers, setPromoOffers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -101,7 +102,7 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
           discount,
           stock: firstItem?.stock,
           isPlaceholder: false,
-          badge: type === "BOGO" ? `Buy ${offer.buyQuantity} Get ${offer.getQuantity}` : type === "COMBO" ? "Bundle Deal" : null,
+              badge: type === "BOGO" ? `${t.buyXGetY.replace("{buy}", offer.buyQuantity).replace("{get}", offer.getQuantity)}` : type === "COMBO" ? t.bundleDeal : null,
           items: offer.items,
         };
       })
@@ -157,7 +158,7 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
               </button>
             </div>
             <Link href={`/shop?offer=${type}`} className="bg-white/20 hover:bg-white/30 text-white text-[10px] sm:text-[11px] font-semibold px-3 py-1.5 rounded-lg transition hidden sm:block">
-              View All →
+              {t.viewAll} →
             </Link>
           </div>
         </div>
@@ -200,12 +201,12 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
                   )}
                   {isBogo && (
                     <span className="absolute top-2 right-2 bg-[#EC008C] text-white text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full z-10">
-                      FREE
+                      {t.freeLabel}
                     </span>
                   )}
                   {!isBogo && item.discount >= 40 && (
                     <span className="absolute top-2 right-2 bg-[#DC2626] text-white text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full z-10">
-                      Hot Deal
+                      {t.hotDeal}
                     </span>
                   )}
                   {item.isPlaceholder ? (
@@ -238,12 +239,12 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
                   </div>
                   {isBogo && (
                     <div className="text-[9px] sm:text-[10px] text-[#16A34A] font-semibold mb-1">
-                      You save ৳{Math.max(0, item.price - item.dealPrice)}
+                      {t.youSave.replace("{amount}", `৳${Math.max(0, item.price - item.dealPrice)}`)}
                     </div>
                   )}
                   {item.stock !== undefined && item.stock !== null && (
                     <div className="text-[9px] sm:text-[10px] font-medium text-[#667085]">
-                      {item.stock > 0 ? `Stock: ${item.stock}` : "Out of Stock"}
+                      {item.stock > 0 ? t.stockLabel.replace("{count}", item.stock) : t.outOfStock}
                     </div>
                   )}
                 </div>

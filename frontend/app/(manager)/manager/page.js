@@ -44,7 +44,7 @@ export default function ManagerDashboard() {
       {stats && (
         <div className="bg-white rounded-lg p-3 mb-4 border border-[#E5E7EB] flex items-center gap-2 text-xs text-[#667085]">
           <MapPin size={14} className="text-[#EC008C]" />
-          <span>Assigned Location: <strong className="text-[#000000]">{stats.assignedDistrict}</strong>{stats.assignedZila ? `, ${stats.assignedZila}` : ""}</span>
+          <span>{t.assignedLocation}: <strong className="text-[#000000]">{stats.assignedDistrict}</strong>{stats.assignedZila ? `, ${stats.assignedZila}` : ""}</span>
         </div>
       )}
 
@@ -84,7 +84,7 @@ export default function ManagerDashboard() {
             {loading ? (
               <tr><td colSpan={5} className="px-3 py-6 text-center text-[11px] text-gray-400">{t.loading}</td></tr>
             ) : orders.length === 0 ? (
-              <tr><td colSpan={5} className="px-3 py-6 text-center text-[11px] text-gray-400">No pending orders</td></tr>
+              <tr><td colSpan={5} className="px-3 py-6 text-center text-[11px] text-gray-400">{t.noPendingOrders}</td></tr>
             ) : (
               orders.map((order) => (
                 <tr key={order.id} className="border-b border-[#F4F7FB] hover:bg-[#F4F7FB] transition">

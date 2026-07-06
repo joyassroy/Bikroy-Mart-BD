@@ -3,8 +3,10 @@ import { useState, useEffect } from "react";
 import api from "@/lib/axios";
 import { Plus, Edit, Trash2, X, Image as ImageIcon } from "lucide-react";
 import toast from "react-hot-toast";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function CategoriesPage() {
+  const { t } = useLanguage();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -56,33 +58,33 @@ export default function CategoriesPage() {
     try {
       if (editingId) {
         await api.put(`/categories/${editingId}`, data);
-        toast.success("Category updated");
+        toast.success(t.categoryUpdated);
       } else {
         await api.post("/categories", data);
-        toast.success("Category created");
+        toast.success(t.categoryCreated);
       }
       setShowModal(false);
       fetchCategories();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Something went wrong");
+      toast.error(err.response?.data?.message || t.somethingWentWrong);
     }
   };
 
   const handleDelete = async (id) => {
-    if (!confirm("Are you sure you want to delete this category?")) return;
+    if (!confirm(t.confirmDeleteCategory)) return;
     try {
       await api.delete(`/categories/${id}`);
-      toast.success("Category deleted");
+      toast.success(t.categoryDeleted);
       fetchCategories();
-    } catch (err) { toast.error("Failed to delete"); }
+    } catch (err) { toast.error(t.failedToDelete); }
   };
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Categories</h1>
+        <h1 className="text-2xl font-bold text-gray-800">{t.categories}</h1>
         <button onClick={() => handleOpenModal()} className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-primary-700 flex items-center gap-2">
-          <Plus size={16} /> Add Category
+          <Plus size={16} /> {t.addCategory}
         </button>
       </div>
 
@@ -91,19 +93,19 @@ export default function CategoriesPage() {
           <table className="w-full">
             <thead>
               <tr className="text-left text-sm text-gray-500 border-b bg-gray-50">
-                <th className="px-4 py-3 font-medium">Image</th>
-                <th className="px-4 py-3 font-medium">Name</th>
-                <th className="px-4 py-3 font-medium">Name (BN)</th>
-                <th className="px-4 py-3 font-medium">Sort Order</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Actions</th>
+                <th className="px-4 py-3 font-medium">{t.image}</th>
+                <th className="px-4 py-3 font-medium">{t.name}</th>
+                <th className="px-4 py-3 font-medium">{t.nameBn}</th>
+                <th className="px-4 py-3 font-medium">{t.sortOrder}</th>
+                <th className="px-4 py-3 font-medium">{t.status}</th>
+                <th className="px-4 py-3 font-medium">{t.actions}</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">Loading...</td></tr>
+                <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">{t.loading}</td></tr>
               ) : categories.length === 0 ? (
-                <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">No categories found</td></tr>
+                <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">{t.noCategoriesFound}</td></tr>
               ) : (
                 categories.map((c) => (
                   <tr key={c.id} className="border-b hover:bg-gray-50">
@@ -119,7 +121,7 @@ export default function CategoriesPage() {
                     <td className="px-4 py-3 text-sm">{c.sortOrder}</td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${c.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
-                        {c.isActive ? "Active" : "Inactive"}
+                        {c.isActive ? t.active : t.inactive}
                       </span>
                     </td>
                     <td className="px-4 py-3">
@@ -140,37 +142,37 @@ export default function CategoriesPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-lg w-full max-w-md overflow-hidden">
             <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="font-semibold text-lg">{editingId ? "Edit Category" : "Add Category"}</h2>
+              <h2 className="font-semibold text-lg">{editingId ? t.editCategory : t.addCategory}</h2>
               <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700"><X size={20} /></button>
             </div>
             <form onSubmit={handleSubmit} className="p-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name (EN) *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t.nameEn} *</label>
                 <input type="text" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name (BN)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t.nameBn}</label>
                 <input type="text" value={formData.nameBn} onChange={(e) => setFormData({ ...formData, nameBn: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t.image}</label>
                 <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files[0])} className="w-full border rounded-lg px-3 py-2 text-sm" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Sort Order</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t.sortOrder}</label>
                   <input type="number" value={formData.sortOrder} onChange={(e) => setFormData({ ...formData, sortOrder: parseInt(e.target.value) })} className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500" />
                 </div>
                 <div className="flex flex-col justify-center pt-5">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" checked={formData.isActive} onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })} className="rounded text-primary-600 focus:ring-primary-500" />
-                    <span className="text-sm font-medium text-gray-700">Active</span>
+                    <span className="text-sm font-medium text-gray-700">{t.active}</span>
                   </label>
                 </div>
               </div>
               <div className="pt-4 flex justify-end gap-2">
-                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
-                <button type="submit" className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700">Save</button>
+                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">{t.cancel}</button>
+                <button type="submit" className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700">{t.save}</button>
               </div>
             </form>
           </div>

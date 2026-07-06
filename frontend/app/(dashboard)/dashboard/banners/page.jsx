@@ -3,8 +3,10 @@ import { useState, useEffect } from "react";
 import api from "@/lib/axios";
 import { Plus, Trash2, Edit2, X, ChevronDown, ChevronUp } from "lucide-react";
 import toast from "react-hot-toast";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function BannersPage() {
+  const { t } = useLanguage();
   const [banners, setBanners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
@@ -67,93 +69,93 @@ export default function BannersPage() {
     try {
       if (editingId) {
         await api.put(`/banners/${editingId}`, formData);
-        toast.success("Banner updated");
+        toast.success(t.bannerUpdated);
       } else {
         await api.post("/banners", formData);
-        toast.success("Banner created");
+        toast.success(t.bannerCreated);
       }
       resetForm();
       fetchBanners();
-    } catch (err) { toast.error("Failed"); }
+    } catch (err) { toast.error(t.failed); }
   };
 
   const handleDelete = async (id) => {
-    if (!confirm("Delete this banner?")) return;
-    try { await api.delete(`/banners/${id}`); toast.success("Deleted"); fetchBanners(); }
-    catch (err) { toast.error("Failed"); }
+    if (!confirm(t.confirmDeleteBanner)) return;
+    try { await api.delete(`/banners/${id}`); toast.success(t.deleted); fetchBanners(); }
+    catch (err) { toast.error(t.failed); }
   };
 
   const toggleActive = async (id, isActive) => {
     try {
       await api.put(`/banners/${id}`, { isActive: !isActive });
-      toast.success(isActive ? "Banner deactivated" : "Banner activated");
+      toast.success(isActive ? t.bannerDeactivated : t.bannerActivated);
       fetchBanners();
-    } catch (err) { toast.error("Failed"); }
+    } catch (err) { toast.error(t.failed); }
   };
 
   const positionOptions = [
-    { value: "hero", label: "Hero (Main Banner)" },
-    { value: "center", label: "Center (Middle Banner)" },
-    { value: "sidebar", label: "Sidebar" },
+    { value: "hero", label: t.heroMainBanner },
+    { value: "center", label: t.centerMiddleBanner },
+    { value: "sidebar", label: t.sidebar },
   ];
 
   const bgColorOptions = [
-    { value: "", label: "Default" },
-    { value: "from-[#00215B] to-[#001A4A]", label: "Dark Blue" },
-    { value: "from-[#EC008C] to-[#D60071]", label: "Pink" },
-    { value: "from-[#00AFCC] to-[#009AB5]", label: "Teal" },
-    { value: "from-[#EC008C] to-[#E85AA0]", label: "Light Pink" },
+    { value: "", label: t.default },
+    { value: "from-[#00215B] to-[#001A4A]", label: t.darkBlue },
+    { value: "from-[#EC008C] to-[#D60071]", label: t.pink },
+    { value: "from-[#00AFCC] to-[#009AB5]", label: t.teal },
+    { value: "from-[#EC008C] to-[#E85AA0]", label: t.lightPink },
   ];
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Banners</h1>
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">{t.banners}</h1>
 
       <form onSubmit={handleSubmit} className="bg-white rounded-xl p-6 shadow-sm mb-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-gray-800">
-            {editingId ? "Edit Banner" : "Add New Banner"}
+            {editingId ? t.editBanner : t.addNewBanner}
           </h3>
           {editingId && (
             <button type="button" onClick={resetForm} className="text-gray-500 hover:text-gray-700 text-sm flex items-center gap-1">
-              <X size={14} /> Cancel Edit
+              <X size={14} /> {t.cancelEdit}
             </button>
           )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Title *</label>
+            <label className="block text-xs font-medium text-gray-600 mb-1">{t.title}</label>
             <input type="text" required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
               className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" placeholder="Banner title" />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Subtitle</label>
+            <label className="block text-xs font-medium text-gray-600 mb-1">{t.subtitle}</label>
             <input type="text" value={form.subtitle} onChange={(e) => setForm({ ...form, subtitle: e.target.value })}
               className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" placeholder="Optional subtitle" />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Desktop Image (1920x500)</label>
+            <label className="block text-xs font-medium text-gray-600 mb-1">{t.desktopImage}</label>
             <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files[0])}
               className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Mobile Image (800x600)</label>
+            <label className="block text-xs font-medium text-gray-600 mb-1">{t.mobileImage}</label>
             <input type="file" accept="image/*" onChange={(e) => setMobileImageFile(e.target.files[0])}
               className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Link URL</label>
+            <label className="block text-xs font-medium text-gray-600 mb-1">{t.linkUrl}</label>
             <input type="text" value={form.link} onChange={(e) => setForm({ ...form, link: e.target.value })}
               className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" placeholder="/shop or https://..." />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Position *</label>
+            <label className="block text-xs font-medium text-gray-600 mb-1">{t.position}</label>
             <select value={form.position} onChange={(e) => setForm({ ...form, position: e.target.value })}
               className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none">
               {positionOptions.map(opt => (
@@ -163,7 +165,7 @@ export default function BannersPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Background Color (Fallback)</label>
+            <label className="block text-xs font-medium text-gray-600 mb-1">{t.backgroundColorFallback}</label>
             <select value={form.bgColor} onChange={(e) => setForm({ ...form, bgColor: e.target.value })}
               className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none">
               {bgColorOptions.map(opt => (
@@ -173,7 +175,7 @@ export default function BannersPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Sort Order</label>
+            <label className="block text-xs font-medium text-gray-600 mb-1">{t.sortOrder}</label>
             <input type="number" value={form.sortOrder} onChange={(e) => setForm({ ...form, sortOrder: parseInt(e.target.value) || 0 })}
               className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" />
           </div>
@@ -181,13 +183,13 @@ export default function BannersPage() {
 
         {form.image && !imageFile && (
           <div className="mt-4">
-            <label className="block text-xs font-medium text-gray-600 mb-1">Current Desktop Image</label>
+            <label className="block text-xs font-medium text-gray-600 mb-1">{t.currentDesktopImage}</label>
             <img src={form.image.startsWith('http') ? form.image : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5004'}${form.image}`} alt="Preview" className="h-24 md:h-32 rounded-lg object-cover border" />
           </div>
         )}
 
         <button type="submit" className="mt-6 bg-pink-600 text-white rounded-lg px-6 py-2.5 text-sm font-medium hover:bg-pink-700 transition flex items-center gap-2">
-          {editingId ? <><Edit2 size={14} /> Update Banner</> : <><Plus size={14} /> Add Banner</>}
+          {editingId ? <><Edit2 size={14} /> {t.updateBanner}</> : <><Plus size={14} /> {t.addBanner}</>}
         </button>
       </form>
 
@@ -196,18 +198,18 @@ export default function BannersPage() {
           <table className="w-full">
             <thead>
               <tr className="text-left text-sm text-gray-500 border-b">
-                <th className="px-4 py-3 font-medium">Banner</th>
-                <th className="px-4 py-3 font-medium">Position</th>
-                <th className="px-4 py-3 font-medium">Order</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Actions</th>
+                <th className="px-4 py-3 font-medium">{t.banner}</th>
+                <th className="px-4 py-3 font-medium">{t.position}</th>
+                <th className="px-4 py-3 font-medium">{t.order}</th>
+                <th className="px-4 py-3 font-medium">{t.status}</th>
+                <th className="px-4 py-3 font-medium">{t.actions}</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">Loading...</td></tr>
+                <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">{t.loading}</td></tr>
               ) : banners.length === 0 ? (
-                <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">No banners found</td></tr>
+                <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">{t.noBannersFound}</td></tr>
               ) : banners.map((banner) => (
                 <tr key={banner.id} className="border-b hover:bg-gray-50">
                   <td className="px-4 py-3">
@@ -216,7 +218,7 @@ export default function BannersPage() {
                         <img src={banner.image.startsWith('http') ? banner.image : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5004'}${banner.image}`} alt={banner.title} className="w-16 h-10 rounded object-cover" />
                       ) : (
                         <div className={`w-16 h-10 rounded bg-gradient-to-r ${banner.bgColor || "from-pink-500 to-pink-600"} flex items-center justify-center`}>
-                          <span className="text-white text-[8px] font-bold">NO IMG</span>
+                          <span className="text-white text-[8px] font-bold">{t.noImg}</span>
                         </div>
                       )}
                       <div>
@@ -234,7 +236,7 @@ export default function BannersPage() {
                         banner.isActive ? "bg-green-100 text-green-700 hover:bg-green-200" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                       }`}
                     >
-                      {banner.isActive ? "Active" : "Inactive"}
+                      {banner.isActive ? t.active : t.inactive}
                     </button>
                   </td>
                   <td className="px-4 py-3">

@@ -10,15 +10,6 @@ import { Package, MapPin, Phone, CheckCircle, ArrowLeft, Navigation, CreditCard,
 import toast from "react-hot-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 
-const statusConfig = {
-  PENDING: { color: "bg-yellow-50 text-yellow-700 border-yellow-200", label: "Pending" },
-  CONFIRMED: { color: "bg-blue-50 text-blue-700 border-blue-200", label: "Confirmed" },
-  PROCESSING: { color: "bg-indigo-50 text-indigo-700 border-indigo-200", label: "Processing" },
-  SHIPPED: { color: "bg-purple-50 text-purple-700 border-purple-200", label: "Shipped" },
-  OUT_FOR_DELIVERY: { color: "bg-orange-50 text-orange-700 border-orange-200", label: "Out for Delivery" },
-  DELIVERED: { color: "bg-emerald-50 text-emerald-700 border-emerald-200", label: "Delivered" },
-};
-
 const deliverySteps = ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED"];
 
 function SkeletonLoader() {
@@ -37,6 +28,16 @@ export default function DeliveryPage() {
   const params = useParams();
   const router = useRouter();
   const { t } = useLanguage();
+
+  const statusConfig = {
+    PENDING: { color: "bg-yellow-50 text-yellow-700 border-yellow-200", label: t.pending },
+    CONFIRMED: { color: "bg-blue-50 text-blue-700 border-blue-200", label: t.confirmed },
+    PROCESSING: { color: "bg-indigo-50 text-indigo-700 border-indigo-200", label: t.processing },
+    SHIPPED: { color: "bg-purple-50 text-purple-700 border-purple-200", label: t.shipped },
+    OUT_FOR_DELIVERY: { color: "bg-orange-50 text-orange-700 border-orange-200", label: t.outForDelivery },
+    DELIVERED: { color: "bg-emerald-50 text-emerald-700 border-emerald-200", label: t.delivered },
+  };
+
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [delivering, setDelivering] = useState(false);
@@ -68,10 +69,10 @@ export default function DeliveryPage() {
     setDelivering(true);
     try {
       await api.put(`/riders/${params.id}/deliver`, { paymentMethod: order.paymentMethod });
-      toast.success(t.orderDeliveredSuccess || "Order delivered successfully!");
+      toast.success(t.orderDeliveredSuccess);
       router.push("/rider");
     } catch (err) {
-      toast.error(t.deliveryCompleteError || "Failed to complete delivery");
+      toast.error(t.deliveryCompleteError);
     } finally {
       setDelivering(false);
     }
@@ -83,7 +84,7 @@ export default function DeliveryPage() {
       <div className="w-16 h-16 rounded-2xl bg-[#F4F7FB] flex items-center justify-center mx-auto mb-3">
         <Package size={28} className="text-[#D0D5DD]" />
       </div>
-      <p className="text-sm font-medium text-[#667085]">{t.orderNotFound || "Order not found"}</p>
+      <p className="text-sm font-medium text-[#667085]">{t.orderNotFound}</p>
     </div>
   );
 
@@ -98,7 +99,7 @@ export default function DeliveryPage() {
         </button>
         <div>
           <h1 className="text-lg sm:text-xl font-bold text-[#000000]">#{order.orderNumber}</h1>
-          <p className="text-[11px] text-[#667085]">{t.activeDelivery || "Active Delivery"}</p>
+          <p className="text-[11px] text-[#667085]">{t.activeDelivery}</p>
         </div>
         <span className={`ml-auto px-2.5 py-1 rounded-full text-[10px] font-semibold border ${statusConfig[order.orderStatus]?.color || "bg-gray-50 text-gray-600 border-gray-200"}`}>
           {statusConfig[order.orderStatus]?.label || order.orderStatus}
@@ -107,7 +108,7 @@ export default function DeliveryPage() {
 
       {/* Delivery Progress Stepper */}
       <div className="bg-white rounded-2xl p-5 border border-[#E5E7EB]">
-        <p className="text-[11px] font-semibold text-[#667085] mb-4">{t.deliveryProgress || "Delivery Progress"}</p>
+        <p className="text-[11px] font-semibold text-[#667085] mb-4">{t.deliveryProgress}</p>
         <div className="flex items-center justify-between relative px-2">
           <div className="absolute top-2 left-6 right-6 h-0.5 bg-gray-200" />
           <div className="absolute top-2 left-6 h-0.5 bg-[#EC008C] transition-all duration-500" style={{ width: `${(currentStepIndex / (deliverySteps.length - 1)) * 100}%`, maxWidth: "calc(100% - 48px)" }} />
@@ -137,26 +138,26 @@ export default function DeliveryPage() {
               <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
                 <User size={14} className="text-blue-500" />
               </div>
-              <h3 className="font-semibold text-sm text-[#000000]">{t.customerInfo || "Customer Info"}</h3>
+              <h3 className="font-semibold text-sm text-[#000000]">{t.customerInfo}</h3>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-3">
                 <div>
-                  <p className="text-[10px] text-[#667085] mb-0.5">{t.customer || "Customer"}</p>
+                  <p className="text-[10px] text-[#667085] mb-0.5">{t.customer}</p>
                   <p className="text-xs font-medium text-[#000000]">{order.user?.name}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-[#667085] mb-0.5">{t.phone || "Phone"}</p>
+                  <p className="text-[10px] text-[#667085] mb-0.5">{t.phone}</p>
                   <a href={`tel:${order.user?.phone}`} className="text-xs font-semibold text-[#EC008C] hover:underline">{order.user?.phone}</a>
                 </div>
               </div>
               <div className="space-y-3">
                 <div>
-                  <p className="text-[10px] text-[#667085] mb-0.5">{t.deliveryAddress || "Delivery Address"}</p>
+                  <p className="text-[10px] text-[#667085] mb-0.5">{t.deliveryAddress}</p>
                   <p className="text-xs font-medium text-[#000000]">{order.deliveryAddress}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-[#667085] mb-0.5">{t.district || "District"}</p>
+                  <p className="text-[10px] text-[#667085] mb-0.5">{t.district}</p>
                   <p className="text-xs font-medium text-[#000000]">{order.deliveryDistrict}</p>
                 </div>
               </div>
@@ -164,14 +165,14 @@ export default function DeliveryPage() {
             <div className="flex gap-2 mt-4">
               <a href={`tel:${order.user?.phone}`}
                 className="flex-1 flex items-center justify-center gap-2 bg-green-50 text-green-700 py-2.5 rounded-xl text-xs font-semibold hover:bg-green-100 transition border border-green-200">
-                <Phone size={14} /> {t.callCustomer || "Call Customer"}
+                <Phone size={14} /> {t.callCustomer}
               </a>
               {order.deliveryLatitude && order.deliveryLongitude && (
                 <button
                   onClick={() => setShowNavigateMap(true)}
                   className="flex items-center justify-center gap-2 bg-[#F4F7FB] text-[#00215B] px-4 py-2.5 rounded-xl text-xs font-semibold hover:bg-[#E8EDF4] transition border border-[#E5E7EB]"
                 >
-                  <Navigation size={14} /> {t.navigate || "Navigate"}
+                  <Navigation size={14} /> {t.navigate}
                 </button>
               )}
             </div>
@@ -183,19 +184,19 @@ export default function DeliveryPage() {
               <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center">
                 <CreditCard size={14} className="text-purple-500" />
               </div>
-              <h3 className="font-semibold text-sm text-[#000000]">{t.paymentInfo || "Payment Info"}</h3>
+              <h3 className="font-semibold text-sm text-[#000000]">{t.paymentInfo}</h3>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-[#F9FAFB] rounded-xl p-3">
-                <p className="text-[10px] text-[#667085]">{t.paymentMethod || "Payment Method"}</p>
+                <p className="text-[10px] text-[#667085]">{t.paymentMethod}</p>
                 <p className="text-xs font-semibold text-[#000000] mt-0.5">{order.paymentMethod}</p>
               </div>
               <div className="bg-[#F9FAFB] rounded-xl p-3">
-                <p className="text-[10px] text-[#667085]">{t.paymentStatus || "Payment Status"}</p>
+                <p className="text-[10px] text-[#667085]">{t.paymentStatus}</p>
                 <p className={`text-xs font-semibold mt-0.5 ${order.paymentStatus === "PAID" ? "text-emerald-600" : "text-amber-600"}`}>{order.paymentStatus}</p>
               </div>
               <div className="bg-[#F9FAFB] rounded-xl p-3 col-span-2">
-                <p className="text-[10px] text-[#667085]">{t.orderTotal || "Order Total"}</p>
+                <p className="text-[10px] text-[#667085]">{t.orderTotal}</p>
                 <p className="text-lg font-bold text-[#000000] mt-0.5">৳{order.total}</p>
               </div>
             </div>
@@ -206,7 +207,7 @@ export default function DeliveryPage() {
             <div className="bg-amber-50 rounded-2xl p-5 border border-amber-200">
               <div className="flex items-center gap-2 mb-2">
                 <FileText size={14} className="text-amber-600" />
-                <h3 className="font-semibold text-sm text-amber-800">{t.customRequirement || "Custom Requirement"}</h3>
+                <h3 className="font-semibold text-sm text-amber-800">{t.customRequirement}</h3>
               </div>
               <p className="text-xs text-amber-700 leading-relaxed">{order.customRequirement}</p>
             </div>
@@ -218,7 +219,7 @@ export default function DeliveryPage() {
               <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
                 <Package size={14} className="text-orange-500" />
               </div>
-              <h3 className="font-semibold text-sm text-[#000000]">{t.items || "Items"} ({order.items?.length || 0})</h3>
+              <h3 className="font-semibold text-sm text-[#000000]">{t.items} ({order.items?.length || 0})</h3>
             </div>
             <div className="space-y-2">
               {order.items?.map((item, idx) => (
@@ -249,7 +250,7 @@ export default function DeliveryPage() {
             ) : (
               <CheckCircle size={18} />
             )}
-            {delivering ? (t.processing || "Processing...") : (t.markAsDelivered || "Mark as Delivered")}
+            {delivering ? (t.processing) : (t.markAsDelivered)}
           </button>
         </div>
 
@@ -258,11 +259,11 @@ export default function DeliveryPage() {
           <div className="bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden sticky top-20">
             <div className="px-5 py-3 border-b border-[#F4F7FB] flex items-center gap-2">
               <MapPin size={14} className="text-[#EC008C]" />
-              <h3 className="font-semibold text-sm text-[#000000]">{t.deliveryLocation || "Delivery Location"}</h3>
+              <h3 className="font-semibold text-sm text-[#000000]">{t.deliveryLocation}</h3>
               {connected && (
                 <div className="ml-auto flex items-center gap-1">
                   <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                  <span className="text-[9px] font-semibold text-emerald-600">Live</span>
+                  <span className="text-[9px] font-semibold text-emerald-600">{t.live}</span>
                 </div>
               )}
             </div>
@@ -278,7 +279,7 @@ export default function DeliveryPage() {
                 <div className="h-full flex items-center justify-center bg-[#F9FAFB]">
                   <div className="text-center">
                     <MapPin size={28} className="mx-auto mb-2 text-[#D0D5DD]" />
-                    <p className="text-xs text-[#667085]">{t.noLocationAvailable || "No location available"}</p>
+                    <p className="text-xs text-[#667085]">{t.noLocationAvailable}</p>
                   </div>
                 </div>
               )}
@@ -292,8 +293,8 @@ export default function DeliveryPage() {
           onClose={() => setShowNavigateMap(false)}
           lat={order.deliveryLatitude}
           lng={order.deliveryLongitude}
-          label="Delivery Location"
-          title="Navigate to Delivery"
+          label={t.deliveryLocation}
+          title={t.navigateToDelivery}
         />
       )}
     </div>

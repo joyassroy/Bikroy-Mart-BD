@@ -154,9 +154,9 @@ model Order {
   customRequirement  String?
   estimatedDelivery  DateTime?
   actualDelivery     DateTime?
-   notes              String?
-   cancelReason       String?
-   createdAt          DateTime        @default(now())
+  notes              String?
+  cancelReason       String?
+  createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt
 }
 
