@@ -155,21 +155,21 @@ function getBadgeHTML(status, lang) {
   const info = STATUS_MAP[status] || STATUS_MAP.CONFIRMED;
   const label = lang === "bn" ? info.bn : info.en;
   const [r, g, b] = info.color;
-  return `<span style="background:rgb(${r},${g},${b});color:#fff;padding:3px 12px;border-radius:12px;font-size:11px;font-weight:600;letter-spacing:0.3px;display:inline-block">${label}</span>`;
+  return `<div style="display:inline-block;background:rgba(${r},${g},${b},0.15);color:rgb(${r},${g},${b});border:1px solid rgba(${r},${g},${b},0.3);padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.3px;white-space:nowrap;line-height:1.2">${label}</div>`;
 }
 
 function getPaymentBadgeHTML(method) {
   const isCOD = method === "COD" || method === "Cash on Delivery";
   const label = isCOD ? "COD" : "PAID";
   const [r, g, b] = isCOD ? [245, 158, 11] : [22, 163, 74];
-  return `<span style="background:rgb(${r},${g},${b});color:#fff;padding:3px 12px;border-radius:12px;font-size:11px;font-weight:600;display:inline-block">${label}</span>`;
+  return `<div style="display:inline-block;background:rgba(${r},${g},${b},0.15);color:rgb(${r},${g},${b});border:1px solid rgba(${r},${g},${b},0.3);padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.3px;white-space:nowrap;line-height:1.2">${label}</div>`;
 }
 
 function getPaymentStatusBadgeHTML(status, lang) {
   const info = PAYMENT_STATUS_MAP[status] || PAYMENT_STATUS_MAP.PENDING;
   const label = lang === "bn" ? info.bn : info.en;
   const [r, g, b] = info.color;
-  return `<span style="background:rgb(${r},${g},${b});color:#fff;padding:3px 12px;border-radius:12px;font-size:11px;font-weight:600;letter-spacing:0.3px;display:inline-block">${label}</span>`;
+  return `<div style="display:inline-block;background:rgba(${r},${g},${b},0.15);color:rgb(${r},${g},${b});border:1px solid rgba(${r},${g},${b},0.3);padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.3px;white-space:nowrap;line-height:1.2">${label}</div>`;
 }
 
 function buildInvoiceHTML(order, lang) {
@@ -185,21 +185,21 @@ function buildInvoiceHTML(order, lang) {
 
   const itemsHTML = d.items.map((item, i) => `
     <tr style="background:${i % 2 === 0 ? "#f9fafb" : "#fff"}">
-      <td style="padding:10px 14px;border-bottom:1px solid #e5e7eb;color:#374151;font-size:13px;font-family:${L.font}">${item.index}</td>
-      <td style="padding:10px 14px;border-bottom:1px solid #e5e7eb;color:#111827;font-size:13px;font-weight:500;font-family:${L.font}">
-        <div style="display:flex;align-items:center;gap:10px">
-          <div style="width:40px;height:40px;border-radius:8px;overflow:hidden;flex-shrink:0;background:#f3f4f6;display:flex;align-items:center;justify-content:center">
+      <td style="padding:14px 16px;border-bottom:1px solid #e5e7eb;color:#374151;font-size:13px;font-family:${L.font}">${item.index}</td>
+      <td style="padding:14px 16px;border-bottom:1px solid #e5e7eb;color:#111827;font-size:13px;font-weight:500;font-family:${L.font}">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:40px;height:40px;border-radius:8px;overflow:hidden;flex-shrink:0;background:#f3f4f6;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb">
             ${item.image
               ? `<img src="${item.image}" style="width:100%;height:100%;object-fit:cover" crossorigin="anonymous" />`
               : `<span style="color:#9ca3af;font-size:16px">📦</span>`
             }
           </div>
-          <span>${item.name}</span>
+          <span style="line-height:1.4">${item.name}</span>
         </div>
       </td>
-      <td style="padding:10px 14px;border-bottom:1px solid #e5e7eb;color:#374151;font-size:13px;text-align:center;font-family:${L.font}">${item.quantity}</td>
-      <td style="padding:10px 14px;border-bottom:1px solid #e5e7eb;color:#374151;font-size:13px;text-align:right;font-family:${L.font}">${currency} ${item.price.toLocaleString()}</td>
-      <td style="padding:10px 14px;border-bottom:1px solid #e5e7eb;color:#111827;font-size:13px;text-align:right;font-weight:600;font-family:${L.font}">${currency} ${item.totalPrice.toLocaleString()}</td>
+      <td style="padding:14px 16px;border-bottom:1px solid #e5e7eb;color:#374151;font-size:13px;text-align:center;font-family:${L.font}">${item.quantity}</td>
+      <td style="padding:14px 16px;border-bottom:1px solid #e5e7eb;color:#374151;font-size:13px;text-align:right;font-family:${L.font}">${currency} ${item.price.toLocaleString()}</td>
+      <td style="padding:14px 16px;border-bottom:1px solid #e5e7eb;color:#111827;font-size:13px;text-align:right;font-weight:700;font-family:${L.font}">${currency} ${item.totalPrice.toLocaleString()}</td>
     </tr>
   `).join("");
 
@@ -259,10 +259,10 @@ function buildInvoiceHTML(order, lang) {
           <div style="flex:1;background:#f4f7fb;border-radius:12px;padding:20px 22px;border:1px solid #e8ecf3">
             <div style="color:#00215B;font-size:12px;font-weight:700;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.8px;font-family:${L.font}">${L.orderDetails}</div>
             <table style="width:100%;border-collapse:collapse">
-              <tr><td style="padding:4px 0;color:#6b7280;font-size:12px;width:130px;font-family:${L.font}">${L.orderNumber}</td><td style="padding:4px 0;color:#111827;font-size:12px;font-weight:600">${d.orderNumber}</td></tr>
-              <tr><td style="padding:4px 0;color:#6b7280;font-size:12px;font-family:${L.font}">${L.orderDate}</td><td style="padding:4px 0;color:#111827;font-size:12px;font-weight:600">${d.date}</td></tr>
-              <tr><td style="padding:4px 0;color:#6b7280;font-size:12px;font-family:${L.font}">${L.payment}</td><td style="padding:4px 0;font-size:12px;text-align:center">${getPaymentBadgeHTML(d.paymentMethod)}</td></tr>
-              <tr><td style="padding:4px 0;color:#6b7280;font-size:12px;font-family:${L.font}">${L.status}</td><td style="padding:4px 0;font-size:12px;text-align:center">${getBadgeHTML(d.orderStatus, lang)}</td></tr>
+              <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;width:130px;font-family:${L.font}">${L.orderNumber}</td><td style="padding:6px 0;color:#111827;font-size:12px;font-weight:600">${d.orderNumber}</td></tr>
+              <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;font-family:${L.font}">${L.orderDate}</td><td style="padding:6px 0;color:#111827;font-size:12px;font-weight:600">${d.date}</td></tr>
+              <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;font-family:${L.font}">${L.payment}</td><td style="padding:6px 0;font-size:12px;text-align:left">${getPaymentBadgeHTML(d.paymentMethod)}</td></tr>
+              <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;font-family:${L.font}">${L.status}</td><td style="padding:6px 0;font-size:12px;text-align:left">${getBadgeHTML(d.orderStatus, lang)}</td></tr>
               ${estDeliveryHTML}
             </table>
           </div>
@@ -270,39 +270,39 @@ function buildInvoiceHTML(order, lang) {
           <div style="flex:1;background:#f4f7fb;border-radius:12px;padding:20px 22px;border:1px solid #e8ecf3">
             <div style="color:#00215B;font-size:12px;font-weight:700;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.8px;font-family:${L.font}">${L.shipTo}</div>
             <table style="width:100%;border-collapse:collapse">
-              <tr><td style="padding:4px 0;color:#6b7280;font-size:12px;width:85px;font-family:${L.font}">${L.name}</td><td style="padding:4px 0;color:#111827;font-size:12px;font-weight:600">${d.customerName}</td></tr>
-              <tr><td style="padding:4px 0;color:#6b7280;font-size:12px;font-family:${L.font}">${L.phone}</td><td style="padding:4px 0;color:#111827;font-size:12px">${d.customerPhone}</td></tr>
-              <tr><td style="padding:4px 0;color:#6b7280;font-size:12px;font-family:${L.font}">${L.address}</td><td style="padding:4px 0;color:#111827;font-size:12px">${d.address || "N/A"}</td></tr>
-              <tr><td style="padding:4px 0;color:#6b7280;font-size:12px;font-family:${L.font}">${L.upazila}</td><td style="padding:4px 0;color:#111827;font-size:12px">${d.upazila || "N/A"}</td></tr>
-              <tr><td style="padding:4px 0;color:#6b7280;font-size:12px;font-family:${L.font}">${L.district}</td><td style="padding:4px 0;color:#111827;font-size:12px">${d.district || "N/A"}</td></tr>
-              <tr><td style="padding:4px 0;color:#6b7280;font-size:12px;font-family:${L.font}">${L.division}</td><td style="padding:4px 0;color:#111827;font-size:12px">${d.division || "N/A"}</td></tr>
+              <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;width:85px;font-family:${L.font}">${L.name}</td><td style="padding:6px 0;color:#111827;font-size:12px;font-weight:600">${d.customerName}</td></tr>
+              <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;font-family:${L.font}">${L.phone}</td><td style="padding:6px 0;color:#111827;font-size:12px">${d.customerPhone}</td></tr>
+              <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;font-family:${L.font}">${L.address}</td><td style="padding:6px 0;color:#111827;font-size:12px">${d.address || "N/A"}</td></tr>
+              <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;font-family:${L.font}">${L.upazila}</td><td style="padding:6px 0;color:#111827;font-size:12px">${d.upazila || "N/A"}</td></tr>
+              <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;font-family:${L.font}">${L.district}</td><td style="padding:6px 0;color:#111827;font-size:12px">${d.district || "N/A"}</td></tr>
+              <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;font-family:${L.font}">${L.division}</td><td style="padding:6px 0;color:#111827;font-size:12px">${d.division || "N/A"}</td></tr>
             </table>
           </div>
         </div>
 
         <!-- Payment Information -->
-        <div style="background:#f4f7fb;border-radius:12px;padding:16px 22px;border:1px solid #e8ecf3;margin-bottom:24px">
-          <div style="color:#00215B;font-size:12px;font-weight:700;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.8px;font-family:${L.font}">${L.paymentInfo}</div>
+        <div style="background:#f4f7fb;border-radius:12px;padding:20px 22px;border:1px solid #e8ecf3;margin-bottom:24px">
+          <div style="color:#00215B;font-size:12px;font-weight:700;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.8px;font-family:${L.font}">${L.paymentInfo}</div>
           <div style="display:flex;gap:40px">
             <table style="border-collapse:collapse">
-              <tr><td style="padding:3px 0;color:#6b7280;font-size:12px;width:120px;font-family:${L.font}">${L.paymentMethod}</td><td style="padding:3px 0;font-size:12px;text-align:center">${getPaymentBadgeHTML(d.paymentMethod)}</td></tr>
+              <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;width:130px;font-family:${L.font}">${L.paymentMethod}</td><td style="padding:6px 0;font-size:12px;text-align:left">${getPaymentBadgeHTML(d.paymentMethod)}</td></tr>
             </table>
             <table style="border-collapse:collapse">
-              <tr><td style="padding:3px 0;color:#6b7280;font-size:12px;width:120px;font-family:${L.font}">${L.paymentStatus}</td><td style="padding:3px 0;font-size:12px;text-align:center">${getPaymentStatusBadgeHTML(d.paymentStatus, lang)}</td></tr>
+              <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;width:130px;font-family:${L.font}">${L.paymentStatus}</td><td style="padding:6px 0;font-size:12px;text-align:left">${getPaymentStatusBadgeHTML(d.paymentStatus, lang)}</td></tr>
             </table>
             ${transactionIdHTML ? `<table style="border-collapse:collapse">${transactionIdHTML}</table>` : ""}
           </div>
         </div>
 
         <!-- Items Table -->
-        <table style="width:100%;border-collapse:collapse;margin-bottom:20px;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06)">
+        <table style="width:100%;border-collapse:collapse;margin-bottom:24px;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.04);border:1px solid #e8ecf3">
           <thead>
             <tr style="background:linear-gradient(135deg,#00215B,#003087)">
-              <th style="padding:11px 14px;text-align:left;color:#fff;font-size:11px;font-weight:600;width:36px;letter-spacing:0.5px;border-radius:8px 0 0 0;font-family:${L.font}">#</th>
-              <th style="padding:11px 14px;text-align:left;color:#fff;font-size:11px;font-weight:600;letter-spacing:0.5px;font-family:${L.font}">${L.itemHeader}</th>
-              <th style="padding:11px 14px;text-align:center;color:#fff;font-size:11px;font-weight:600;width:60px;letter-spacing:0.5px;font-family:${L.font}">${L.qtyHeader}</th>
-              <th style="padding:11px 14px;text-align:right;color:#fff;font-size:11px;font-weight:600;width:100px;letter-spacing:0.5px;font-family:${L.font}">${L.unitPriceHeader}</th>
-              <th style="padding:11px 14px;text-align:right;color:#fff;font-size:11px;font-weight:600;width:100px;letter-spacing:0.5px;border-radius:0 8px 0 0;font-family:${L.font}">${L.totalHeader}</th>
+              <th style="padding:14px 16px;text-align:left;color:#fff;font-size:11px;font-weight:700;width:36px;letter-spacing:0.8px;text-transform:uppercase;font-family:${L.font}">#</th>
+              <th style="padding:14px 16px;text-align:left;color:#fff;font-size:11px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;font-family:${L.font}">${L.itemHeader}</th>
+              <th style="padding:14px 16px;text-align:center;color:#fff;font-size:11px;font-weight:700;width:60px;letter-spacing:0.8px;text-transform:uppercase;font-family:${L.font}">${L.qtyHeader}</th>
+              <th style="padding:14px 16px;text-align:right;color:#fff;font-size:11px;font-weight:700;width:100px;letter-spacing:0.8px;text-transform:uppercase;font-family:${L.font}">${L.unitPriceHeader}</th>
+              <th style="padding:14px 16px;text-align:right;color:#fff;font-size:11px;font-weight:700;width:100px;letter-spacing:0.8px;text-transform:uppercase;font-family:${L.font}">${L.totalHeader}</th>
             </tr>
           </thead>
           <tbody>${itemsHTML}</tbody>
