@@ -4,6 +4,7 @@ import api from "@/lib/axios";
 import { Plus, Trash2, Edit2, X, ChevronDown, ChevronUp } from "lucide-react";
 import toast from "react-hot-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
+import Pagination from "@/components/ui/Pagination";
 
 export default function BannersPage() {
   const { t, language } = useLanguage();
@@ -11,6 +12,8 @@ export default function BannersPage() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
   const [form, setForm] = useState({
     title: "",
     subtitle: "",
@@ -32,6 +35,9 @@ export default function BannersPage() {
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
+
+  const totalPages = Math.ceil(banners.length / ITEMS_PER_PAGE);
+  const paginatedBanners = banners.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const fetchCategories = async () => {
     try {
@@ -233,7 +239,7 @@ export default function BannersPage() {
                 <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">{t.loading}</td></tr>
               ) : banners.length === 0 ? (
                 <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">{t.noBannersFound}</td></tr>
-              ) : banners.map((banner) => (
+              ) : paginatedBanners.map((banner) => (
                 <tr key={banner.id} className="border-b hover:bg-gray-50">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
@@ -287,6 +293,8 @@ export default function BannersPage() {
           </table>
         </div>
       </div>
+
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={banners.length} itemsPerPage={ITEMS_PER_PAGE} />
     </div>
   );
 }

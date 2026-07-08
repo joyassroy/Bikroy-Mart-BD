@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { X, Truck, Search, Package, Clock, CheckCircle, MapPin, Phone, User, ChevronDown, RefreshCw, Printer } from "lucide-react";
 import { printInvoice } from "@/lib/generateInvoice";
 import { useLanguage } from "@/i18n/LanguageContext";
+import Pagination from "@/components/ui/Pagination";
 
 const statusColors = {
   PENDING: "bg-yellow-100 text-yellow-700",
@@ -26,6 +27,8 @@ export default function ManagerOrdersPage() {
   const [filter, setFilter] = useState("ALL");
   const [search, setSearch] = useState("");
   const [updatingStatus, setUpdatingStatus] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   const statusLabels = {
     PENDING: t.pending,
@@ -92,6 +95,11 @@ export default function ManagerOrdersPage() {
   };
 
   const filtered = orders.filter((o) => filter === "ALL" || o.orderStatus === filter);
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  useEffect(() => { setCurrentPage(1); }, [search, filter]);
 
   const stats = {
     total: orders.length,
@@ -184,7 +192,7 @@ export default function ManagerOrdersPage() {
                 <p>{search ? t.noSearchResults : t.noOrdersFound}</p>
               </td></tr>
             ) : (
-              filtered.map((order) => (
+              paginated.map((order) => (
                 <tr key={order.id} className="border-b border-[#F4F7FB] hover:bg-[#F4F7FB] transition">
                   <td className="px-3 py-2.5 font-medium text-[#EC008C] text-[11px] sm:text-xs">{order.orderNumber}</td>
                   <td className="px-3 py-2.5">
@@ -238,6 +246,8 @@ export default function ManagerOrdersPage() {
           </tbody>
         </table>
       </div>
+
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={filtered.length} itemsPerPage={ITEMS_PER_PAGE} />
 
       {/* Rider Assignment Modal */}
       {showRiderModal && selectedOrder && (

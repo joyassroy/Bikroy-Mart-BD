@@ -4,6 +4,7 @@ import api from "@/lib/axios";
 import { Plus, Edit, Trash2, X, Image as ImageIcon, Search } from "lucide-react";
 import toast from "react-hot-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
+import Pagination from "@/components/ui/Pagination";
 
 export default function SubcategoriesPage() {
   const { t } = useLanguage();
@@ -13,6 +14,8 @@ export default function SubcategoriesPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
   
   const [formData, setFormData] = useState({
     name: "",
@@ -49,6 +52,11 @@ export default function SubcategoriesPage() {
         (s.category?.name && s.category.name.toLowerCase().includes(search.toLowerCase()))
       )
     : subcategories;
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  useEffect(() => { setCurrentPage(1); }, [search]);
 
   const handleOpenModal = (subcategory = null) => {
     if (subcategory) {
@@ -141,7 +149,7 @@ export default function SubcategoriesPage() {
               ) : filtered.length === 0 ? (
                 <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">{search ? "No subcategories match your search" : "No subcategories found"}</td></tr>
               ) : (
-                filtered.map((s) => (
+                paginated.map((s) => (
                   <tr key={s.id} className="border-b hover:bg-gray-50">
                     <td className="px-4 py-3">
                       {s.image ? (
@@ -173,6 +181,8 @@ export default function SubcategoriesPage() {
           </table>
         </div>
       </div>
+
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={filtered.length} itemsPerPage={ITEMS_PER_PAGE} />
 
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">

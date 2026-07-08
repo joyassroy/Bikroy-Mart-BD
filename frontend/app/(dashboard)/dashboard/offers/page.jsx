@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import api from "@/lib/axios";
 import { Plus, Trash2, Edit2, X, Tag, Package, Gift, Sparkles, ShoppingBag, Search } from "lucide-react";
 import toast from "react-hot-toast";
+import Pagination from "@/components/ui/Pagination";
 
 const OFFER_TYPES = [
   { value: "FLASH_DEAL", label: "Flash Deal", icon: Tag, color: "text-orange-600 bg-orange-50" },
@@ -24,6 +25,9 @@ export default function OffersPage() {
   const [editingId, setEditingId] = useState(null);
   const [editingSource, setEditingSource] = useState(null); // "flash" or "promo"
   const [productSearch, setProductSearch] = useState("");
+  const [flashPage, setFlashPage] = useState(1);
+  const [promoPage, setPromoPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   const [flashForm, setFlashForm] = useState({
     productId: "", dealPrice: "", quantity: "", startsAt: "", endsAt: "",
@@ -169,6 +173,13 @@ export default function OffersPage() {
 
   const currentItems = flashDeals.filter((d) => d.type === activeType);
   const currentPromoItems = promoOffers.filter((o) => o.type === activeType);
+
+  const flashTotalPages = Math.ceil(currentItems.length / ITEMS_PER_PAGE);
+  const paginatedFlash = currentItems.slice((flashPage - 1) * ITEMS_PER_PAGE, flashPage * ITEMS_PER_PAGE);
+  const promoTotalPages = Math.ceil(currentPromoItems.length / ITEMS_PER_PAGE);
+  const paginatedPromo = currentPromoItems.slice((promoPage - 1) * ITEMS_PER_PAGE, promoPage * ITEMS_PER_PAGE);
+
+  useEffect(() => { setFlashPage(1); setPromoPage(1); }, [activeType]);
 
   return (
     <div>
@@ -366,7 +377,7 @@ export default function OffersPage() {
                 <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">Loading...</td></tr>
               ) : (
                 <>
-                  {currentItems.map((deal) => (
+                  {paginatedFlash.map((deal) => (
                     <tr key={deal.id} className="border-b hover:bg-gray-50">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
@@ -402,7 +413,7 @@ export default function OffersPage() {
                       </td>
                     </tr>
                   ))}
-                  {currentPromoItems.map((offer) => (
+                  {paginatedPromo.map((offer) => (
                     <tr key={offer.id} className="border-b hover:bg-gray-50 bg-blue-50/30">
                       <td className="px-4 py-3">
                         <div>
@@ -444,6 +455,13 @@ export default function OffersPage() {
           </table>
         </div>
       </div>
+
+      {currentItems.length > ITEMS_PER_PAGE && (
+        <Pagination currentPage={flashPage} totalPages={flashTotalPages} onPageChange={setFlashPage} totalItems={currentItems.length} itemsPerPage={ITEMS_PER_PAGE} />
+      )}
+      {currentPromoItems.length > ITEMS_PER_PAGE && (
+        <Pagination currentPage={promoPage} totalPages={promoTotalPages} onPageChange={setPromoPage} totalItems={currentPromoItems.length} itemsPerPage={ITEMS_PER_PAGE} />
+      )}
     </div>
   );
 }

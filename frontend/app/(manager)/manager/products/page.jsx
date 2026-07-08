@@ -5,6 +5,7 @@ import { Plus, Edit, X, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
 import { useLanguage } from "@/i18n/LanguageContext";
+import Pagination from "@/components/ui/Pagination";
 
 const emptyForm = {
   name: "", nameBn: "", description: "", descriptionBn: "", price: "",
@@ -26,6 +27,8 @@ export default function ManagerProductsPage() {
   const user = useSelector((state) => state.user?.data);
   const [managerProfile, setManagerProfile] = useState(null);
   const [existingImages, setExistingImages] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
     fetchManagerProfile();
@@ -53,6 +56,10 @@ export default function ManagerProductsPage() {
     catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
+
+  const filtered = products;
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const fetchCategories = async () => {
     try { const res = await api.get("/categories"); setCategories(res.data.data || []); }
@@ -158,10 +165,10 @@ export default function ManagerProductsPage() {
             <tbody>
               {loading ? (
                 <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">{t.loading}</td></tr>
-              ) : products.length === 0 ? (
+              ) : filtered.length === 0 ? (
                 <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">{t.notFound}</td></tr>
               ) : (
-                products.map((p) => (
+                paginated.map((p) => (
                   <tr key={p.id} className="border-b hover:bg-gray-50">
                     <td className="px-4 py-3 text-sm font-medium">{p.name}</td>
                     <td className="px-4 py-3 text-sm">{p.category?.name}</td>
@@ -187,6 +194,8 @@ export default function ManagerProductsPage() {
           </table>
         </div>
       </div>
+
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={filtered.length} itemsPerPage={ITEMS_PER_PAGE} />
 
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowModal(false)}>

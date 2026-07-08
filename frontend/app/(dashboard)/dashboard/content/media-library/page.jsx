@@ -3,11 +3,14 @@ import { useState, useEffect, useRef } from "react";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
 import { Upload, Trash2, Copy, FileIcon, ImageIcon } from "lucide-react";
+import Pagination from "@/components/ui/Pagination";
 
 export default function MediaLibraryPage() {
   const [media, setMedia] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -72,6 +75,9 @@ export default function MediaLibraryPage() {
 
   if (loading) return <div className="p-4 text-gray-500">Loading media library...</div>;
 
+  const totalPages = Math.ceil(media.length / ITEMS_PER_PAGE);
+  const paginated = media.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
   return (
     <div className="p-4 sm:p-8">
       <div className="flex justify-between items-center mb-6">
@@ -100,7 +106,7 @@ export default function MediaLibraryPage() {
           </div>
         )}
         
-        {media.map((file) => (
+        {paginated.map((file) => (
           <div key={file.id} className="bg-white rounded-xl shadow-sm border overflow-hidden group relative">
             <div className="h-32 bg-gray-50 flex items-center justify-center p-2 relative">
               {file.fileType.startsWith("image/") ? (
@@ -138,6 +144,8 @@ export default function MediaLibraryPage() {
           </div>
         ))}
       </div>
+
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={media.length} itemsPerPage={ITEMS_PER_PAGE} />
     </div>
   );
 }

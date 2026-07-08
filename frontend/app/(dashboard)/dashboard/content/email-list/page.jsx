@@ -3,10 +3,13 @@ import { useState, useEffect } from "react";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
 import { Mail, Trash2 } from "lucide-react";
+import Pagination from "@/components/ui/Pagination";
 
 export default function EmailListPage() {
   const [subscribers, setSubscribers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
     fetchSubscribers();
@@ -36,6 +39,9 @@ export default function EmailListPage() {
 
   if (loading) return <div className="p-4 text-gray-500">Loading email list...</div>;
 
+  const totalPages = Math.ceil(subscribers.length / ITEMS_PER_PAGE);
+  const paginated = subscribers.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
   return (
     <div className="p-4 sm:p-8">
       <div className="flex justify-between items-center mb-6">
@@ -62,7 +68,7 @@ export default function EmailListPage() {
                   <td colSpan={4} className="px-6 py-8 text-center text-gray-500">No subscribers found.</td>
                 </tr>
               )}
-              {subscribers.map((sub) => (
+              {paginated.map((sub) => (
                 <tr key={sub.id} className="hover:bg-gray-50/50">
                   <td className="px-6 py-4 text-sm font-medium text-gray-800">
                     {sub.email}
@@ -91,6 +97,8 @@ export default function EmailListPage() {
           </table>
         </div>
       </div>
+
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={subscribers.length} itemsPerPage={ITEMS_PER_PAGE} />
     </div>
   );
 }

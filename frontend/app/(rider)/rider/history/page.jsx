@@ -4,6 +4,7 @@ import api from "@/lib/axios";
 import { CheckCircle, Package, Search, TrendingUp, Calendar, Printer, X, Phone, MapPin } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { printInvoice } from "@/lib/generateInvoice";
+import Pagination from "@/components/ui/Pagination";
 
 const statusColors = {
   PENDING: "bg-yellow-100 text-yellow-700",
@@ -21,6 +22,8 @@ export default function RiderHistoryPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
     fetchHistory();
@@ -47,6 +50,15 @@ export default function RiderHistoryPage() {
     const now = new Date();
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
   }).length;
+
+  const filtered = search
+    ? orders.filter((o) => (o.orderNumber?.toLowerCase().includes(search.toLowerCase()) || o.user?.name?.toLowerCase().includes(search.toLowerCase())))
+    : orders;
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  useEffect(() => { setCurrentPage(1); }, [search]);
 
   if (loading) {
     return (
@@ -129,7 +141,7 @@ export default function RiderHistoryPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F4F7FB]">
-              {orders.length === 0 ? (
+              {filtered.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-5 py-12 text-center">
                     <div className="w-14 h-14 rounded-2xl bg-[#F4F7FB] flex items-center justify-center mx-auto mb-3">
@@ -140,7 +152,7 @@ export default function RiderHistoryPage() {
                   </td>
                 </tr>
               ) : (
-                orders.map((order) => (
+                paginated.map((order) => (
                   <tr key={order.id} className="hover:bg-[#F9FAFB] transition-colors cursor-pointer" onClick={() => setSelectedOrder(order)}>
                     <td className="px-5 py-3.5">
                       <span className="text-xs font-semibold text-[#EC008C]">{order.orderNumber}</span>
@@ -183,6 +195,8 @@ export default function RiderHistoryPage() {
           </table>
         </div>
       </div>
+
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={filtered.length} itemsPerPage={ITEMS_PER_PAGE} />
 
       {/* Order Detail Modal */}
       {selectedOrder && (

@@ -3,10 +3,13 @@ import { useState, useEffect } from "react";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
 import { Plus, Edit2, Trash2, ToggleLeft, ToggleRight, ExternalLink } from "lucide-react";
+import Pagination from "@/components/ui/Pagination";
 
 export default function SponsorsAdminPage() {
   const [sponsors, setSponsors] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 8;
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [logoFile, setLogoFile] = useState(null);
@@ -95,6 +98,9 @@ export default function SponsorsAdminPage() {
 
   if (loading) return <div className="p-4 text-gray-500">Loading sponsors...</div>;
 
+  const totalPages = Math.ceil(sponsors.length / ITEMS_PER_PAGE);
+  const paginatedSponsors = sponsors.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
   return (
     <div className="p-4 sm:p-8">
       <div className="flex justify-between items-center mb-6">
@@ -117,7 +123,7 @@ export default function SponsorsAdminPage() {
             No sponsors yet. Add your first sponsor to show them in the homepage marquee!
           </div>
         )}
-        {sponsors.map((sponsor) => (
+        {paginatedSponsors.map((sponsor) => (
           <div key={sponsor.id} className={`bg-white rounded-xl border shadow-sm overflow-hidden transition-all ${!sponsor.isActive ? 'opacity-50' : ''}`}>
             <div className="h-28 bg-gray-50 flex items-center justify-center p-4 border-b">
               <img
@@ -158,6 +164,8 @@ export default function SponsorsAdminPage() {
           </div>
         ))}
       </div>
+
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={sponsors.length} itemsPerPage={ITEMS_PER_PAGE} />
 
       {/* Modal */}
       {showModal && (

@@ -5,6 +5,7 @@ import api from "@/lib/axios";
 import { Ban, CheckCircle, Edit2, Trash2, X, UserCog } from "lucide-react";
 import toast from "react-hot-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
+import Pagination from "@/components/ui/Pagination";
 
 export default function CustomersPage() {
   const { t } = useLanguage();
@@ -14,6 +15,8 @@ export default function CustomersPage() {
   const [editingUser, setEditingUser] = useState(null);
   const [editForm, setEditForm] = useState({ name: "", email: "", phone: "" });
   const [filterRole, setFilterRole] = useState("ALL");
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   useEffect(() => { fetchUsers(); }, []);
 
@@ -66,6 +69,11 @@ export default function CustomersPage() {
 
   const filteredUsers = filterRole === "ALL" ? users : users.filter((u) => u.role === filterRole);
 
+  const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
+  const paginated = filteredUsers.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  useEffect(() => { setCurrentPage(1); }, [filterRole]);
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -110,7 +118,7 @@ export default function CustomersPage() {
                 <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">{t.loading}</td></tr>
               ) : filteredUsers.length === 0 ? (
                 <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">{t.noUsersFound}</td></tr>
-              ) : filteredUsers.map((user) => (
+              ) : paginated.map((user) => (
                 <tr key={user.id} className="border-b hover:bg-gray-50">
                   <td className="px-4 py-3">
                     <div>
@@ -161,6 +169,8 @@ export default function CustomersPage() {
           </table>
         </div>
       </div>
+
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={filteredUsers.length} itemsPerPage={ITEMS_PER_PAGE} />
 
       {editingUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

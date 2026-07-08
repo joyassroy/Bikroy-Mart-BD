@@ -14,6 +14,7 @@ import { BANGLADESH_LOCATIONS, getUpazilas } from "@/lib/constants";
 import toast from "react-hot-toast";
 import FloatingChatButton from "@/components/layout/FloatingChatButton";
 import { printInvoice } from "@/lib/generateInvoice";
+import Pagination from "@/components/ui/Pagination";
 
 const statusSteps = ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED"];
 
@@ -56,6 +57,8 @@ export default function AccountPage() {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [cancellingLoading, setCancellingLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
     const div = BANGLADESH_LOCATIONS.find((d) => d.division === addressForm.division);
@@ -354,6 +357,9 @@ export default function AccountPage() {
 
   const getStatusIndex = (status) => statusSteps.indexOf(status);
 
+  const totalPages = Math.ceil(orders.length / ITEMS_PER_PAGE);
+  const paginatedOrders = orders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
   if (!authChecked) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -470,7 +476,7 @@ export default function AccountPage() {
                   </div>
                 ) : (
                   <div className="divide-y divide-gray-100">
-                    {orders.map((order) => (
+                    {paginatedOrders.map((order) => (
                       <div key={order.id} className="p-6 hover:bg-gray-50 transition cursor-pointer" onClick={() => setSelectedOrder(order)}>
                         <div className="flex justify-between items-start">
                           <div>
@@ -513,6 +519,10 @@ export default function AccountPage() {
                         </div>
                       </div>
                     ))}
+                  </div>
+
+                  <div className="px-6 pb-6">
+                    <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={orders.length} itemsPerPage={ITEMS_PER_PAGE} />
                   </div>
                 )}
               </div>

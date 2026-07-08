@@ -115,6 +115,7 @@ const en = {
   back: "Back",
   next: "Next",
   previous: "Previous",
+  showingXofY: "Showing {from}-{to} of {total}",
   loading: "Loading...",
   noResults: "No results found",
   viewDetails: "View Details",

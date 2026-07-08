@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
 import { X, Eye, ClipboardList, Truck, CheckCircle, XCircle, Clock } from "lucide-react";
+import Pagination from "@/components/ui/Pagination";
 
 const STATUS_CONFIG = {
   PENDING: { color: "bg-yellow-100 text-yellow-700", label: "Pending" },
@@ -27,6 +28,8 @@ export default function ManagerCustomRequestsPage() {
   const [riders, setRiders] = useState([]);
   const [showQuoteModal, setShowQuoteModal] = useState(false);
   const [showRiderModal, setShowRiderModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
   const [quoteForm, setQuoteForm] = useState({ quotedPrice: "", deliveryCharge: "", managerNotes: "" });
 
   useEffect(() => { fetchRequests(); fetchRiders(); }, []);
@@ -53,6 +56,11 @@ export default function ManagerCustomRequestsPage() {
   };
 
   const filteredRequests = activeTab === "ALL" ? requests : requests.filter((r) => r.status === activeTab);
+
+  const totalPages = Math.ceil(filteredRequests.length / ITEMS_PER_PAGE);
+  const paginatedRequests = filteredRequests.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  useEffect(() => { setCurrentPage(1); }, [activeTab]);
 
   const stats = {
     pending: requests.filter((r) => r.status === "PENDING" || r.status === "MANAGER_REVIEW").length,
@@ -169,7 +177,7 @@ export default function ManagerCustomRequestsPage() {
               ) : filteredRequests.length === 0 ? (
                 <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">No custom requests found</td></tr>
               ) : (
-                filteredRequests.map((req) => {
+                paginatedRequests.map((req) => {
                   const st = STATUS_CONFIG[req.status] || STATUS_CONFIG.PENDING;
                   return (
                     <tr key={req.id} className="border-b hover:bg-gray-50">
@@ -214,6 +222,8 @@ export default function ManagerCustomRequestsPage() {
           </table>
         </div>
       </div>
+
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={filteredRequests.length} itemsPerPage={ITEMS_PER_PAGE} />
 
       {/* Detail Modal */}
       {selectedRequest && !showQuoteModal && !showRiderModal && (

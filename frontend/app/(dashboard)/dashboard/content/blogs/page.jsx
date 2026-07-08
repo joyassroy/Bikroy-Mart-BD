@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
 import { Plus, Edit2, Trash2 } from "lucide-react";
+import Pagination from "@/components/ui/Pagination";
 
 export default function BlogsPage() {
   const [blogs, setBlogs] = useState([]);
@@ -13,6 +14,8 @@ export default function BlogsPage() {
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({ title: "", content: "", author: "", isPublished: true });
   const [imageFile, setImageFile] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 9;
 
   useEffect(() => {
     fetchBlogs();
@@ -84,6 +87,9 @@ export default function BlogsPage() {
 
   if (loading) return <div className="p-4 text-gray-500">Loading blogs...</div>;
 
+  const totalPages = Math.ceil(blogs.length / ITEMS_PER_PAGE);
+  const paginatedBlogs = blogs.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
   return (
     <div className="p-4 sm:p-8">
       <div className="flex justify-between items-center mb-6">
@@ -97,7 +103,7 @@ export default function BlogsPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {blogs.map((blog) => (
+        {paginatedBlogs.map((blog) => (
           <div key={blog.id} className="bg-white rounded-xl shadow-sm border overflow-hidden">
             <div className="h-48 bg-gray-100">
               {blog.image ? (
@@ -127,6 +133,8 @@ export default function BlogsPage() {
           </div>
         ))}
       </div>
+
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={blogs.length} itemsPerPage={ITEMS_PER_PAGE} />
 
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">

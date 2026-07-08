@@ -6,6 +6,7 @@ import { Plus, Trash2, X, Pencil, Search } from "lucide-react";
 import toast from "react-hot-toast";
 import EditManagerModal from "@/components/manager/EditManagerModal";
 import { useLanguage } from "@/i18n/LanguageContext";
+import Pagination from "@/components/ui/Pagination";
 
 export default function ManagersPage() {
   const { t } = useLanguage();
@@ -14,12 +15,23 @@ export default function ManagersPage() {
   const [showForm, setShowForm] = useState(false);
   const [editManager, setEditManager] = useState(null);
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
   const [form, setForm] = useState({
     name: "", email: "", phone: "", password: "",
     assignedDistrict: "Dhaka", assignedZila: "",
   });
 
   useEffect(() => { fetchManagers(); }, [search]);
+
+  useEffect(() => { setCurrentPage(1); }, [search]);
+
+  const filtered = search
+    ? managers.filter((m) => (m.user?.name?.toLowerCase().includes(search.toLowerCase()) || m.user?.email?.toLowerCase().includes(search.toLowerCase()) || m.assignedDistrict?.toLowerCase().includes(search.toLowerCase())))
+    : managers;
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const fetchManagers = async () => {
     try {
@@ -129,10 +141,10 @@ export default function ManagersPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {loading ? (
           [...Array(3)].map((_, i) => <div key={i} className="bg-white rounded-xl h-40 animate-pulse shadow-sm"></div>)
-        ) : managers.length === 0 ? (
+        ) : filtered.length === 0 ? (
           <div className="bg-white rounded-xl p-8 text-center text-gray-400 col-span-3">{t.noManagersFound}</div>
         ) : (
-          managers.map((manager) => (
+          paginated.map((manager) => (
             <div key={manager.id} className="bg-white rounded-xl p-5 shadow-sm">
               <div className="flex items-start justify-between">
                 <div>
@@ -163,6 +175,8 @@ export default function ManagersPage() {
           ))
         )}
       </div>
+
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={filtered.length} itemsPerPage={ITEMS_PER_PAGE} />
 
       {editManager && (
         <EditManagerModal

@@ -3,11 +3,14 @@ import { useState, useEffect, useMemo } from "react";
 import api from "@/lib/axios";
 import { AlertTriangle, Package, TrendingUp, Search, Download, Upload, Plus, MoreHorizontal } from "lucide-react";
 import toast from "react-hot-toast";
+import Pagination from "@/components/ui/Pagination";
 
 export default function InventoryPage() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
   const lowStockThreshold = 10;
 
   useEffect(() => {
@@ -43,6 +46,11 @@ export default function InventoryPage() {
       );
     });
   }, [products, searchTerm]);
+
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+  const paginated = filteredProducts.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  useEffect(() => { setCurrentPage(1); }, [searchTerm]);
 
   const getStockStatus = (stock) => {
     if (stock === 0) return { status: "Out of Stock", color: "bg-red-100 text-red-600" };
@@ -129,7 +137,7 @@ export default function InventoryPage() {
               ) : filteredProducts.length === 0 ? (
                 <tr><td colSpan={6} className="px-6 py-8 text-center text-gray-500">No products found.</td></tr>
               ) : (
-                filteredProducts.map((product) => {
+                paginated.map((product) => {
                   const stockStatus = getStockStatus(product.stock);
                   return (
                     <tr key={product.id} className="hover:bg-gray-50/50">
@@ -176,6 +184,8 @@ export default function InventoryPage() {
           </table>
         </div>
       </div>
+
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={filteredProducts.length} itemsPerPage={ITEMS_PER_PAGE} />
     </div>
   );
 }

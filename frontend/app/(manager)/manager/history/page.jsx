@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import api from "@/lib/axios";
 import { CheckCircle, XCircle, Package, Search, TrendingUp, Calendar } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
+import Pagination from "@/components/ui/Pagination";
 
 const STATUS_CONFIG = {
   DELIVERED: { label: "Delivered", color: "bg-green-100 text-green-700", icon: CheckCircle },
@@ -15,6 +16,8 @@ export default function ManagerHistoryPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
     fetchHistory();
@@ -45,6 +48,15 @@ export default function ManagerHistoryPage() {
     const now = new Date();
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
   }).length;
+
+  const filtered = statusFilter
+    ? orders.filter((o) => o.orderStatus === statusFilter)
+    : orders;
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  useEffect(() => { setCurrentPage(1); }, [search, statusFilter]);
 
   if (loading) {
     return (
@@ -157,7 +169,7 @@ export default function ManagerHistoryPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F4F7FB]">
-              {orders.length === 0 ? (
+              {filtered.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-5 py-12 text-center">
                     <div className="w-14 h-14 rounded-2xl bg-[#F4F7FB] flex items-center justify-center mx-auto mb-3">
@@ -168,7 +180,7 @@ export default function ManagerHistoryPage() {
                   </td>
                 </tr>
               ) : (
-                orders.map((order) => {
+                paginated.map((order) => {
                   const statusCfg = STATUS_CONFIG[order.orderStatus] || STATUS_CONFIG.DELIVERED;
                   const StatusIcon = statusCfg.icon;
                   return (
@@ -217,6 +229,8 @@ export default function ManagerHistoryPage() {
           </table>
         </div>
       </div>
+
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={filtered.length} itemsPerPage={ITEMS_PER_PAGE} />
     </div>
   );
 }

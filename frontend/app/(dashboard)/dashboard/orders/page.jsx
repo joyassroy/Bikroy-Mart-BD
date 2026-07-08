@@ -5,6 +5,7 @@ import { ALL_DISTRICTS } from "@/lib/constants";
 import { Search, Eye, ChevronDown, Printer } from "lucide-react";
 import toast from "react-hot-toast";
 import { printInvoice } from "@/lib/generateInvoice";
+import Pagination from "@/components/ui/Pagination";
 import { useLanguage } from "@/i18n/LanguageContext";
 
 const statusColors = {
@@ -31,7 +32,9 @@ export default function OrdersPage() {
   const [districtFilter, setDistrictFilter] = useState("");
   const [search, setSearch] = useState("");
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const { t } = useLanguage();
+  const ITEMS_PER_PAGE = 10;
 
   useEffect(() => { fetchOrders(); }, [districtFilter, search]);
 
@@ -55,6 +58,11 @@ export default function OrdersPage() {
   const filtered = statusFilter
     ? orders.filter((o) => o.orderStatus === statusFilter)
     : orders;
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  useEffect(() => { setCurrentPage(1); }, [search, statusFilter, districtFilter]);
 
   const updateStatus = async (orderId, status, paymentStatus) => {
     try {
@@ -117,7 +125,7 @@ export default function OrdersPage() {
               ) : filtered.length === 0 ? (
                 <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">{t.noOrdersFound}</td></tr>
               ) : (
-                filtered.map((order) => (
+                paginated.map((order) => (
                   <tr key={order.id} className="border-b hover:bg-gray-50">
                     <td className="px-4 py-3 font-medium text-primary-600">{order.orderNumber}</td>
                     <td className="px-4 py-3 text-sm">{order.user?.name}</td>
@@ -157,6 +165,8 @@ export default function OrdersPage() {
           </table>
         </div>
       </div>
+
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={filtered.length} itemsPerPage={ITEMS_PER_PAGE} />
 
       {/* Order Detail Modal */}
       {selectedOrder && (

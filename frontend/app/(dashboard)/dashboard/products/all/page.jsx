@@ -6,6 +6,7 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import EditProductModal from "@/components/product/EditProductModal";
 import { useLanguage } from "@/i18n/LanguageContext";
+import Pagination from "@/components/ui/Pagination";
 
 export default function ProductsPage() {
   const { t } = useLanguage();
@@ -14,16 +15,24 @@ export default function ProductsPage() {
   const [search, setSearch] = useState("");
   const [editProductId, setEditProductId] = useState(null);
   const [deleteModal, setDeleteModal] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   useEffect(() => { fetchProducts(); }, []);
 
   const fetchProducts = async () => {
     try {
-      const res = await api.get(`/products?limit=50&includeInactive=true${search ? `&search=${search}` : ""}`);
+      const res = await api.get(`/products?includeInactive=true${search ? `&search=${search}` : ""}`);
       setProducts(res.data.data || []);
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
+
+  const filtered = products;
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  useEffect(() => { setCurrentPage(1); }, [search]);
 
   const handleDelete = async (id) => {
     setDeleteModal(null);
@@ -70,10 +79,10 @@ export default function ProductsPage() {
             <tbody>
               {loading ? (
                 <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">{t.loading}</td></tr>
-              ) : products.length === 0 ? (
+              ) : filtered.length === 0 ? (
                 <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">{t.noProductsFound}</td></tr>
               ) : (
-                products.map((p) => (
+                paginated.map((p) => (
                   <tr key={p.id} className="border-b hover:bg-gray-50">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
@@ -113,6 +122,8 @@ export default function ProductsPage() {
           </table>
         </div>
       </div>
+
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={filtered.length} itemsPerPage={ITEMS_PER_PAGE} />
 
       {editProductId && (
         <EditProductModal

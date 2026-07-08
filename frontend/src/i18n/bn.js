@@ -85,6 +85,7 @@ const bn = {
   back: "পেছনে",
   next: "পরবর্তী",
   previous: "পূর্ববর্তী",
+  showingXofY: "{total} এর মধ্যে {from}-{to} দেখাচ্ছে",
   loading: "লোড হচ্ছে...",
   noResults: "কোনো ফলাফল পাওয়া যায়নি",
   viewDetails: "বিস্তারিত দেখুন",

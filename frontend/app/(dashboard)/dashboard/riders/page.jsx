@@ -6,6 +6,7 @@ import { Plus, Trash2, X, Pencil, Search } from "lucide-react";
 import toast from "react-hot-toast";
 import EditRiderModal from "@/components/rider/EditRiderModal";
 import { useLanguage } from "@/i18n/LanguageContext";
+import Pagination from "@/components/ui/Pagination";
 
 export default function RidersPage() {
   const { t } = useLanguage();
@@ -14,6 +15,7 @@ export default function RidersPage() {
   const [showForm, setShowForm] = useState(false);
   const [editRider, setEditRider] = useState(null);
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [form, setForm] = useState({
     name: "", email: "", phone: "", password: "",
     vehicleType: "Bike", vehicleNumber: "", licenseNumber: "", assignedZila: "",
@@ -29,6 +31,15 @@ export default function RidersPage() {
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
+
+  const filtered = search
+    ? riders.filter((r) => (r.user?.name?.toLowerCase().includes(search.toLowerCase()) || r.user?.email?.toLowerCase().includes(search.toLowerCase()) || r.assignedZila?.toLowerCase().includes(search.toLowerCase())))
+    : riders;
+
+  const totalPages = Math.ceil(filtered.length / 10);
+  const paginated = filtered.slice((currentPage - 1) * 10, currentPage * 10);
+
+  useEffect(() => { setCurrentPage(1); }, [search]);
 
   const resetForm = () => {
     setForm({ name: "", email: "", phone: "", password: "", vehicleType: "Bike", vehicleNumber: "", licenseNumber: "", assignedZila: "" });
@@ -160,10 +171,10 @@ export default function RidersPage() {
             <tbody>
               {loading ? (
                 <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">{t.loading}</td></tr>
-              ) : riders.length === 0 ? (
+              ) : filtered.length === 0 ? (
                 <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">{t.noRidersFound}</td></tr>
               ) : (
-                riders.map((rider) => (
+                paginated.map((rider) => (
                   <tr key={rider.id} className="border-b hover:bg-gray-50">
                     <td className="px-4 py-3">
                       <div>
@@ -201,6 +212,8 @@ export default function RidersPage() {
           </table>
         </div>
       </div>
+
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={filtered.length} itemsPerPage={10} />
 
       {editRider && (
         <EditRiderModal

@@ -4,6 +4,7 @@ import api from "@/lib/axios";
 import { Plus, Edit, Trash2, X, Image as ImageIcon, Search } from "lucide-react";
 import toast from "react-hot-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
+import Pagination from "@/components/ui/Pagination";
 
 export default function CategoriesPage() {
   const { t } = useLanguage();
@@ -12,6 +13,8 @@ export default function CategoriesPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
   
   const [formData, setFormData] = useState({
     name: "",
@@ -87,6 +90,11 @@ export default function CategoriesPage() {
       )
     : categories;
 
+  const totalPages = Math.ceil(filteredCategories.length / ITEMS_PER_PAGE);
+  const paginatedCategories = filteredCategories.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  useEffect(() => { setCurrentPage(1); }, [search]);
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -128,7 +136,7 @@ export default function CategoriesPage() {
               ) : filteredCategories.length === 0 ? (
                 <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">{t.noCategoriesFound}</td></tr>
               ) : (
-                filteredCategories.map((c) => (
+                paginatedCategories.map((c) => (
                   <tr key={c.id} className="border-b hover:bg-gray-50">
                     <td className="px-4 py-3">
                       {c.image ? (
@@ -158,6 +166,8 @@ export default function CategoriesPage() {
           </table>
         </div>
       </div>
+
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={filteredCategories.length} itemsPerPage={ITEMS_PER_PAGE} />
 
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">

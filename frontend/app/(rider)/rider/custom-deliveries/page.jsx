@@ -4,6 +4,7 @@ import api from "@/lib/axios";
 import toast from "react-hot-toast";
 import { MapPin, Phone, CheckCircle, Package, User, ClipboardList, Loader2, Image as ImageIcon, Navigation } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
+import Pagination from "@/components/ui/Pagination";
 import dynamic from "next/dynamic";
 const LiveRiderMap = dynamic(() => import("@/components/tracking/LiveRiderMap"), { ssr: false });
 const LocationMapModal = dynamic(() => import("@/components/ui/LocationMapModal"), { ssr: false });
@@ -137,6 +138,8 @@ export default function RiderCustomDeliveriesPage() {
   const [deliveries, setDeliveries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [completingId, setCompletingId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 5;
 
   useEffect(() => { fetchDeliveries(); }, []);
 
@@ -151,6 +154,9 @@ export default function RiderCustomDeliveriesPage() {
       setLoading(false);
     }
   };
+
+  const totalPages = Math.ceil(deliveries.length / ITEMS_PER_PAGE);
+  const paginatedDeliveries = deliveries.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const markDelivered = async (id) => {
     setCompletingId(id);
@@ -195,7 +201,7 @@ export default function RiderCustomDeliveriesPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {deliveries.map((del) => (
+          {paginatedDeliveries.map((del) => (
             <CustomDeliveryCard
               key={del.id}
               del={del}
@@ -206,6 +212,8 @@ export default function RiderCustomDeliveriesPage() {
           ))}
         </div>
       )}
+
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={deliveries.length} itemsPerPage={ITEMS_PER_PAGE} />
     </div>
   );
 }
