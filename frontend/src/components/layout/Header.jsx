@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -46,7 +46,7 @@ const NAV_OFFER_LINKS = [
   { label: "Custom Offer", labelBn: "কাস্টম অফার", href: "/shop?offer=CUSTOM", icon: Tag },
 ];
 
-export default function Header() {
+function HeaderContent() {
   const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [megaMenuOpen, setMegaMenuOpen] = useState(false);
@@ -762,5 +762,13 @@ export default function Header() {
         </div>
       </div>
     </>
+  );
+}
+
+export default function Header() {
+  return (
+    <Suspense fallback={null}>
+      <HeaderContent />
+    </Suspense>
   );
 }

@@ -475,8 +475,9 @@ export default function AccountPage() {
                     <button onClick={() => router.push("/shop")} className="mt-3 text-[#0067A0] hover:underline text-sm font-medium">Start Shopping</button>
                   </div>
                 ) : (
-                  <div className="divide-y divide-gray-100">
-                    {paginatedOrders.map((order) => (
+                  <>
+                    <div className="divide-y divide-gray-100">
+                      {paginatedOrders.map((order) => (
                       <div key={order.id} className="p-6 hover:bg-gray-50 transition cursor-pointer" onClick={() => setSelectedOrder(order)}>
                         <div className="flex justify-between items-start">
                           <div>
@@ -519,11 +520,11 @@ export default function AccountPage() {
                         </div>
                       </div>
                     ))}
-                  </div>
-
-                  <div className="px-6 pb-6">
-                    <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={orders.length} itemsPerPage={ITEMS_PER_PAGE} />
-                  </div>
+                    </div>
+                    <div className="px-6 pb-6">
+                      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={orders.length} itemsPerPage={ITEMS_PER_PAGE} />
+                    </div>
+                  </>
                 )}
               </div>
             )}

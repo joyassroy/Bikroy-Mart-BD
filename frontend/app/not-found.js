@@ -1,11 +1,12 @@
 "use client";
+import { Suspense } from "react";
 import Link from "next/link";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { Home, Headphones, Search } from "lucide-react";
 
-export default function NotFound() {
+function NotFoundContent() {
   const { t } = useLanguage();
 
   return (
@@ -56,5 +57,13 @@ export default function NotFound() {
       </main>
       <Footer />
     </div>
+  );
+}
+
+export default function NotFound() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#F0F2F5] flex items-center justify-center">Loading...</div>}>
+      <NotFoundContent />
+    </Suspense>
   );
 }
