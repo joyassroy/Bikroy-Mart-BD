@@ -1,7 +1,3 @@
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
-import { convertToWords } from "./numberToWords";
-
 const STATUS_LABELS = {
   PENDING: { en: "PENDING", bn: "অপেক্ষমান" },
   CONFIRMED: { en: "CONFIRMED", bn: "নিশ্চিত" },
@@ -51,7 +47,6 @@ function extractOrderData(order, lang = "en") {
     items: (order.items || []).map((item, i) => ({
       index: i + 1,
       name: item.name || item.product?.name || "Item",
-      image: item.product?.images?.[0] || item.productImage || null,
       quantity: item.quantity,
       price: item.unitPrice || item.price || (item.totalPrice ? item.totalPrice / item.quantity : 0),
       totalPrice: item.totalPrice || (item.unitPrice || item.price || 0) * item.quantity,
@@ -88,23 +83,13 @@ const LABELS = {
     footerNote: "এটি একটি কম্পিউটার-জনিত চালান। স্বাক্ষরের প্রয়োজন নেই।",
     currency: "৳",
     font: "'Noto Sans Bengali','Hind Siliguri','Kalpurush',sans-serif",
-    paymentInfo: "পেমেন্ট তথ্য",
     paymentMethod: "পেমেন্ট পদ্ধতি:",
     paymentStatus: "পেমেন্ট স্ট্যাটাস:",
     transactionId: "লেনদেন আইডি:",
     estimatedDelivery: "আনুমানিক ডেলিভারি:",
-    totalInWords: "মোট কথায়",
-    trustBadges: "আমাদের প্রতিশ্রুতি",
-    returnPolicy: "রিটার্ন নীতি",
-    returnPolicyText: "ডেলিভারির ৩ দিনের মধ্যে পণ্য ফেরত দেওয়া যাবে। সাহায্যের জন্য সাপোর্টে যোগাযোগ করুন।",
-    trackingLink: "অর্ডার ট্র্যাক করুন",
     companyAddress: "বিক্রয়-মার্ট-বিডি, ঢাকা, বাংলাদেশ",
-    website: "বিক্রয়-মার্ট-বিডি",
     contact: "যোগাযোগ: 16469",
-    authProducts: "১০০% প্রামাণিক পণ্য",
-    easyReturns: "সহজ রিটার্ন",
-    securePayment: "নিরাপদ পেমেন্ট",
-    fastDelivery: "দ্রুত ডেলিভারি",
+    website: "bikroymart.com",
     page: "পৃষ্ঠ",
     of: "এর",
   },
@@ -136,23 +121,13 @@ const LABELS = {
     footerNote: "This is a computer-generated invoice. No signature required.",
     currency: "Tk",
     font: "Inter,system-ui,-apple-system,sans-serif",
-    paymentInfo: "PAYMENT INFORMATION",
     paymentMethod: "Payment Method:",
     paymentStatus: "Payment Status:",
     transactionId: "Transaction ID:",
     estimatedDelivery: "Est. Delivery:",
-    totalInWords: "Total in Words",
-    trustBadges: "OUR PROMISE",
-    returnPolicy: "Return Policy",
-    returnPolicyText: "Items can be returned within 3 days of delivery. Contact support for assistance.",
-    trackingLink: "Track Order",
     companyAddress: "Bikroy-Mart-BD, Dhaka, Bangladesh",
-    website: "bikroymart.com",
     contact: "Support: 16469",
-    authProducts: "100% Authentic Products",
-    easyReturns: "Easy Returns",
-    securePayment: "Secure Payment",
-    fastDelivery: "Fast Delivery",
+    website: "bikroymart.com",
     page: "Page",
     of: "of",
   },
@@ -173,264 +148,169 @@ function getPaymentStatusText(status, lang) {
   return lang === "bn" ? info.bn : info.en;
 }
 
-function buildInvoiceHTML(order, lang) {
+function printInvoiceHTML(order, lang) {
   const L = LABELS[lang] || LABELS.en;
   const d = extractOrderData(order, lang);
   const currency = L.currency;
 
   const trackingUrl = `https://bikroymart.com/track/${d.orderNumber}`;
-  const totalInWords = convertToWords(d.total, lang);
   const formattedEstDelivery = d.estimatedDelivery
     ? new Date(d.estimatedDelivery).toLocaleDateString(lang === "bn" ? "bn-BD" : "en-BD", { day: "numeric", month: "short", year: "numeric" })
     : null;
 
   const itemsHTML = d.items.map((item, i) => `
     <tr style="background:${i % 2 === 0 ? "#f9fafb" : "#fff"}">
-      <td style="padding:14px 16px;border-bottom:1px solid #e5e7eb;color:#374151;font-size:13px;font-family:${L.font}">${item.index}</td>
-      <td style="padding:14px 16px;border-bottom:1px solid #e5e7eb;color:#111827;font-size:13px;font-weight:500;font-family:${L.font}">
-        <div style="display:flex;align-items:center;gap:12px">
-          <div style="width:40px;height:40px;border-radius:8px;overflow:hidden;flex-shrink:0;background:#f3f4f6;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb">
-            ${item.image
-              ? `<img src="${item.image}" style="width:100%;height:100%;object-fit:cover" crossorigin="anonymous" />`
-              : `<span style="color:#9ca3af;font-size:16px">📦</span>`
-            }
-          </div>
-          <span style="line-height:1.4">${item.name}</span>
-        </div>
-      </td>
-      <td style="padding:14px 16px;border-bottom:1px solid #e5e7eb;color:#374151;font-size:13px;text-align:center;font-family:${L.font}">${item.quantity}</td>
-      <td style="padding:14px 16px;border-bottom:1px solid #e5e7eb;color:#374151;font-size:13px;text-align:right;font-family:${L.font}">${currency} ${item.price.toLocaleString()}</td>
-      <td style="padding:14px 16px;border-bottom:1px solid #e5e7eb;color:#111827;font-size:13px;text-align:right;font-weight:700;font-family:${L.font}">${currency} ${item.totalPrice.toLocaleString()}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid #e5e7eb;color:#374151;font-size:11px;font-family:${L.font}">${item.index}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid #e5e7eb;color:#111827;font-size:11px;font-weight:500;font-family:${L.font}">${item.name}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid #e5e7eb;color:#374151;font-size:11px;text-align:center;font-family:${L.font}">${item.quantity}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid #e5e7eb;color:#374151;font-size:11px;text-align:right;font-family:${L.font}">${currency} ${item.price.toLocaleString()}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid #e5e7eb;color:#111827;font-size:11px;text-align:right;font-weight:700;font-family:${L.font}">${currency} ${item.totalPrice.toLocaleString()}</td>
     </tr>
   `).join("");
 
   const discountRow = d.discount > 0 ? `
     <tr>
-      <td colspan="4" style="padding:8px 14px;text-align:right;color:#6b7280;font-size:13px;font-family:${L.font}">${L.discount}</td>
-      <td style="padding:8px 14px;text-align:right;color:#dc2626;font-size:13px;font-weight:600;font-family:${L.font}">-${currency} ${d.discount.toLocaleString()}</td>
+      <td colspan="4" style="padding:6px 10px;text-align:right;color:#6b7280;font-size:11px;font-family:${L.font}">${L.discount}</td>
+      <td style="padding:6px 10px;text-align:right;color:#dc2626;font-size:11px;font-weight:600;font-family:${L.font}">-${currency} ${d.discount.toLocaleString()}</td>
     </tr>
   ` : "";
 
   const cancelReasonHTML = d.cancelReason && d.orderStatus === "CANCELLED" ? `
-    <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px 16px;margin-top:12px">
-      <span style="color:#991b1b;font-size:12px;font-weight:600;font-family:${L.font}">${L.cancelReason}</span>
-      <span style="color:#991b1b;font-size:12px;margin-left:6px;font-family:${L.font}">${d.cancelReason}</span>
+    <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:8px 12px;margin-top:8px">
+      <span style="color:#991b1b;font-size:10px;font-weight:600;font-family:${L.font}">${L.cancelReason} ${d.cancelReason}</span>
     </div>
   ` : "";
 
   const estDeliveryHTML = formattedEstDelivery ? `
-    <tr><td style="padding:5px 0;color:#6b7280;font-size:12.5px;width:130px;font-family:${L.font}">${L.estimatedDelivery}</td><td style="padding:5px 0;color:#111827;font-size:12.5px;font-weight:600">${formattedEstDelivery}</td></tr>
+    <tr><td style="padding:4px 0;color:#6b7280;font-size:11px;width:110px;font-family:${L.font}">${L.estimatedDelivery}</td><td style="padding:4px 0;color:#111827;font-size:11px;font-weight:600">${formattedEstDelivery}</td></tr>
   ` : "";
 
   const transactionIdHTML = d.transactionId ? `
-    <tr><td style="padding:5px 0;color:#6b7280;font-size:12.5px;width:130px;font-family:${L.font}">${L.transactionId}</td><td style="padding:5px 0;color:#111827;font-size:12.5px;font-weight:500;font-family:${L.font};word-break:break-all">${d.transactionId}</td></tr>
+    <tr><td style="padding:4px 0;color:#6b7280;font-size:11px;width:110px;font-family:${L.font}">${L.transactionId}</td><td style="padding:4px 0;color:#111827;font-size:11px;font-weight:500;font-family:${L.font};word-break:break-all">${d.transactionId}</td></tr>
   ` : "";
 
-  return `
-    <div id="invoice-capture" style="width:794px;background:#fff;padding:0;margin:0;font-family:${L.font};-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale">
-      <!-- Header -->
-      <div style="background:linear-gradient(135deg,#00215B 0%,#001845 100%);padding:28px 40px">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div style="display:flex;align-items:center;gap:14px">
-            <img src="/favicon.ico" style="width:44px;height:44px;border-radius:10px;background:#fff;padding:4px;box-shadow:0 2px 8px rgba(0,0,0,0.15)" alt="logo" crossorigin="anonymous" />
-            <div>
-              <div style="color:#fff;font-size:24px;font-weight:800;letter-spacing:0.3px;line-height:1.1">Bikroy-Mart-BD</div>
-              <div style="color:#94b3e0;font-size:11px;margin-top:3px;letter-spacing:0.2px">${L.tagline}</div>
-            </div>
-          </div>
-          <div style="text-align:right">
-            <div style="background:#ec008c;color:#fff;padding:8px 28px;border-radius:10px;font-size:15px;font-weight:700;letter-spacing:1.5px;box-shadow:0 2px 8px rgba(236,0,140,0.3)">${L.invoiceTitle}</div>
-            <div style="color:#94b3e0;font-size:11px;margin-top:8px;letter-spacing:0.3px">#${d.orderNumber}</div>
-          </div>
-        </div>
-        <!-- Company Info Bar -->
-        <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.15);display:flex;justify-content:space-between;align-items:center">
-          <div style="color:#7090c0;font-size:10px;font-family:${L.font}">
-            ${L.companyAddress} &nbsp;|&nbsp; ${L.contact} &nbsp;|&nbsp; ${L.website}
-          </div>
-          <a href="${trackingUrl}" style="color:#ec008c;font-size:10px;text-decoration:underline;font-family:${L.font}">${L.trackingLink} →</a>
-        </div>
-      </div>
+  return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Invoice #${d.orderNumber}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: ${L.font}; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  @media print { body { margin: 0; } @page { margin: 8mm; size: A4; } }
+</style>
+</head>
+<body>
+<div style="width:100%;max-width:794px;margin:0 auto;background:#fff;padding:0;font-family:${L.font}">
 
-      <!-- Body -->
-      <div style="padding:28px 40px">
-        <!-- Info Cards -->
-        <div style="display:flex;gap:20px;margin-bottom:24px">
-          <!-- Order Details -->
-          <div style="flex:1;background:#f4f7fb;border-radius:12px;padding:20px 22px;border:1px solid #e8ecf3">
-            <div style="color:#00215B;font-size:12px;font-weight:700;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.8px;font-family:${L.font}">${L.orderDetails}</div>
-            <table style="width:100%;border-collapse:collapse">
-              <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;width:130px;font-family:${L.font}">${L.orderNumber}</td><td style="padding:6px 0;color:#111827;font-size:12px;font-weight:600">${d.orderNumber}</td></tr>
-              <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;font-family:${L.font}">${L.orderDate}</td><td style="padding:6px 0;color:#111827;font-size:12px;font-weight:600">${d.date}</td></tr>
-              <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;font-family:${L.font}">${L.payment}</td><td style="padding:6px 0;color:#111827;font-size:12px;font-weight:600;font-family:${L.font}">${getPaymentMethodText(d.paymentMethod, lang)}</td></tr>
-              <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;font-family:${L.font}">${L.status}</td><td style="padding:6px 0;color:#111827;font-size:12px;font-weight:600;font-family:${L.font}">${getStatusText(d.orderStatus, lang)}</td></tr>
-              ${estDeliveryHTML}
-            </table>
-          </div>
-          <!-- Ship To -->
-          <div style="flex:1;background:#f4f7fb;border-radius:12px;padding:20px 22px;border:1px solid #e8ecf3">
-            <div style="color:#00215B;font-size:12px;font-weight:700;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.8px;font-family:${L.font}">${L.shipTo}</div>
-            <table style="width:100%;border-collapse:collapse">
-              <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;width:85px;font-family:${L.font}">${L.name}</td><td style="padding:6px 0;color:#111827;font-size:12px;font-weight:600">${d.customerName}</td></tr>
-              <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;font-family:${L.font}">${L.phone}</td><td style="padding:6px 0;color:#111827;font-size:12px">${d.customerPhone}</td></tr>
-              <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;font-family:${L.font}">${L.address}</td><td style="padding:6px 0;color:#111827;font-size:12px">${d.address || "N/A"}</td></tr>
-              <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;font-family:${L.font}">${L.upazila}</td><td style="padding:6px 0;color:#111827;font-size:12px">${d.upazila || "N/A"}</td></tr>
-              <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;font-family:${L.font}">${L.district}</td><td style="padding:6px 0;color:#111827;font-size:12px">${d.district || "N/A"}</td></tr>
-              <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;font-family:${L.font}">${L.division}</td><td style="padding:6px 0;color:#111827;font-size:12px">${d.division || "N/A"}</td></tr>
-            </table>
-          </div>
-        </div>
-
-        <!-- Payment Information -->
-        <div style="background:#f4f7fb;border-radius:12px;padding:20px 22px;border:1px solid #e8ecf3;margin-bottom:24px">
-          <div style="color:#00215B;font-size:12px;font-weight:700;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.8px;font-family:${L.font}">${L.paymentInfo}</div>
-          <div style="display:flex;gap:40px">
-            <table style="border-collapse:collapse">
-              <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;width:130px;font-family:${L.font}">${L.paymentMethod}</td><td style="padding:6px 0;color:#111827;font-size:12px;font-weight:600;font-family:${L.font}">${getPaymentMethodText(d.paymentMethod, lang)}</td></tr>
-            </table>
-            <table style="border-collapse:collapse">
-              <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;width:130px;font-family:${L.font}">${L.paymentStatus}</td><td style="padding:6px 0;color:#111827;font-size:12px;font-weight:600;font-family:${L.font}">${getPaymentStatusText(d.paymentStatus, lang)}</td></tr>
-            </table>
-            ${transactionIdHTML ? `<table style="border-collapse:collapse">${transactionIdHTML}</table>` : ""}
-          </div>
-        </div>
-
-        <!-- Items Table -->
-        <table style="width:100%;border-collapse:collapse;margin-bottom:24px;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.04);border:1px solid #e8ecf3">
-          <thead>
-            <tr style="background:linear-gradient(135deg,#00215B,#003087)">
-              <th style="padding:14px 16px;text-align:left;color:#fff;font-size:11px;font-weight:700;width:36px;letter-spacing:0.8px;text-transform:uppercase;font-family:${L.font}">#</th>
-              <th style="padding:14px 16px;text-align:left;color:#fff;font-size:11px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;font-family:${L.font}">${L.itemHeader}</th>
-              <th style="padding:14px 16px;text-align:center;color:#fff;font-size:11px;font-weight:700;width:60px;letter-spacing:0.8px;text-transform:uppercase;font-family:${L.font}">${L.qtyHeader}</th>
-              <th style="padding:14px 16px;text-align:right;color:#fff;font-size:11px;font-weight:700;width:100px;letter-spacing:0.8px;text-transform:uppercase;font-family:${L.font}">${L.unitPriceHeader}</th>
-              <th style="padding:14px 16px;text-align:right;color:#fff;font-size:11px;font-weight:700;width:100px;letter-spacing:0.8px;text-transform:uppercase;font-family:${L.font}">${L.totalHeader}</th>
-            </tr>
-          </thead>
-          <tbody>${itemsHTML}</tbody>
-        </table>
-
-        <!-- Totals + Cancel Reason Row -->
-        <div style="display:flex;gap:20px;margin-bottom:24px">
-          <!-- Total in Words -->
-          <div style="flex:1;background:#f4f7fb;border-radius:12px;padding:14px 18px;border:1px solid #e8ecf3;display:flex;flex-direction:column;justify-content:center">
-            <div style="color:#6b7280;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;font-family:${L.font}">${L.totalInWords}</div>
-            <div style="color:#111827;font-size:12.5px;font-weight:500;font-family:${L.font};line-height:1.4">${totalInWords}</div>
-            ${cancelReasonHTML}
-          </div>
-
-          <!-- Totals -->
-          <div style="background:#f4f7fb;border-radius:12px;padding:18px 22px;min-width:280px;border:1px solid #e8ecf3">
-            <table style="width:100%;border-collapse:collapse">
-              <tr>
-                <td style="padding:5px 0;color:#6b7280;font-size:12.5px;font-family:${L.font}">${L.subtotal}</td>
-                <td style="padding:5px 0;text-align:right;color:#374151;font-size:12.5px;font-family:${L.font}">${currency} ${d.subtotal.toLocaleString()}</td>
-              </tr>
-              <tr>
-                <td style="padding:5px 0;color:#6b7280;font-size:12.5px;font-family:${L.font}">${L.delivery}</td>
-                <td style="padding:5px 0;text-align:right;color:#374151;font-size:12.5px;font-family:${L.font}">${d.deliveryCharge === 0 ? '<span style="background:#16a34a;color:#fff;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:600">FREE</span>' : `${currency} ${d.deliveryCharge.toLocaleString()}`}</td>
-              </tr>
-              ${discountRow}
-            </table>
-            <div style="border-top:2px solid #00215B;margin-top:8px;padding-top:8px;display:flex;justify-content:space-between;align-items:center">
-              <span style="color:#00215B;font-size:14px;font-weight:700;font-family:${L.font}">${L.grandTotal}</span>
-              <span style="color:#ec008c;font-size:20px;font-weight:800;letter-spacing:0.3px;font-family:${L.font}">${currency} ${d.total.toLocaleString()}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Trust Badges -->
-        <div style="background:linear-gradient(135deg,#f0f7ff 0%,#f4f7fb 100%);border-radius:12px;padding:18px 22px;border:1px solid #e0e8f3;margin-bottom:0">
-          <div style="color:#00215B;font-size:12px;font-weight:700;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.8px;font-family:${L.font}">${L.trustBadges}</div>
-          <div style="display:flex;gap:24px;margin-bottom:14px">
-            <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:#374151;font-family:${L.font}">
-              <span style="color:#16a34a;font-size:14px">✓</span> ${L.authProducts}
-            </div>
-            <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:#374151;font-family:${L.font}">
-              <span style="color:#16a34a;font-size:14px">✓</span> ${L.easyReturns}
-            </div>
-            <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:#374151;font-family:${L.font}">
-              <span style="color:#16a34a;font-size:14px">✓</span> ${L.securePayment}
-            </div>
-            <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:#374151;font-family:${L.font}">
-              <span style="color:#16a34a;font-size:14px">✓</span> ${L.fastDelivery}
-            </div>
-          </div>
-          <div style="border-top:1px solid #e0e8f3;padding-top:10px">
-            <div style="color:#6b7280;font-size:11px;font-family:${L.font}"><strong>${L.returnPolicy}:</strong> ${L.returnPolicyText}</div>
-          </div>
+  <!-- Header -->
+  <div style="background:linear-gradient(135deg,#00215B 0%,#001845 100%);padding:18px 28px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div style="display:flex;align-items:center;gap:10px">
+        <img src="/favicon.ico" style="width:32px;height:32px;border-radius:8px;background:#fff;padding:3px;box-shadow:0 1px 4px rgba(0,0,0,0.15)" alt="logo" />
+        <div>
+          <div style="color:#fff;font-size:18px;font-weight:800;letter-spacing:0.3px;line-height:1.1">Bikroy-Mart-BD</div>
+          <div style="color:#94b3e0;font-size:9px;margin-top:2px;letter-spacing:0.2px">${L.tagline}</div>
         </div>
       </div>
-
-      <!-- Footer -->
-      <div style="background:linear-gradient(135deg,#00215B 0%,#001845 100%);padding:20px 40px;text-align:center">
-        <div style="color:#fff;font-size:13px;font-weight:600;letter-spacing:0.2px;font-family:${L.font}">${L.thankYou}</div>
-        <div style="color:#7090c0;font-size:10px;margin-top:5px">${L.website} &nbsp;|&nbsp; ${L.contact} &nbsp;|&nbsp; bikroymart.com</div>
-        <div style="color:#4a6590;font-size:9.5px;margin-top:4px;font-family:${L.font}">${L.footerNote}</div>
+      <div style="text-align:right">
+        <div style="background:#ec008c;color:#fff;padding:6px 20px;border-radius:8px;font-size:13px;font-weight:700;letter-spacing:1.5px">${L.invoiceTitle}</div>
+        <div style="color:#94b3e0;font-size:10px;margin-top:5px">#${d.orderNumber}</div>
       </div>
     </div>
-  `;
+    <div style="margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.15);display:flex;justify-content:space-between;align-items:center">
+      <div style="color:#7090c0;font-size:9px;font-family:${L.font}">${L.companyAddress} | ${L.contact} | ${L.website}</div>
+      <a href="${trackingUrl}" style="color:#ec008c;font-size:9px;text-decoration:underline;font-family:${L.font}">${L.trackingLink} →</a>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div style="padding:18px 28px">
+    <!-- Info Cards -->
+    <div style="display:flex;gap:14px;margin-bottom:16px">
+      <!-- Order Details -->
+      <div style="flex:1;background:#f4f7fb;border-radius:10px;padding:14px 16px;border:1px solid #e8ecf3">
+        <div style="color:#00215B;font-size:10px;font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px;font-family:${L.font}">${L.orderDetails}</div>
+        <table style="width:100%;border-collapse:collapse">
+          <tr><td style="padding:4px 0;color:#6b7280;font-size:11px;width:110px;font-family:${L.font}">${L.orderNumber}</td><td style="padding:4px 0;color:#111827;font-size:11px;font-weight:600">${d.orderNumber}</td></tr>
+          <tr><td style="padding:4px 0;color:#6b7280;font-size:11px;font-family:${L.font}">${L.orderDate}</td><td style="padding:4px 0;color:#111827;font-size:11px;font-weight:600">${d.date}</td></tr>
+          <tr><td style="padding:4px 0;color:#6b7280;font-size:11px;font-family:${L.font}">${L.payment}</td><td style="padding:4px 0;color:#111827;font-size:11px;font-weight:600;font-family:${L.font}">${getPaymentMethodText(d.paymentMethod, lang)}</td></tr>
+          <tr><td style="padding:4px 0;color:#6b7280;font-size:11px;font-family:${L.font}">${L.status}</td><td style="padding:4px 0;color:#111827;font-size:11px;font-weight:600;font-family:${L.font}">${getStatusText(d.orderStatus, lang)}</td></tr>
+          <tr><td style="padding:4px 0;color:#6b7280;font-size:11px;font-family:${L.font}">${L.paymentStatus}</td><td style="padding:4px 0;color:#111827;font-size:11px;font-weight:600;font-family:${L.font}">${getPaymentStatusText(d.paymentStatus, lang)}</td></tr>
+          ${estDeliveryHTML}
+          ${transactionIdHTML}
+        </table>
+      </div>
+      <!-- Ship To -->
+      <div style="flex:1;background:#f4f7fb;border-radius:10px;padding:14px 16px;border:1px solid #e8ecf3">
+        <div style="color:#00215B;font-size:10px;font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px;font-family:${L.font}">${L.shipTo}</div>
+        <table style="width:100%;border-collapse:collapse">
+          <tr><td style="padding:4px 0;color:#6b7280;font-size:11px;width:75px;font-family:${L.font}">${L.name}</td><td style="padding:4px 0;color:#111827;font-size:11px;font-weight:600">${d.customerName}</td></tr>
+          <tr><td style="padding:4px 0;color:#6b7280;font-size:11px;font-family:${L.font}">${L.phone}</td><td style="padding:4px 0;color:#111827;font-size:11px">${d.customerPhone}</td></tr>
+          <tr><td style="padding:4px 0;color:#6b7280;font-size:11px;font-family:${L.font}">${L.address}</td><td style="padding:4px 0;color:#111827;font-size:11px">${d.address || "N/A"}</td></tr>
+          <tr><td style="padding:4px 0;color:#6b7280;font-size:11px;font-family:${L.font}">${L.upazila}</td><td style="padding:4px 0;color:#111827;font-size:11px">${d.upazila || "N/A"}</td></tr>
+          <tr><td style="padding:4px 0;color:#6b7280;font-size:11px;font-family:${L.font}">${L.district}</td><td style="padding:4px 0;color:#111827;font-size:11px">${d.district || "N/A"}</td></tr>
+          <tr><td style="padding:4px 0;color:#6b7280;font-size:11px;font-family:${L.font}">${L.division}</td><td style="padding:4px 0;color:#111827;font-size:11px">${d.division || "N/A"}</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Items Table -->
+    <table style="width:100%;border-collapse:collapse;margin-bottom:16px;border-radius:10px;overflow:hidden;border:1px solid #e8ecf3">
+      <thead>
+        <tr style="background:linear-gradient(135deg,#00215B,#003087)">
+          <th style="padding:10px;text-align:left;color:#fff;font-size:10px;font-weight:700;width:30px;letter-spacing:0.8px;text-transform:uppercase;font-family:${L.font}">#</th>
+          <th style="padding:10px;text-align:left;color:#fff;font-size:10px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;font-family:${L.font}">${L.itemHeader}</th>
+          <th style="padding:10px;text-align:center;color:#fff;font-size:10px;font-weight:700;width:50px;letter-spacing:0.8px;text-transform:uppercase;font-family:${L.font}">${L.qtyHeader}</th>
+          <th style="padding:10px;text-align:right;color:#fff;font-size:10px;font-weight:700;width:90px;letter-spacing:0.8px;text-transform:uppercase;font-family:${L.font}">${L.unitPriceHeader}</th>
+          <th style="padding:10px;text-align:right;color:#fff;font-size:10px;font-weight:700;width:90px;letter-spacing:0.8px;text-transform:uppercase;font-family:${L.font}">${L.totalHeader}</th>
+        </tr>
+      </thead>
+      <tbody>${itemsHTML}</tbody>
+    </table>
+
+    <!-- Totals -->
+    <div style="display:flex;gap:14px;margin-bottom:16px">
+      ${cancelReasonHTML ? `<div style="flex:1">${cancelReasonHTML}</div>` : ""}
+      <div style="background:#f4f7fb;border-radius:10px;padding:14px 16px;min-width:250px;border:1px solid #e8ecf3;margin-left:auto">
+        <table style="width:100%;border-collapse:collapse">
+          <tr>
+            <td style="padding:4px 0;color:#6b7280;font-size:11px;font-family:${L.font}">${L.subtotal}</td>
+            <td style="padding:4px 0;text-align:right;color:#374151;font-size:11px;font-family:${L.font}">${currency} ${d.subtotal.toLocaleString()}</td>
+          </tr>
+          <tr>
+            <td style="padding:4px 0;color:#6b7280;font-size:11px;font-family:${L.font}">${L.delivery}</td>
+            <td style="padding:4px 0;text-align:right;color:#374151;font-size:11px;font-family:${L.font}">${d.deliveryCharge === 0 ? '<span style="background:#16a34a;color:#fff;padding:1px 8px;border-radius:8px;font-size:10px;font-weight:600">FREE</span>' : `${currency} ${d.deliveryCharge.toLocaleString()}`}</td>
+          </tr>
+          ${discountRow}
+        </table>
+        <div style="border-top:2px solid #00215B;margin-top:6px;padding-top:6px;display:flex;justify-content:space-between;align-items:center">
+          <span style="color:#00215B;font-size:12px;font-weight:700;font-family:${L.font}">${L.grandTotal}</span>
+          <span style="color:#ec008c;font-size:16px;font-weight:800;font-family:${L.font}">${currency} ${d.total.toLocaleString()}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div style="background:linear-gradient(135deg,#00215B 0%,#001845 100%);padding:12px 28px;text-align:center">
+    <div style="color:#fff;font-size:11px;font-weight:600;font-family:${L.font}">${L.thankYou}</div>
+    <div style="color:#7090c0;font-size:9px;margin-top:3px">${L.website} | ${L.contact}</div>
+    <div style="color:#4a6590;font-size:8.5px;margin-top:2px;font-family:${L.font}">${L.footerNote}</div>
+  </div>
+
+</div>
+</body>
+</html>`;
 }
 
-export async function generateInvoicePDF(order, lang = "en") {
-  const d = extractOrderData(order, lang);
-  const L = LABELS[lang] || LABELS.en;
-
-  const html = buildInvoiceHTML(order, lang);
-
-  const container = document.createElement("div");
-  container.style.cssText = "position:fixed;left:-9999px;top:0;z-index:-1;background:#fff;width:794px";
-  container.innerHTML = html;
-  document.body.appendChild(container);
-
-  const el = container.querySelector("#invoice-capture");
-
-  await document.fonts.ready;
-  await new Promise((r) => setTimeout(r, 200));
-
-  const canvas = await html2canvas(el, {
-    scale: 2,
-    useCORS: true,
-    allowTaint: false,
-    backgroundColor: "#ffffff",
-    logging: false,
-    width: 794,
-    windowWidth: 794,
-    windowHeight: el.scrollHeight,
-    height: el.scrollHeight,
-    imageTimeout: 15000,
-    removeContainer: false,
-  });
-
-  document.body.removeChild(container);
-
-  const imgData = canvas.toDataURL("image/png", 1.0);
-  const pdf = new jsPDF("p", "mm", "a4");
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const pageHeight = pdf.internal.pageSize.getHeight();
-  const imgWidth = pageWidth;
-  const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-  const totalPages = Math.ceil(imgHeight / pageHeight);
-
-  for (let i = 0; i < totalPages; i++) {
-    if (i > 0) pdf.addPage();
-
-    const srcY = (i * canvas.height) / totalPages;
-    const srcH = canvas.height / totalPages;
-    const pageCanvas = document.createElement("canvas");
-    pageCanvas.width = canvas.width;
-    pageCanvas.height = srcH;
-    const ctx = pageCanvas.getContext("2d");
-    ctx.drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
-
-    const pageImgData = pageCanvas.toDataURL("image/png", 1.0);
-    const pageImgHeight = (srcH * imgWidth) / canvas.width;
-    pdf.addImage(pageImgData, "PNG", 0, 0, imgWidth, pageImgHeight);
-
-    pdf.setFontSize(8);
-    pdf.setTextColor(150);
-    pdf.text(`${L.page} ${i + 1} ${L.of} ${totalPages}`, pageWidth / 2, pageHeight - 5, { align: "center" });
-  }
-
-  pdf.save(`invoice-${d.orderNumber}.pdf`);
+export function printInvoice(order, lang = "en") {
+  const html = printInvoiceHTML(order, lang);
+  const win = window.open("", "_blank");
+  if (!win) return;
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  win.onload = () => { win.print(); };
 }

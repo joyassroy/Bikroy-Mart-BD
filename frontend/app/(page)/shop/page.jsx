@@ -21,11 +21,14 @@ const OFFER_TITLES = {
   EXECUTIVE: "Executive Offer",
   COMBO: "Combo Offer",
   BOGO: "Buy One Get One Free",
+  CUSTOM: "Custom Offer",
 };
 
-const FilterSidebar = memo(function FilterSidebar({ categories, selectedCategory, selectedSubcategory, minPrice, maxPrice, onCategorySelect, onSubcategorySelect, onMinPriceChange, onMaxPriceChange, onPriceFilter, t }) {
+const FilterSidebar = memo(function FilterSidebar({ categories, selectedCategory, selectedSubcategory, minPrice, maxPrice, onCategorySelect, onSubcategorySelect, onMinPriceChange, onMaxPriceChange, onPriceFilter, t, language }) {
   const selectedCat = categories.find((c) => c.slug === selectedCategory);
   const subcats = selectedCat?.subcategories || [];
+  const catName = (cat) => cat ? (language === "bn" ? (cat.nameBn || cat.name) : cat.name) : "";
+  const subName = (sub) => sub ? (language === "bn" ? (sub.nameBn || sub.name) : sub.name) : "";
 
   return (
     <div>
@@ -48,7 +51,7 @@ const FilterSidebar = memo(function FilterSidebar({ categories, selectedCategory
                 selectedCategory === cat.slug ? "bg-[#FCE8F3] text-[#EC008C]" : "text-[#667085] hover:bg-[#F4F7FB]"
               }`}
             >
-              <span className="truncate">{cat.name}</span>
+              <span className="truncate">{catName(cat)}</span>
               {cat._count?.products > 0 && (
                 <span className="text-[9px] bg-[#F4F7FB] px-1.5 py-0.5 rounded-full flex-shrink-0 ml-1">
                   {cat._count.products}
@@ -69,7 +72,7 @@ const FilterSidebar = memo(function FilterSidebar({ categories, selectedCategory
                 selectedSubcategory === "" ? "bg-[#FCE8F3] text-[#EC008C]" : "text-[#667085] hover:bg-[#F4F7FB]"
               }`}
             >
-              All {selectedCat?.name || "Subcategories"}
+              All {catName(selectedCat) || "Subcategories"}
             </button>
             {subcats.map((sub) => (
               <button
@@ -79,7 +82,7 @@ const FilterSidebar = memo(function FilterSidebar({ categories, selectedCategory
                   selectedSubcategory === sub.slug ? "bg-[#FCE8F3] text-[#EC008C]" : "text-[#667085] hover:bg-[#F4F7FB]"
                 }`}
               >
-                {sub.name}
+                {subName(sub)}
               </button>
             ))}
           </div>
@@ -141,7 +144,9 @@ function ShopContent() {
   const [offerType, setOfferType] = useState("");
   const [groupedProducts, setGroupedProducts] = useState([]);
   const [loadingGrouped, setLoadingGrouped] = useState(false);
-  const { t } = useLanguage();
+  const [shopBanners, setShopBanners] = useState([]);
+  const [currentBanner, setCurrentBanner] = useState(0);
+  const { t, language } = useLanguage();
   const fetchIdRef = useRef(0);
   const groupedFetchIdRef = useRef(0);
   const searchDebounceRef = useRef(null);
@@ -150,6 +155,9 @@ function ShopContent() {
   const urlSubcategory = searchParams.get("subcategory") || "";
   const urlOffer = searchParams.get("offer") || "";
   const urlSearch = searchParams.get("search") || "";
+
+  const catName = (cat) => cat ? (language === "bn" ? (cat.nameBn || cat.name) : cat.name) : "";
+  const subName = (sub) => sub ? (language === "bn" ? (sub.nameBn || sub.name) : sub.name) : "";
 
   useEffect(() => {
     fetchCategories();
@@ -164,6 +172,36 @@ function ShopContent() {
       dispatch(setSearchQueryRedux(urlSearch));
     }
   }, [urlCategory, urlSubcategory, urlOffer, urlSearch, dispatch]);
+
+  useEffect(() => {
+    if (selectedCategory) {
+      const cat = categories.find(c => c.slug === selectedCategory);
+      if (cat) fetchShopBanners({ categoryId: cat.id });
+      else setShopBanners([]);
+    } else if (offerType) {
+      const positionMap = {
+        COMBO: "offer_combo",
+        EXECUTIVE: "offer_executive",
+        STOCK_CLEARANCE: "offer_stock_clearance",
+        BOGO: "offer_bogo",
+        CUSTOM: "offer_custom",
+      };
+      const position = positionMap[offerType];
+      if (position) fetchShopBanners({ position });
+      else setShopBanners([]);
+    } else {
+      setShopBanners([]);
+    }
+    setCurrentBanner(0);
+  }, [selectedCategory, offerType, categories]);
+
+  useEffect(() => {
+    if (shopBanners.length <= 1) return;
+    const timer = setInterval(() => {
+      setCurrentBanner((prev) => (prev + 1) % shopBanners.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [shopBanners.length]);
 
   const activeSearch = localSearch || searchQueryRedux;
 
@@ -191,6 +229,19 @@ function ShopContent() {
       setCategories(res.data.data || []);
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const fetchShopBanners = async ({ categoryId, position }) => {
+    try {
+      const params = new URLSearchParams();
+      if (categoryId) params.set("categoryId", categoryId);
+      if (position) params.set("position", position);
+      const res = await api.get(`/banners?${params.toString()}`);
+      setShopBanners(res.data.data || []);
+    } catch (err) {
+      console.error(err);
+      setShopBanners([]);
     }
   };
 
@@ -300,7 +351,8 @@ function ShopContent() {
     onMaxPriceChange: setMaxPrice,
     onPriceFilter: handlePriceFilter,
     t,
-  }), [categories, selectedCategory, selectedSubcategory, minPrice, maxPrice, handleCategorySelect, handleSubcategorySelect, t]);
+    language,
+  }), [categories, selectedCategory, selectedSubcategory, minPrice, maxPrice, handleCategorySelect, handleSubcategorySelect, t, language]);
 
   return (
     <div className="min-h-screen bg-[#F0F2F5]">
@@ -412,7 +464,7 @@ function ShopContent() {
                 )}
                 {selectedCategory && (
                   <span className="inline-flex items-center gap-1 bg-[#FCE8F3] text-[#EC008C] text-[10px] font-medium px-2 py-1 rounded-full">
-                    {categories.find(c => c.slug === selectedCategory)?.name || selectedCategory}
+                    {catName(categories.find(c => c.slug === selectedCategory)) || selectedCategory}
                     <button onClick={() => { setSelectedCategory(""); setSelectedSubcategory(""); setCurrentPage(1); }} className="hover:text-[#D60071]"><X size={10} /></button>
                   </span>
                 )}
@@ -444,6 +496,44 @@ function ShopContent() {
               </div>
             )}
 
+            {shopBanners.length > 0 && (
+              <div className="mb-4 rounded-lg overflow-hidden relative" style={{ aspectRatio: "3/1" }}>
+                {shopBanners.map((banner, index) => (
+                  <div
+                    key={banner.id}
+                    className={`absolute inset-0 transition-opacity duration-500 ${index === currentBanner ? "opacity-100 z-10" : "opacity-0 z-0"}`}
+                  >
+                    {banner.image ? (
+                      <img src={banner.image} alt={banner.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className={`w-full h-full bg-gradient-to-r ${banner.bgColor || "from-[#00215B] to-[#001A4A]"}`}>
+                        <div className="flex items-center justify-center h-full text-white text-center px-5">
+                          <div>
+                            <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-1">{banner.title}</h2>
+                            {banner.subtitle && (
+                              <p className="text-xs sm:text-sm opacity-90">{banner.subtitle}</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {shopBanners.length > 1 && (
+                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
+                    {shopBanners.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentBanner(index)}
+                        className={`h-1.5 rounded-full transition-all ${index === currentBanner ? "bg-white w-3.5" : "bg-white/50 w-1.5"}`}
+                        aria-label={`Banner ${index + 1}`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {loading || loadingGrouped ? (
               <div className={`grid gap-2.5 sm:gap-3 ${viewMode === "grid" ? "grid-cols-2 md:grid-cols-3 lg:grid-cols-4" : "grid-cols-1"}`}>
                 {[...Array(8)].map((_, i) => (
@@ -456,7 +546,7 @@ function ShopContent() {
                   <div key={group.category.id} className="mb-6">
                     <h2 className="text-base sm:text-lg font-bold text-[#00215B] mb-3 flex items-center gap-2">
                       {group.category.icon && <span className="text-xl">{group.category.icon}</span>}
-                      {group.category.nameBn || group.category.name}
+                      {catName(group.category)}
                     </h2>
                     {group.subcategories.map((subGroup) => (
                       <ProductGroupRow

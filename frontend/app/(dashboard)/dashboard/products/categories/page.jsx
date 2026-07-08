@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import api from "@/lib/axios";
-import { Plus, Edit, Trash2, X, Image as ImageIcon } from "lucide-react";
+import { Plus, Edit, Trash2, X, Image as ImageIcon, Search } from "lucide-react";
 import toast from "react-hot-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 
@@ -11,6 +11,7 @@ export default function CategoriesPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [search, setSearch] = useState("");
   
   const [formData, setFormData] = useState({
     name: "",
@@ -79,6 +80,13 @@ export default function CategoriesPage() {
     } catch (err) { toast.error(t.failedToDelete); }
   };
 
+  const filteredCategories = search
+    ? categories.filter((c) =>
+        c.name.toLowerCase().includes(search.toLowerCase()) ||
+        (c.nameBn && c.nameBn.toLowerCase().includes(search.toLowerCase()))
+      )
+    : categories;
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -86,6 +94,19 @@ export default function CategoriesPage() {
         <button onClick={() => handleOpenModal()} className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-primary-700 flex items-center gap-2">
           <Plus size={16} /> {t.addCategory}
         </button>
+      </div>
+
+      <div className="flex flex-wrap gap-3 mb-4">
+        <div className="relative flex-1 min-w-[200px] max-w-xs">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder={t.searchPlaceholder}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-9 pr-3 py-2 border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:border-[#EC008C] transition"
+          />
+        </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -104,10 +125,10 @@ export default function CategoriesPage() {
             <tbody>
               {loading ? (
                 <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">{t.loading}</td></tr>
-              ) : categories.length === 0 ? (
+              ) : filteredCategories.length === 0 ? (
                 <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">{t.noCategoriesFound}</td></tr>
               ) : (
-                categories.map((c) => (
+                filteredCategories.map((c) => (
                   <tr key={c.id} className="border-b hover:bg-gray-50">
                     <td className="px-4 py-3">
                       {c.image ? (

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import api from "@/lib/axios";
 import { useLanguage } from "@/i18n/LanguageContext";
+import CountdownTimer from "@/components/ui/CountdownTimer";
 
 const IMG_BASE = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5004/api").replace("/api", "");
 
@@ -30,7 +31,7 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
   const [canScrollRight, setCanScrollRight] = useState(true);
 
   useEffect(() => {
-    const isMulti = type === "COMBO" || type === "BOGO";
+    const isMulti = type === "COMBO" || type === "BOGO" || type === "CUSTOM";
     const fetches = [];
     if (!isMulti) fetches.push(api.get(`/flash-deals?type=${type}`).catch(() => ({ data: { data: [] } })));
     if (isMulti) fetches.push(api.get(`/offers?type=${type}`).catch(() => ({ data: { data: [] } })));
@@ -82,6 +83,7 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
           image: product.images?.[0] || null,
           discount,
           stock,
+          endsAt: deal.endsAt,
           isPlaceholder: false,
           badge: null,
         };
@@ -101,6 +103,7 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
           image: firstItem?.images?.[0] || null,
           discount,
           stock: firstItem?.stock,
+          endsAt: offer.endsAt,
           isPlaceholder: false,
               badge: type === "BOGO" ? `${t.buyXGetY.replace("{buy}", offer.buyQuantity).replace("{get}", offer.getQuantity)}` : type === "COMBO" ? t.bundleDeal : null,
           items: offer.items,
@@ -245,6 +248,11 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
                   {item.stock !== undefined && item.stock !== null && (
                     <div className="text-[9px] sm:text-[10px] font-medium text-[#667085]">
                       {item.stock > 0 ? t.stockLabel.replace("{count}", item.stock) : t.outOfStock}
+                    </div>
+                  )}
+                  {item.endsAt && !item.isPlaceholder && (
+                    <div className="mt-1">
+                      <CountdownTimer endsAt={item.endsAt} compact />
                     </div>
                   )}
                 </div>

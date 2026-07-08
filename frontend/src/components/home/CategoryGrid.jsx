@@ -12,6 +12,7 @@ export default function CategoryGrid() {
   const scrollRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
+  const catName = (cat) => language === "bn" ? (cat.nameBn || cat.nameEn) : cat.nameEn;
 
   useEffect(() => {
     fetchCategories();
@@ -46,7 +47,8 @@ export default function CategoryGrid() {
       const data = res.data.data || [];
       if (data.length > 0) {
         setCategories(data.map((cat) => ({
-          name: cat.nameBn || cat.name,
+          nameEn: cat.name,
+          nameBn: cat.nameBn || cat.name,
           slug: cat.slug,
           icon: cat.icon || "📦",
           image: cat.image,
@@ -121,13 +123,13 @@ export default function CategoryGrid() {
             >
               <div className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-xl bg-[#F4F7FB] group-hover:bg-[#FCE8F3] flex items-center justify-center transition-colors duration-200 mb-2 sm:mb-2.5">
                 {cat.image ? (
-                  <img src={cat.image} alt={cat.name} className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 object-contain group-hover:scale-110 transition-transform duration-200" />
+                  <img src={cat.image} alt={catName(cat)} className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 object-contain group-hover:scale-110 transition-transform duration-200" />
                 ) : (
                   <span className="text-2xl sm:text-3xl md:text-4xl group-hover:scale-110 transition-transform duration-200">{cat.icon}</span>
                 )}
               </div>
               <span className="text-[10px] sm:text-[11px] md:text-xs font-semibold text-[#364152] text-center leading-tight line-clamp-2">
-                {cat.name}
+                {catName(cat)}
               </span>
               {cat.count > 0 && (
                 <span className="text-[8px] sm:text-[9px] text-[#667085] mt-0.5">{cat.count} {t.itemsCount}</span>
@@ -142,13 +144,13 @@ export default function CategoryGrid() {
 
 function fallbackCategories(t) {
   return [
-    { name: t.food, slug: "food", icon: "🍞" },
-    { name: t.fruitsVegetables, slug: "fruits-vegetables", icon: "🥬" },
-    { name: t.meatFish, slug: "meat-fish", icon: "🥩" },
-    { name: t.dairyEggs, slug: "dairy-eggs", icon: "🥛" },
-    { name: t.drinks, slug: "drinks-beverages", icon: "☕" },
-    { name: t.snacks, slug: "snacks-frozen", icon: "🍪" },
-    { name: t.cooking, slug: "cooking-essentials", icon: "🍳" },
-    { name: t.beauty, slug: "beauty-health", icon: "✨" },
+    { nameEn: t.food, nameBn: t.food, slug: "food", icon: "🍞" },
+    { nameEn: t.fruitsVegetables, nameBn: t.fruitsVegetables, slug: "fruits-vegetables", icon: "🥬" },
+    { nameEn: t.meatFish, nameBn: t.meatFish, slug: "meat-fish", icon: "🥩" },
+    { nameEn: t.dairyEggs, nameBn: t.dairyEggs, slug: "dairy-eggs", icon: "🥛" },
+    { nameEn: t.drinks, nameBn: t.drinks, slug: "drinks-beverages", icon: "☕" },
+    { nameEn: t.snacks, nameBn: t.snacks, slug: "snacks-frozen", icon: "🍪" },
+    { nameEn: t.cooking, nameBn: t.cooking, slug: "cooking-essentials", icon: "🍳" },
+    { nameEn: t.beauty, nameBn: t.beauty, slug: "beauty-health", icon: "✨" },
   ];
 }

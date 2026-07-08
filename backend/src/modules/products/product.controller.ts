@@ -261,7 +261,7 @@ export const getAllProducts = async (req: Request, res: Response) => {
     if (offer) {
       const now = new Date();
       const offerStr = String(offer);
-      const isPromoOffer = offerStr === "COMBO" || offerStr === "BOGO";
+      const isPromoOffer = ["COMBO", "BOGO", "CUSTOM"].includes(offerStr);
 
       if (isPromoOffer) {
         const promoOffers = await prisma.promoOffer.findMany({

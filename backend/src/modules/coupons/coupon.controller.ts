@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import prisma from "../../config/db";
 import { AuthRequest } from "../../middlewares/auth.middleware";
 import { sendSuccess, sendError } from "../../utils/apiResponse";
+import { toValidDate } from "../../utils/dateHelper";
 
 export const validateCoupon = async (req: AuthRequest, res: Response) => {
   try {
@@ -27,7 +28,7 @@ export const createCoupon = async (req: Request, res: Response) => {
   try {
     const { code, discountType, discountValue, minPurchase, maxDiscount, usageLimit, expiresAt } = req.body;
     const coupon = await prisma.coupon.create({
-      data: { code: code.toUpperCase(), discountType, discountValue, minPurchase, maxDiscount, usageLimit, expiresAt },
+      data: { code: code.toUpperCase(), discountType, discountValue, minPurchase, maxDiscount, usageLimit, expiresAt: toValidDate(expiresAt) },
     });
     return sendSuccess(res, "Coupon created", coupon, 201);
   } catch (error: any) {
@@ -37,7 +38,17 @@ export const createCoupon = async (req: Request, res: Response) => {
 
 export const updateCoupon = async (req: Request, res: Response) => {
   try {
-    const coupon = await prisma.coupon.update({ where: { id: String(req.params.id) }, data: req.body });
+    const { code, discountType, discountValue, minPurchase, maxDiscount, usageLimit, expiresAt, isActive } = req.body;
+    const data: any = {};
+    if (code !== undefined) data.code = code.toUpperCase();
+    if (discountType !== undefined) data.discountType = discountType;
+    if (discountValue !== undefined) data.discountValue = discountValue;
+    if (minPurchase !== undefined) data.minPurchase = minPurchase;
+    if (maxDiscount !== undefined) data.maxDiscount = maxDiscount;
+    if (usageLimit !== undefined) data.usageLimit = usageLimit;
+    if (expiresAt !== undefined) data.expiresAt = toValidDate(expiresAt);
+    if (isActive !== undefined) data.isActive = isActive;
+    const coupon = await prisma.coupon.update({ where: { id: String(req.params.id) }, data });
     return sendSuccess(res, "Coupon updated", coupon);
   } catch (error: any) {
     return sendError(res, error.message, 400);

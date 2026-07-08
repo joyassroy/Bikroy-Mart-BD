@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Package, ShoppingCart, Clock, CheckCircle, MapPin } from "lucide-react";
+import { Package, ShoppingCart, Clock, CheckCircle, MapPin, Truck, DollarSign } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import api from "@/lib/axios";
 
@@ -37,6 +37,15 @@ export default function ManagerDashboard() {
       ]
     : [];
 
+  const todayCards = stats
+    ? [
+        { label: t.todayOrders, value: stats.todayOrders || 0, icon: ShoppingCart, color: "text-[#7C3AED] bg-[#F3E8FF]" },
+        { label: t.todayPending, value: stats.todayPendingOrders || 0, icon: Clock, color: "text-[#D4A017] bg-[#FFF8E1]" },
+        { label: t.todayDelivered, value: stats.todayDeliveredOrders || 0, icon: Truck, color: "text-[#10B981] bg-[#ECFDF5]" },
+        { label: t.todaySales, value: `৳${(stats.todaySales || 0).toLocaleString()}`, icon: DollarSign, color: "text-[#EC008C] bg-[#FCE8F3]" },
+      ]
+    : [];
+
   return (
     <div>
       <h1 className="text-base sm:text-lg md:text-xl font-semibold text-[#00215B] mb-3">{t.managerDashboard}</h1>
@@ -52,6 +61,24 @@ export default function ManagerDashboard() {
         {loading
           ? [...Array(4)].map((_, i) => <div key={i} className="bg-white rounded-lg h-20 animate-pulse border border-[#E5E7EB]" />)
           : statCards.map((stat) => (
+            <div key={stat.label} className="bg-white rounded-lg p-2.5 sm:p-3 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] sm:text-[11px] text-[#667085]">{stat.label}</p>
+                  <p className="text-base sm:text-lg md:text-xl font-bold text-[#000000] mt-0.5">{stat.value}</p>
+                </div>
+                <div className={`${stat.color} p-2 sm:p-2.5 rounded-lg flex-shrink-0`}>
+                  <stat.icon size={18} className="sm:w-5 sm:h-5" />
+                </div>
+              </div>
+            </div>
+          ))}
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-4">
+        {loading
+          ? [...Array(4)].map((_, i) => <div key={i} className="bg-white rounded-lg h-20 animate-pulse border border-[#E5E7EB]" />)
+          : todayCards.map((stat) => (
             <div key={stat.label} className="bg-white rounded-lg p-2.5 sm:p-3 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">
               <div className="flex items-center justify-between">
                 <div>

@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
 import { X, Truck, Search, Package, Clock, CheckCircle, MapPin, Phone, User, ChevronDown, RefreshCw, Printer } from "lucide-react";
-import { generateInvoicePDF } from "@/lib/generateInvoice";
+import { printInvoice } from "@/lib/generateInvoice";
 import { useLanguage } from "@/i18n/LanguageContext";
 
 const statusColors = {
@@ -218,7 +218,7 @@ export default function ManagerOrdersPage() {
                   </td>
                   <td className="px-3 py-2.5 text-right">
                     <div className="flex items-center justify-end gap-1.5">
-                      <button onClick={() => generateInvoicePDF(order)} className="p-1.5 text-[#667085] hover:text-[#00215B] hover:bg-[#F4F7FB] rounded-lg transition" title={t.printInvoice}>
+                      <button onClick={() => printInvoice(order)} className="p-1.5 text-[#667085] hover:text-[#00215B] hover:bg-[#F4F7FB] rounded-lg transition" title={t.printInvoice}>
                         <Printer size={14} />
                       </button>
                       {!order.riderId && order.orderStatus !== "DELIVERED" && order.orderStatus !== "CANCELLED" && (

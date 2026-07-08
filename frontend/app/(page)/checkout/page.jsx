@@ -7,14 +7,14 @@ import Footer from "@/components/layout/Footer";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { MessageSquare, CheckCircle, Copy, ExternalLink, Home, MapPin, Download } from "lucide-react";
+import { MessageSquare, CheckCircle, Copy, ExternalLink, Home, MapPin, Printer } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useAuthChecked } from "@/helper/AuthInit";
 import { BANGLADESH_LOCATIONS, getUpazilas } from "@/lib/constants";
 import dynamic from "next/dynamic";
 const DeliveryMapPicker = dynamic(() => import("@/components/checkout/DeliveryMapPicker"), { ssr: false });
 import FloatingChatButton from "@/components/layout/FloatingChatButton";
-import { generateInvoicePDF } from "@/lib/generateInvoice";
+import { printInvoice } from "@/lib/generateInvoice";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -161,10 +161,9 @@ export default function CheckoutPage() {
     toast.success("Tracking ID copied!");
   };
 
-  const downloadInvoice = async (lang = "en") => {
+  const handlePrintInvoice = async (lang = "en") => {
     if (!placedOrderData) return;
-    await generateInvoicePDF(placedOrderData, lang);
-    toast.success("Invoice downloaded!");
+    printInvoice(placedOrderData, lang);
   };
 
   return (
@@ -323,13 +322,13 @@ export default function CheckoutPage() {
             </button>
 
             <div className="flex gap-2 mb-3">
-              <button onClick={() => downloadInvoice("en")} className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-white border border-[#E5E7EB] hover:bg-[#F4F7FB] rounded-xl text-sm font-medium text-[#364152] transition">
-                <Download size={16} />
-                {t.downloadInvoice} (EN)
+              <button onClick={() => handlePrintInvoice("en")} className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-white border border-[#E5E7EB] hover:bg-[#F4F7FB] rounded-xl text-sm font-medium text-[#364152] transition">
+                <Printer size={16} />
+                {t.printInvoice} (EN)
               </button>
-              <button onClick={() => downloadInvoice("bn")} className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-white border border-[#E5E7EB] hover:bg-[#F4F7FB] rounded-xl text-sm font-medium text-[#364152] transition">
-                <Download size={16} />
-                {t.downloadInvoice} (BN)
+              <button onClick={() => handlePrintInvoice("bn")} className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-white border border-[#E5E7EB] hover:bg-[#F4F7FB] rounded-xl text-sm font-medium text-[#364152] transition">
+                <Printer size={16} />
+                {t.printInvoice} (BN)
               </button>
             </div>
 

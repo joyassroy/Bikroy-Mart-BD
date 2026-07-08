@@ -4,6 +4,9 @@ import { sendSuccess, sendError } from "../../utils/apiResponse";
 
 export const getAdminStats = async (req: Request, res: Response) => {
   try {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
     const [
       totalUsers,
       totalProducts,
@@ -16,6 +19,10 @@ export const getAdminStats = async (req: Request, res: Response) => {
       totalBanners,
       totalCoupons,
       totalFlashDeals,
+      todayPendingOrders,
+      todayDeliveredOrders,
+      todaySales,
+      todayOrders,
     ] = await Promise.all([
       prisma.user.count(),
       prisma.product.count(),
@@ -28,6 +35,10 @@ export const getAdminStats = async (req: Request, res: Response) => {
       prisma.banner.count(),
       prisma.coupon.count(),
       prisma.flashDeal.count({ where: { isActive: true } }),
+      prisma.order.count({ where: { orderStatus: "PENDING", createdAt: { gte: todayStart } } }),
+      prisma.order.count({ where: { orderStatus: "DELIVERED", actualDelivery: { gte: todayStart } } }),
+      prisma.order.aggregate({ _sum: { total: true }, where: { paymentStatus: "PAID", createdAt: { gte: todayStart } } }),
+      prisma.order.count({ where: { createdAt: { gte: todayStart } } }),
     ]);
 
     const stats = {
@@ -42,6 +53,10 @@ export const getAdminStats = async (req: Request, res: Response) => {
       totalBanners,
       totalCoupons,
       totalFlashDeals,
+      todayPendingOrders,
+      todayDeliveredOrders,
+      todaySales: todaySales._sum?.total || 0,
+      todayOrders,
     };
 
     return sendSuccess(res, "Admin stats fetched", stats);

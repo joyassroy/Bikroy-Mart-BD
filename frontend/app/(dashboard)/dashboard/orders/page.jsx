@@ -4,7 +4,7 @@ import api from "@/lib/axios";
 import { ALL_DISTRICTS } from "@/lib/constants";
 import { Search, Eye, ChevronDown, Printer } from "lucide-react";
 import toast from "react-hot-toast";
-import { generateInvoicePDF } from "@/lib/generateInvoice";
+import { printInvoice } from "@/lib/generateInvoice";
 import { useLanguage } from "@/i18n/LanguageContext";
 
 const statusColors = {
@@ -17,6 +17,13 @@ const statusColors = {
   CANCELLED: "bg-red-100 text-red-700",
 };
 
+const paymentStatusColors = {
+  PENDING: "bg-yellow-100 text-yellow-700",
+  PAID: "bg-green-100 text-green-700",
+  FAILED: "bg-red-100 text-red-700",
+  REFUNDED: "bg-purple-100 text-purple-700",
+};
+
 export default function OrdersPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,12 +33,11 @@ export default function OrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const { t } = useLanguage();
 
-  useEffect(() => { fetchOrders(); }, [statusFilter, districtFilter, search]);
+  useEffect(() => { fetchOrders(); }, [districtFilter, search]);
 
   const fetchOrders = async () => {
     try {
       const params = new URLSearchParams();
-      if (statusFilter) params.set("status", statusFilter);
       if (districtFilter) params.set("district", districtFilter);
       if (search) params.set("search", search);
       const query = params.toString() ? `?${params.toString()}` : "";
@@ -41,9 +47,20 @@ export default function OrdersPage() {
     finally { setLoading(false); }
   };
 
-  const updateStatus = async (orderId, status) => {
+  const statusCounts = orders.reduce((acc, o) => {
+    acc[o.orderStatus] = (acc[o.orderStatus] || 0) + 1;
+    return acc;
+  }, {});
+
+  const filtered = statusFilter
+    ? orders.filter((o) => o.orderStatus === statusFilter)
+    : orders;
+
+  const updateStatus = async (orderId, status, paymentStatus) => {
     try {
-      await api.put(`/orders/${orderId}/status`, { status });
+      const body = { status };
+      if (paymentStatus) body.paymentStatus = paymentStatus;
+      await api.put(`/orders/${orderId}/status`, body);
       toast.success(t.statusUpdated);
       fetchOrders();
     } catch (err) { toast.error(t.failedToUpdate); }
@@ -74,8 +91,8 @@ export default function OrdersPage() {
         </select>
         {["", "PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED"].map((s) => (
           <button key={s} onClick={() => setStatusFilter(s)}
-            className={`px-3 py-1.5 rounded-lg text-sm ${statusFilter === s ? "bg-primary-600 text-white" : "bg-white border text-gray-600 hover:bg-gray-50"}`}>
-            {s || t.all}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap ${statusFilter === s ? "bg-primary-600 text-white" : "bg-white border text-gray-600 hover:bg-gray-50"}`}>
+            {s || t.all} ({s ? (statusCounts[s] || 0) : orders.length})
           </button>
         ))}
       </div>
@@ -97,19 +114,25 @@ export default function OrdersPage() {
             <tbody>
               {loading ? (
                 <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">{t.loading}</td></tr>
-              ) : orders.length === 0 ? (
+              ) : filtered.length === 0 ? (
                 <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">{t.noOrdersFound}</td></tr>
               ) : (
-                orders.map((order) => (
+                filtered.map((order) => (
                   <tr key={order.id} className="border-b hover:bg-gray-50">
                     <td className="px-4 py-3 font-medium text-primary-600">{order.orderNumber}</td>
                     <td className="px-4 py-3 text-sm">{order.user?.name}</td>
                     <td className="px-4 py-3 text-sm">{order.items?.length}</td>
                     <td className="px-4 py-3 text-sm font-medium">৳{order.total}</td>
                     <td className="px-4 py-3">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${order.paymentStatus === "PAID" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>
-                        {order.paymentStatus}
-                      </span>
+                      <select
+                        value={order.paymentStatus}
+                        onChange={(e) => updateStatus(order.id, order.orderStatus, e.target.value)}
+                        className={`px-2 py-1 rounded-lg text-xs font-medium border-0 ${paymentStatusColors[order.paymentStatus] || ""}`}
+                      >
+                        {Object.keys(paymentStatusColors).map((s) => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
                     </td>
                     <td className="px-4 py-3">
                       <select value={order.orderStatus} onChange={(e) => updateStatus(order.id, e.target.value)}
@@ -122,7 +145,7 @@ export default function OrdersPage() {
                         <button onClick={() => setSelectedOrder(order)} className="text-blue-500 hover:text-blue-700">
                           <Eye size={16} />
                         </button>
-                        <button onClick={() => generateInvoicePDF(order)} className="text-gray-500 hover:text-gray-700" title={t.printInvoice}>
+                        <button onClick={() => printInvoice(order)} className="text-gray-500 hover:text-gray-700" title={t.printInvoice}>
                           <Printer size={16} />
                         </button>
                       </div>
@@ -158,7 +181,7 @@ export default function OrdersPage() {
               </div>
             </div>
             <div className="flex gap-2 mt-4">
-              <button onClick={() => generateInvoicePDF(selectedOrder)} className="flex-1 flex items-center justify-center gap-2 bg-[#00215B] text-white py-2 rounded-lg text-sm hover:bg-[#001A4A] transition">
+              <button onClick={() => printInvoice(selectedOrder)} className="flex-1 flex items-center justify-center gap-2 bg-[#00215B] text-white py-2 rounded-lg text-sm hover:bg-[#001A4A] transition">
                 <Printer size={14} /> {t.printInvoice}
               </button>
               <button onClick={() => setSelectedOrder(null)} className="flex-1 bg-gray-100 py-2 rounded-lg text-sm hover:bg-gray-200">{t.close}</button>

@@ -31,6 +31,8 @@ const en = {
   comboOfferDesc: "Buy more together, save more! Bundle deals on popular products",
   bogoOffer: "Buy One Get One Free",
   bogoOfferDesc: "Buy any product and get the second one at 50% off!",
+  customOffer: "Custom Offer",
+  customOfferDesc: "Special bundle deals — buy together, save more!",
   trustedPartners: "Trusted Partners",
   ourSponsors: "Our Sponsors & Partners",
   sponsorsDesc: "Collaborating with industry leaders to serve you better",

@@ -49,6 +49,17 @@ const OFFER_TYPES = [
     fallbackSubEn: "Buy 1, Get 1 Free — limited time!",
     emoji: "🎁",
   },
+  {
+    key: "CUSTOM",
+    position: "offer_custom",
+    link: "/shop?offer=CUSTOM",
+    fallbackBg: "from-[#7C3AED] to-[#6D28D9]",
+    fallbackTitleBn: "কাস্টম অফার",
+    fallbackTitleEn: "Custom Offer",
+    fallbackSubBn: "বিশেষ অফার — একসাথে কিনুন, বেশি সাশ্রয় করুন!",
+    fallbackSubEn: "Special offer — buy together, save more!",
+    emoji: "🏷️",
+  },
 ];
 
 export default function OfferCarousel() {

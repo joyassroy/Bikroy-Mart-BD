@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "../../config/db";
 import { sendSuccess, sendError } from "../../utils/apiResponse";
+import { toValidDate } from "../../utils/dateHelper";
 
 export const getActivePromoOffers = async (req: Request, res: Response) => {
   try {
@@ -44,8 +45,8 @@ export const createPromoOffer = async (req: Request, res: Response) => {
         buyQuantity: buyQuantity || 1,
         getQuantity: getQuantity || 1,
         getDiscount: getDiscount ?? 100,
-        startsAt,
-        endsAt,
+        startsAt: toValidDate(startsAt),
+        endsAt: toValidDate(endsAt),
         sortOrder: sortOrder || 0,
         items: {
           create: items?.map((item: any) => ({
@@ -81,8 +82,8 @@ export const updatePromoOffer = async (req: Request, res: Response) => {
         buyQuantity,
         getQuantity,
         getDiscount,
-        startsAt,
-        endsAt,
+        startsAt: toValidDate(startsAt),
+        endsAt: toValidDate(endsAt),
         isActive,
         sortOrder,
         ...(items && {

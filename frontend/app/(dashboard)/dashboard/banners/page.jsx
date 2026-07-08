@@ -6,8 +6,9 @@ import toast from "react-hot-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function BannersPage() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [banners, setBanners] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState({
@@ -18,10 +19,11 @@ export default function BannersPage() {
     link: "",
     position: "hero",
     bgColor: "",
+    categoryId: "",
     sortOrder: 0,
   });
 
-  useEffect(() => { fetchBanners(); }, []);
+  useEffect(() => { fetchBanners(); fetchCategories(); }, []);
 
   const fetchBanners = async () => {
     try {
@@ -31,11 +33,18 @@ export default function BannersPage() {
     finally { setLoading(false); }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const res = await api.get("/categories");
+      setCategories(res.data.data || []);
+    } catch (err) { console.error(err); }
+  };
+
   const [imageFile, setImageFile] = useState(null);
   const [mobileImageFile, setMobileImageFile] = useState(null);
 
   const resetForm = () => {
-    setForm({ title: "", subtitle: "", image: "", mobileImage: "", link: "", position: "hero", bgColor: "", sortOrder: 0 });
+    setForm({ title: "", subtitle: "", image: "", mobileImage: "", link: "", position: "hero", bgColor: "", categoryId: "", sortOrder: 0 });
     setImageFile(null);
     setMobileImageFile(null);
     setEditingId(null);
@@ -51,6 +60,7 @@ export default function BannersPage() {
       link: banner.link || "",
       position: banner.position || "hero",
       bgColor: banner.bgColor || "",
+      categoryId: banner.categoryId || "",
       sortOrder: banner.sortOrder || 0,
     });
     setImageFile(null);
@@ -96,6 +106,7 @@ export default function BannersPage() {
   const positionOptions = [
     { value: "hero", label: t.heroMainBanner },
     { value: "center", label: t.centerMiddleBanner },
+    { value: "category", label: "Category Banner" },
     { value: "sidebar", label: t.sidebar },
   ];
 
@@ -165,6 +176,17 @@ export default function BannersPage() {
           </div>
 
           <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Category (optional)</label>
+            <select value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
+              className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none">
+              <option value="">None</option>
+              {categories.map(cat => (
+                <option key={cat.id} value={cat.id}>{language === "bn" ? (cat.nameBn || cat.name) : cat.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">{t.backgroundColorFallback}</label>
             <select value={form.bgColor} onChange={(e) => setForm({ ...form, bgColor: e.target.value })}
               className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none">
@@ -200,6 +222,7 @@ export default function BannersPage() {
               <tr className="text-left text-sm text-gray-500 border-b">
                 <th className="px-4 py-3 font-medium">{t.banner}</th>
                 <th className="px-4 py-3 font-medium">{t.position}</th>
+                <th className="px-4 py-3 font-medium">Category</th>
                 <th className="px-4 py-3 font-medium">{t.order}</th>
                 <th className="px-4 py-3 font-medium">{t.status}</th>
                 <th className="px-4 py-3 font-medium">{t.actions}</th>
@@ -207,9 +230,9 @@ export default function BannersPage() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">{t.loading}</td></tr>
+                <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">{t.loading}</td></tr>
               ) : banners.length === 0 ? (
-                <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">{t.noBannersFound}</td></tr>
+                <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">{t.noBannersFound}</td></tr>
               ) : banners.map((banner) => (
                 <tr key={banner.id} className="border-b hover:bg-gray-50">
                   <td className="px-4 py-3">
@@ -228,6 +251,15 @@ export default function BannersPage() {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-sm capitalize">{banner.position}</td>
+                  <td className="px-4 py-3 text-sm">
+                    {banner.category ? (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                        {language === "bn" ? (banner.category.nameBn || banner.category.name) : banner.category.name}
+                      </span>
+                    ) : (
+                      <span className="text-gray-400 text-xs">-</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-sm">{banner.sortOrder}</td>
                   <td className="px-4 py-3">
                     <button

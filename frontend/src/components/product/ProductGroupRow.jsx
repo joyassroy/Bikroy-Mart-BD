@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const ProductGroupRow = memo(function ProductGroupRow({ categorySlug, subcategory, products, showActions, onDelete, onProductUpdated }) {
   const scrollRef = useRef(null);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const scroll = useCallback((dir) => {
     if (!scrollRef.current) return;
@@ -20,7 +20,7 @@ const ProductGroupRow = memo(function ProductGroupRow({ categorySlug, subcategor
     <div className="mb-5">
       <div className="flex items-center justify-between mb-2.5">
         <h3 className="font-semibold text-sm sm:text-base text-[#00215B]">
-          {subcategory.nameBn || subcategory.name}
+          {language === "bn" ? (subcategory.nameBn || subcategory.name) : subcategory.name}
         </h3>
         <Link
           href={`/shop?category=${categorySlug}&subcategory=${subcategory.slug}`}

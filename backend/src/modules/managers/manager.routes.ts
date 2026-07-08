@@ -10,6 +10,7 @@ router.post("/", authenticate, authorize("ADMIN"), managerController.createManag
 router.put("/:id", authenticate, authorize("ADMIN"), managerController.updateManager);
 router.get("/products", authenticate, authorize("MANAGER"), managerController.getManagerProducts);
 router.get("/stats", authenticate, authorize("MANAGER"), managerController.getManagerStats);
+router.get("/history", authenticate, authorize("MANAGER"), managerController.getManagerHistory);
 router.delete("/:id", authenticate, authorize("ADMIN"), managerController.deleteManager);
 
 export default router;

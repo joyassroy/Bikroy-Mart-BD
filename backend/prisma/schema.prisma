@@ -63,6 +63,7 @@ model Category {
   sortOrder     Int           @default(0)
   products      Product[]
   subcategories Subcategory[]
+  banners       Banner[]
   createdAt     DateTime      @default(now())
 }
 
@@ -267,6 +268,8 @@ model Banner {
   link        String?
   position    String
   bgColor     String?
+  categoryId  String?
+  category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   isActive    Boolean  @default(true)
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())

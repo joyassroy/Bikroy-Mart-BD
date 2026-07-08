@@ -132,10 +132,12 @@ export const getAllOrders = async (req: Request, res: Response) => {
 
 export const updateOrderStatus = async (req: AuthRequest, res: Response) => {
   try {
-    const { status } = req.body;
+    const { status, paymentStatus } = req.body;
+    const data: any = { orderStatus: status };
+    if (paymentStatus) data.paymentStatus = paymentStatus;
     const order = await prisma.order.update({
       where: { id: String(req.params.id) },
-      data: { orderStatus: status },
+      data,
     });
 
     try {
@@ -271,7 +273,7 @@ export const assignRider = async (req: AuthRequest, res: Response) => {
 
 export const getLocalOrders = async (req: AuthRequest, res: Response) => {
   try {
-    const { search } = req.query;
+    const { search, status } = req.query;
     const manager = await prisma.managerProfile.findUnique({
       where: { userId: req.user!.userId },
     });
@@ -279,8 +281,13 @@ export const getLocalOrders = async (req: AuthRequest, res: Response) => {
 
     const where: any = {
       deliveryDistrict: manager.assignedDistrict,
-      orderStatus: { notIn: ["DELIVERED", "CANCELLED"] },
     };
+
+    if (status && typeof status === "string" && ["DELIVERED", "CANCELLED"].includes(status)) {
+      where.orderStatus = status;
+    } else {
+      where.orderStatus = { notIn: ["DELIVERED", "CANCELLED"] };
+    }
 
     if (search && typeof search === "string" && search.trim()) {
       const q = search.trim();

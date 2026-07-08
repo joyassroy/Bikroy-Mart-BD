@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import api from "@/lib/axios";
-import { Users, Ban, CheckCircle, Edit2, Trash2, X, Shield, UserCog, Lock } from "lucide-react";
+import { Ban, CheckCircle, Edit2, Trash2, X, UserCog } from "lucide-react";
 import toast from "react-hot-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 
@@ -12,7 +12,7 @@ export default function CustomersPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState(null);
-  const [editForm, setEditForm] = useState({ name: "", email: "", phone: "", role: "CUSTOMER" });
+  const [editForm, setEditForm] = useState({ name: "", email: "", phone: "" });
   const [filterRole, setFilterRole] = useState("ALL");
 
   useEffect(() => { fetchUsers(); }, []);
@@ -35,7 +35,7 @@ export default function CustomersPage() {
 
   const handleEdit = (user) => {
     setEditingUser(user);
-    setEditForm({ name: user.name, email: user.email, phone: user.phone || "", role: user.role });
+    setEditForm({ name: user.name, email: user.email, phone: user.phone || "" });
   };
 
   const handleSaveEdit = async () => {
@@ -43,14 +43,6 @@ export default function CustomersPage() {
       await api.put(`/users/${editingUser.id}`, editForm);
       toast.success(t.userUpdated);
       setEditingUser(null);
-      fetchUsers();
-    } catch (err) { toast.error(err.response?.data?.message || t.failed); }
-  };
-
-  const handleChangeRole = async (userId, newRole) => {
-    try {
-      await api.put(`/users/${userId}/role`, { role: newRole });
-      toast.success(`${t.roleChangedTo} ${newRole}`);
       fetchUsers();
     } catch (err) { toast.error(err.response?.data?.message || t.failed); }
   };
@@ -128,22 +120,9 @@ export default function CustomersPage() {
                   </td>
                   <td className="px-4 py-3 text-sm">{user.phone || t.notAvailable}</td>
                   <td className="px-4 py-3">
-                    {currentUser?.id === user.id ? (
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1 ${roleColors[user.role] || "bg-gray-100 text-gray-600"}`}>
-                        {user.role} <Lock size={10} />
-                      </span>
-                    ) : (
-                      <select
-                        value={user.role}
-                        onChange={(e) => handleChangeRole(user.id, e.target.value)}
-                        className={`px-2 py-1 rounded-full text-xs font-medium border-0 cursor-pointer focus:ring-2 focus:ring-pink-500 ${roleColors[user.role] || "bg-gray-100 text-gray-600"}`}
-                      >
-                        <option value="CUSTOMER">{t.customer}</option>
-                        <option value="MANAGER">{t.manager}</option>
-                        <option value="RIDER">{t.rider}</option>
-                        <option value="ADMIN">{t.admin}</option>
-                      </select>
-                    )}
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${roleColors[user.role] || "bg-gray-100 text-gray-600"}`}>
+                      {user.role}
+                    </span>
                   </td>
                   <td className="px-4 py-3 text-sm">{user._count?.orders || 0}</td>
                   <td className="px-4 py-3 text-sm text-gray-500">{new Date(user.createdAt).toLocaleDateString()}</td>
@@ -210,16 +189,6 @@ export default function CustomersPage() {
                 <label className="block text-xs font-medium text-gray-600 mb-1">{t.phone}</label>
                 <input type="text" value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
                   className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">{t.role}</label>
-                <select value={editForm.role} onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
-                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none">
-                  <option value="CUSTOMER">{t.customer}</option>
-                  <option value="MANAGER">{t.manager}</option>
-                  <option value="RIDER">{t.rider}</option>
-                  <option value="ADMIN">{t.admin}</option>
-                </select>
               </div>
             </div>
             <div className="flex gap-2 mt-4">

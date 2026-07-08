@@ -1,14 +1,26 @@
 "use client";
 import { useState, useEffect } from "react";
 import api from "@/lib/axios";
-import { CheckCircle, Package, Search, TrendingUp, Calendar, Download } from "lucide-react";
+import { CheckCircle, Package, Search, TrendingUp, Calendar, Printer, X, Phone, MapPin } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { printInvoice } from "@/lib/generateInvoice";
+
+const statusColors = {
+  PENDING: "bg-yellow-100 text-yellow-700",
+  CONFIRMED: "bg-blue-100 text-blue-700",
+  PROCESSING: "bg-indigo-100 text-indigo-700",
+  SHIPPED: "bg-purple-100 text-purple-700",
+  OUT_FOR_DELIVERY: "bg-orange-100 text-orange-700",
+  DELIVERED: "bg-green-100 text-green-700",
+  CANCELLED: "bg-red-100 text-red-700",
+};
 
 export default function RiderHistoryPage() {
   const { t } = useLanguage();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
   useEffect(() => {
     fetchHistory();
@@ -105,7 +117,7 @@ export default function RiderHistoryPage() {
       {/* Table */}
       <div className="bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[520px]">
+          <table className="w-full min-w-[580px]">
             <thead>
               <tr className="text-left bg-[#F9FAFB]">
                 <th className="px-5 py-3 text-[10px] sm:text-[11px] text-[#667085] font-semibold uppercase tracking-wider">{t.orderNumber || "Order #"}</th>
@@ -113,12 +125,13 @@ export default function RiderHistoryPage() {
                 <th className="px-5 py-3 text-[10px] sm:text-[11px] text-[#667085] font-semibold uppercase tracking-wider">{t.items || "Items"}</th>
                 <th className="px-5 py-3 text-[10px] sm:text-[11px] text-[#667085] font-semibold uppercase tracking-wider">{t.total || "Total"}</th>
                 <th className="px-5 py-3 text-[10px] sm:text-[11px] text-[#667085] font-semibold uppercase tracking-wider">{t.deliveredOn || "Delivered On"}</th>
+                <th className="px-5 py-3 text-[10px] sm:text-[11px] text-[#667085] font-semibold uppercase tracking-wider text-right">{t.printInvoice || "Print"}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F4F7FB]">
               {orders.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-5 py-12 text-center">
+                  <td colSpan={6} className="px-5 py-12 text-center">
                     <div className="w-14 h-14 rounded-2xl bg-[#F4F7FB] flex items-center justify-center mx-auto mb-3">
                       <Package size={24} className="text-[#D0D5DD]" />
                     </div>
@@ -128,7 +141,7 @@ export default function RiderHistoryPage() {
                 </tr>
               ) : (
                 orders.map((order) => (
-                  <tr key={order.id} className="hover:bg-[#F9FAFB] transition-colors">
+                  <tr key={order.id} className="hover:bg-[#F9FAFB] transition-colors cursor-pointer" onClick={() => setSelectedOrder(order)}>
                     <td className="px-5 py-3.5">
                       <span className="text-xs font-semibold text-[#EC008C]">{order.orderNumber}</span>
                     </td>
@@ -154,6 +167,15 @@ export default function RiderHistoryPage() {
                         </span>
                       </div>
                     </td>
+                    <td className="px-5 py-3.5 text-right">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); printInvoice(order); }}
+                        className="p-1.5 text-[#667085] hover:text-[#00215B] hover:bg-[#F4F7FB] rounded-lg transition"
+                        title={t.printInvoice || "Print Invoice"}
+                      >
+                        <Printer size={14} />
+                      </button>
+                    </td>
                   </tr>
                 ))
               )}
@@ -161,6 +183,100 @@ export default function RiderHistoryPage() {
           </table>
         </div>
       </div>
+
+      {/* Order Detail Modal */}
+      {selectedOrder && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setSelectedOrder(null)}>
+          <div className="bg-white rounded-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 bg-white border-b border-gray-100 p-5 flex justify-between items-center rounded-t-2xl">
+              <div>
+                <h2 className="font-bold text-[#00215B] text-base">{t.orderDetails || "Order Details"}</h2>
+                <p className="text-[11px] text-[#667085] mt-0.5">{selectedOrder.orderNumber} — ৳{selectedOrder.total}</p>
+              </div>
+              <button onClick={() => setSelectedOrder(null)} className="p-1.5 hover:bg-gray-100 rounded-lg transition">
+                <X size={18} className="text-gray-500" />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-4">
+              {/* Status */}
+              <div className="flex items-center justify-between">
+                <span className={`px-3 py-1 rounded-lg text-xs font-semibold ${statusColors[selectedOrder.orderStatus] || "bg-gray-100 text-gray-700"}`}>
+                  {selectedOrder.orderStatus?.replace(/_/g, " ")}
+                </span>
+                <span className="text-[11px] text-[#667085]">
+                  {selectedOrder.actualDelivery ? new Date(selectedOrder.actualDelivery).toLocaleDateString("en-BD", { day: "numeric", month: "long", year: "numeric" }) : ""}
+                </span>
+              </div>
+
+              {/* Customer Info */}
+              <div className="bg-[#F4F7FB] rounded-xl p-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-[10px] text-[#667085]">{t.customer || "Customer"}</p>
+                    <p className="text-xs font-medium text-[#000000]">{selectedOrder.user?.name}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-[#667085]">{t.phone || "Phone"}</p>
+                    <a href={`tel:${selectedOrder.user?.phone}`} className="text-xs font-semibold text-[#EC008C] hover:underline">{selectedOrder.user?.phone}</a>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-[10px] text-[#667085]">{t.deliveryAddress || "Address"}</p>
+                    <p className="text-xs font-medium text-[#000000]">{selectedOrder.deliveryAddress}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-[#667085]">{t.district || "District"}</p>
+                    <p className="text-xs font-medium text-[#000000]">{selectedOrder.deliveryDistrict}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-[#667085]">{t.paymentMethod || "Payment"}</p>
+                    <p className="text-xs font-medium text-[#000000]">{selectedOrder.paymentMethod} ({selectedOrder.paymentStatus})</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Items */}
+              <div>
+                <h3 className="text-xs font-medium text-[#000000] mb-2">{t.items || "Items"} ({selectedOrder.items?.length || 0})</h3>
+                <div className="space-y-2">
+                  {selectedOrder.items?.map((item) => (
+                    <div key={item.id} className="flex items-center justify-between py-2 border-b border-[#F4F7FB] last:border-0">
+                      <div className="flex items-center gap-3">
+                        <div className="w-7 h-7 rounded-lg bg-[#F4F7FB] flex items-center justify-center text-[10px] font-bold text-[#667085]">
+                          <Package size={12} />
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-[#000000]">{item.product?.name}</p>
+                          <p className="text-[10px] text-[#667085]">× {item.quantity}</p>
+                        </div>
+                      </div>
+                      <p className="text-xs font-semibold text-[#000000]">৳{item.totalPrice}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Custom Requirement */}
+              {selectedOrder.customRequirement && (
+                <div className="bg-amber-50 rounded-xl p-3 border border-amber-200">
+                  <p className="text-[10px] text-amber-700 font-semibold">{t.customRequirement || "Custom Requirement"}</p>
+                  <p className="text-xs text-amber-800 mt-1">{selectedOrder.customRequirement}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="p-5 border-t border-gray-100 flex gap-2">
+              <button onClick={() => printInvoice(selectedOrder)} className="flex-1 flex items-center justify-center gap-2 bg-[#00215B] text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-[#001845] transition">
+                <Printer size={14} /> {t.printInvoice || "Print Invoice"}
+              </button>
+              <button onClick={() => setSelectedOrder(null)} className="flex-1 flex items-center justify-center gap-2 bg-gray-100 text-gray-700 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-200 transition">
+                {t.close || "Close"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -56,6 +56,13 @@ export default function Home() {
           bgColor="from-[#00AFCC] to-[#009AB5]"
           badgeColor="bg-[#00AFCC]"
         />
+        <OfferSection
+          type="CUSTOM"
+          title={t.customOffer}
+          subtitle={t.customOfferDesc}
+          bgColor="from-[#7C3AED] to-[#6D28D9]"
+          badgeColor="bg-[#7C3AED]"
+        />
         <ProductTabs />
       </main>
       <Footer />

@@ -105,6 +105,9 @@ export const getManagerStats = async (req: AuthRequest, res: Response) => {
     });
     if (!manager) return sendError(res, "Manager profile not found", 404);
 
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
     const productWhere = {
       OR: [
         { managerId: manager.id },
@@ -112,13 +115,19 @@ export const getManagerStats = async (req: AuthRequest, res: Response) => {
       ],
     };
 
-    const [totalProducts, activeProducts, totalOrders, pendingOrders] = await Promise.all([
+    const districtWhere = { deliveryDistrict: manager.assignedDistrict };
+
+    const [totalProducts, activeProducts, totalOrders, pendingOrders, todayPendingOrders, todayDeliveredOrders, todaySales, todayOrders] = await Promise.all([
       prisma.product.count({ where: productWhere }),
       prisma.product.count({ where: { ...productWhere, isActive: true } }),
-      prisma.order.count({ where: { deliveryDistrict: manager.assignedDistrict } }),
+      prisma.order.count({ where: districtWhere }),
       prisma.order.count({
-        where: { deliveryDistrict: manager.assignedDistrict, orderStatus: "PENDING" },
+        where: { ...districtWhere, orderStatus: "PENDING" },
       }),
+      prisma.order.count({ where: { ...districtWhere, orderStatus: "PENDING", createdAt: { gte: todayStart } } }),
+      prisma.order.count({ where: { ...districtWhere, orderStatus: "DELIVERED", actualDelivery: { gte: todayStart } } }),
+      prisma.order.aggregate({ _sum: { total: true }, where: { ...districtWhere, paymentStatus: "PAID", createdAt: { gte: todayStart } } }),
+      prisma.order.count({ where: { ...districtWhere, createdAt: { gte: todayStart } } }),
     ]);
 
     return sendSuccess(res, "Manager stats fetched", {
@@ -126,6 +135,10 @@ export const getManagerStats = async (req: AuthRequest, res: Response) => {
       activeProducts,
       totalOrders,
       pendingOrders,
+      todayPendingOrders,
+      todayDeliveredOrders,
+      todaySales: todaySales._sum?.total || 0,
+      todayOrders,
       assignedZila: manager.assignedZila,
       assignedDistrict: manager.assignedDistrict,
     });
@@ -189,5 +202,45 @@ export const updateManager = async (req: Request, res: Response) => {
     return sendSuccess(res, "Manager updated", updated);
   } catch (error: any) {
     return sendError(res, error.message, 400);
+  }
+};
+
+export const getManagerHistory = async (req: AuthRequest, res: Response) => {
+  try {
+    const { search, status } = req.query;
+    const manager = await prisma.managerProfile.findUnique({
+      where: { userId: req.user!.userId },
+    });
+    if (!manager) return sendError(res, "Manager profile not found", 404);
+
+    const statuses = status
+      ? [String(status)]
+      : ["DELIVERED", "CANCELLED"];
+
+    const where: any = {
+      deliveryDistrict: manager.assignedDistrict,
+      orderStatus: { in: statuses },
+    };
+
+    if (search && typeof search === "string" && search.trim()) {
+      const q = search.trim();
+      where.OR = [
+        { orderNumber: { contains: q, mode: "insensitive" } },
+        { user: { name: { contains: q, mode: "insensitive" } } },
+        { user: { phone: { contains: q } } },
+      ];
+    }
+
+    const orders = await prisma.order.findMany({
+      where,
+      include: {
+        user: { select: { id: true, name: true, phone: true } },
+        items: { include: { product: { select: { id: true, name: true } } } },
+      },
+      orderBy: { actualDelivery: "desc" },
+    });
+    return sendSuccess(res, "Manager history fetched", orders);
+  } catch (error: any) {
+    return sendError(res, error.message);
   }
 };

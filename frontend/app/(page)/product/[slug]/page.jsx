@@ -17,7 +17,7 @@ import toast from "react-hot-toast";
 export default function ProductDetailPage() {
   const { slug } = useParams();
   const dispatch = useDispatch();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const district = useDistrict();
   const productRequestItems = useSelector((state) => state.productRequests.items);
 
@@ -28,6 +28,7 @@ export default function ProductDetailPage() {
   const [activeImage, setActiveImage] = useState(0);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: "" });
   const [submittingReview, setSubmittingReview] = useState(false);
+  const catName = (cat) => cat ? (language === "bn" ? (cat.nameBn || cat.name) : cat.name) : "";
 
   const isInProductRequests = productRequestItems.some((i) => i.productId === product?.id);
 
@@ -163,7 +164,7 @@ export default function ProductDetailPage() {
           <ChevronRight size={10} />
           {product.category && (
             <>
-              <Link href={`/shop?category=${product.category.slug}`} className="hover:text-[#EC008C] whitespace-nowrap">{product.category.name}</Link>
+              <Link href={`/shop?category=${product.category.slug}`} className="hover:text-[#EC008C] whitespace-nowrap">{catName(product.category)}</Link>
               <ChevronRight size={10} />
             </>
           )}
@@ -256,7 +257,7 @@ export default function ProductDetailPage() {
               {/* SKU & Category */}
               <div className="flex flex-wrap gap-x-4 gap-y-1 mb-4 text-[10px] sm:text-[11px] text-[#667085]">
                 {product.sku && <span><span className="font-medium">{t.sku}:</span> {product.sku}</span>}
-                {product.category && <span><span className="font-medium">{t.category}:</span> {product.category.name}</span>}
+                {product.category && <span><span className="font-medium">{t.category}:</span> {catName(product.category)}</span>}
               </div>
 
               {/* Quantity + Add to Cart */}

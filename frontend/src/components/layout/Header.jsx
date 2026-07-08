@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Search, ShoppingCart, User, MapPin, Menu, X, ChevronDown, ChevronRight, Globe, ClipboardList, Loader2, LayoutDashboard, ChevronUp, Wheat, Apple, Beef, Egg, Coffee, Cookie, Droplets, ChefHat, Cake, Sparkles, SprayCan, Baby, Package, Tag, Gift, TrendingUp, Building2 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import LocationSelector from "./LocationSelector";
@@ -17,18 +17,18 @@ const CATEGORY_ICON_MAP = {
 };
 
 const FALLBACK_CATEGORIES = [
-  { name: "Rice & Grains", slug: "rice-grains", icon: "Wheat", subcategories: [] },
-  { name: "Fruits & Vegetables", slug: "fruits-vegetables", icon: "Apple", subcategories: [] },
-  { name: "Meat & Fish", slug: "meat-fish", icon: "Beef", subcategories: [] },
-  { name: "Dairy & Eggs", slug: "dairy-eggs", icon: "Egg", subcategories: [] },
-  { name: "Drinks & Beverages", slug: "drinks-beverages", icon: "Coffee", subcategories: [] },
-  { name: "Snacks & Chips", slug: "snacks-chips", icon: "Cookie", subcategories: [] },
-  { name: "Oil & Ghee", slug: "oil-ghee", icon: "Droplets", subcategories: [] },
-  { name: "Spices & Condiments", slug: "spices-condiments", icon: "ChefHat", subcategories: [] },
-  { name: "Bakery & Biscuits", slug: "bakery-biscuits", icon: "Cake", subcategories: [] },
-  { name: "Beauty & Health", slug: "beauty-health", icon: "Sparkles", subcategories: [] },
-  { name: "Home Cleaning", slug: "home-cleaning", icon: "SprayCan", subcategories: [] },
-  { name: "Baby Care", slug: "baby-care", icon: "Baby", subcategories: [] },
+  { nameEn: "Rice & Grains", nameBn: "চাল ও খাদ্যশস্য", slug: "rice-grains", icon: "Wheat", subcategories: [] },
+  { nameEn: "Fruits & Vegetables", nameBn: "ফল ও সবজি", slug: "fruits-vegetables", icon: "Apple", subcategories: [] },
+  { nameEn: "Meat & Fish", nameBn: "মাংস ও মাছ", slug: "meat-fish", icon: "Beef", subcategories: [] },
+  { nameEn: "Dairy & Eggs", nameBn: "দুগ্ধজাত ও ডিম", slug: "dairy-eggs", icon: "Egg", subcategories: [] },
+  { nameEn: "Drinks & Beverages", nameBn: "পানীয়", slug: "drinks-beverages", icon: "Coffee", subcategories: [] },
+  { nameEn: "Snacks & Chips", nameBn: "স্ন্যাক্স", slug: "snacks-chips", icon: "Cookie", subcategories: [] },
+  { nameEn: "Oil & Ghee", nameBn: "তেল ও ঘি", slug: "oil-ghee", icon: "Droplets", subcategories: [] },
+  { nameEn: "Spices & Condiments", nameBn: "মসলা", slug: "spices-condiments", icon: "ChefHat", subcategories: [] },
+  { nameEn: "Bakery & Biscuits", nameBn: "বেকারি ও বিস্কুট", slug: "bakery-biscuits", icon: "Cake", subcategories: [] },
+  { nameEn: "Beauty & Health", nameBn: "সৌন্দর্য ও স্বাস্থ্য", slug: "beauty-health", icon: "Sparkles", subcategories: [] },
+  { nameEn: "Home Cleaning", nameBn: "বাসা পরিষ্কার", slug: "home-cleaning", icon: "SprayCan", subcategories: [] },
+  { nameEn: "Baby Care", nameBn: "শিশু যত্ন", slug: "baby-care", icon: "Baby", subcategories: [] },
 ];
 
 function CategoryIcon({ icon, size = 22, className = "" }) {
@@ -43,6 +43,7 @@ const NAV_OFFER_LINKS = [
   { label: "Executive", labelBn: "এক্সিকিউটিভ", href: "/shop?offer=EXECUTIVE", icon: Sparkles },
   { label: "Stock Clearance", labelBn: "স্টক ক্লিয়ারেন্স", href: "/shop?offer=STOCK_CLEARANCE", icon: Tag },
   { label: "BOGO", labelBn: "বাই ওয়ান গেট ওয়ান", href: "/shop?offer=BOGO", icon: Gift },
+  { label: "Custom Offer", labelBn: "কাস্টম অফার", href: "/shop?offer=CUSTOM", icon: Tag },
 ];
 
 export default function Header() {
@@ -66,10 +67,14 @@ export default function Header() {
   const dispatch = useDispatch();
   const { language, t, setLang } = useLanguage();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { authChecked } = useAuthChecked();
+  const activeOffer = searchParams.get("offer");
 
   const cartCount = mounted ? cartItems.reduce((sum, item) => sum + item.quantity, 0) : 0;
   const categories = apiCategories.length > 0 ? apiCategories : FALLBACK_CATEGORIES;
+  const catName = (cat) => language === "bn" ? (cat.nameBn || cat.nameEn) : cat.nameEn;
+  const subName = (sub) => language === "bn" ? (sub.nameBn || sub.nameEn) : sub.nameEn;
   const getDashboardHref = () => {
     if (!user) return "/signin";
     if (user.role === "ADMIN") return "/dashboard";
@@ -86,13 +91,14 @@ export default function Header() {
         const data = res.data.data || [];
         if (data.length > 0) {
           setApiCategories(data.map((cat) => ({
-            name: cat.nameBn || cat.name,
             nameEn: cat.name,
+            nameBn: cat.nameBn || cat.name,
             slug: cat.slug,
             icon: cat.icon || "📦",
             image: cat.image,
             subcategories: (cat.subcategories || []).map((sub) => ({
-              name: sub.nameBn || sub.name,
+              nameEn: sub.name,
+              nameBn: sub.nameBn || sub.name,
               slug: sub.slug,
               image: sub.image,
             })),
@@ -428,7 +434,7 @@ export default function Header() {
                               <span className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${isActive ? "bg-[#EC008C]/10 text-[#EC008C]" : "bg-[#F4F7FB] text-[#00215B]"}`}>
                                 <CategoryIcon icon={cat.icon} size={22} />
                               </span>
-                              <span className="flex-1 font-semibold truncate">{cat.name}</span>
+                              <span className="flex-1 font-semibold truncate">{catName(cat)}</span>
                               {hasSubs && (
                                 <ChevronRight size={14} className={`flex-shrink-0 transition-transform ${isActive ? "text-[#EC008C] translate-x-0.5" : "text-gray-300"}`} />
                               )}
@@ -447,7 +453,7 @@ export default function Header() {
                             <span className="w-16 h-16 rounded-2xl bg-[#F4F7FB] flex items-center justify-center mb-4 text-[#00215B]">
                               <CategoryIcon icon={hovered?.icon} size={32} />
                             </span>
-                            <p className="text-base font-bold text-[#364152]">{hovered?.name}</p>
+                            <p className="text-base font-bold text-[#364152]">{catName(hovered)}</p>
                             <Link
                               href={`/shop?category=${hoveredCatSlug}`}
                               onClick={() => { setMegaMenuOpen(false); setHoveredCatSlug(null); }}
@@ -462,14 +468,14 @@ export default function Header() {
                             <span className="w-16 h-16 rounded-2xl bg-[#FCE8F3] flex items-center justify-center mb-4 text-[#EC008C]">
                               <CategoryIcon icon={hovered.icon} size={32} />
                             </span>
-                            <p className="text-base font-bold text-[#364152] mb-1">{hovered.name}</p>
+                            <p className="text-base font-bold text-[#364152] mb-1">{catName(hovered)}</p>
                             <p className="text-[12px] text-[#667085] mb-4">No subcategories yet</p>
                             <Link
                               href={`/shop?category=${hoveredCatSlug}`}
                               onClick={() => { setMegaMenuOpen(false); setHoveredCatSlug(null); }}
                               className="bg-[#EC008C] text-white text-[12px] font-semibold px-5 py-2.5 rounded-lg hover:bg-[#D60071] transition"
                             >
-                              Browse {hovered.name}
+                              Browse {catName(hovered)}
                             </Link>
                           </div>
                         );
@@ -480,7 +486,7 @@ export default function Header() {
                                 <CategoryIcon icon={hovered.icon} size={26} />
                               </span>
                               <div>
-                                <p className="text-[14px] font-bold text-[#00215B]">{hovered.name}</p>
+                                <p className="text-[14px] font-bold text-[#00215B]">{catName(hovered)}</p>
                                 <p className="text-[11px] text-[#667085]">{hovered.subcategories.length} subcategories</p>
                               </div>
                             </div>
@@ -493,13 +499,13 @@ export default function Header() {
                                   className="flex items-center gap-3 px-3 py-3 rounded-xl text-[12px] text-[#364152] hover:bg-[#FCE8F3] hover:text-[#EC008C] transition-all duration-150 group"
                                 >
                                   {sub.image ? (
-                                    <img src={sub.image} alt={sub.name} className="w-9 h-9 rounded-lg object-contain flex-shrink-0 bg-[#F4F7FB] p-0.5" />
+                                    <img src={sub.image} alt={subName(sub)} className="w-9 h-9 rounded-lg object-contain flex-shrink-0 bg-[#F4F7FB] p-0.5" />
                                   ) : (
                                     <span className="w-9 h-9 rounded-lg bg-[#F4F7FB] flex items-center justify-center flex-shrink-0 group-hover:bg-[#EC008C]/10 group-hover:text-[#EC008C] transition-colors">
                                       <Package size={14} className="text-[#00215B] group-hover:text-[#EC008C] transition-colors" />
                                     </span>
                                   )}
-                                  <span className="truncate font-semibold">{sub.name}</span>
+                                  <span className="truncate font-semibold">{subName(sub)}</span>
                                 </Link>
                               ))}
                             </div>
@@ -509,7 +515,7 @@ export default function Header() {
                                 onClick={() => { setMegaMenuOpen(false); setHoveredCatSlug(null); }}
                                 className="flex items-center justify-center gap-1.5 w-full py-2.5 text-[12px] font-semibold text-[#EC008C] hover:bg-[#FCE8F3] rounded-lg transition"
                               >
-                                View All {hovered.name} →
+                                View All {catName(hovered)} →
                               </Link>
                             </div>
                           </div>
@@ -521,11 +527,15 @@ export default function Header() {
               </div>
 
               {/* Nav Links - Offer Types */}
-              {NAV_OFFER_LINKS.map((link) => (
-                <Link key={link.href} href={link.href} className="px-3 py-2.5 text-[12px] text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3] transition font-semibold">
-                  {language === "bn" ? link.labelBn : link.label}
-                </Link>
-              ))}
+              {NAV_OFFER_LINKS.map((link) => {
+                const offerType = link.href.split("offer=")[1];
+                const isActive = activeOffer && activeOffer === offerType;
+                return (
+                  <Link key={link.href} href={link.href} className={`px-3 py-2.5 text-[12px] font-semibold transition ${isActive ? "text-[#EC008C] bg-[#FCE8F3]" : "text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3]"}`}>
+                    {language === "bn" ? link.labelBn : link.label}
+                  </Link>
+                );
+              })}
               <Link href="/shop" className="px-3 py-2.5 text-[12px] text-[#EC008C] font-semibold hover:bg-[#FCE8F3] transition">Shop</Link>
               <Link href="/about" className="px-3 py-2.5 text-[12px] text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3] transition font-semibold">About</Link>
               <Link href="/custom-request" className="px-3 py-2.5 text-[12px] text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3] transition font-semibold flex items-center gap-1">
@@ -606,17 +616,19 @@ export default function Header() {
               <div className="space-y-0.5">
                 {NAV_OFFER_LINKS.map((link) => {
                   const Icon = link.icon;
+                  const offerType = link.href.split("offer=")[1];
+                  const isActive = activeOffer && activeOffer === offerType;
                   return (
                     <Link
                       key={link.href}
                       href={link.href}
                       onClick={() => setDrawerOpen(false)}
-                      className="flex items-center gap-3 px-2 py-3 hover:bg-[#F4F7FB] rounded-lg transition"
+                      className={`flex items-center gap-3 px-2 py-3 rounded-lg transition ${isActive ? "bg-[#FCE8F3]" : "hover:bg-[#F4F7FB]"}`}
                     >
-                      <span className="w-10 h-10 rounded-xl bg-[#FCE8F3] flex items-center justify-center text-[#EC008C] flex-shrink-0">
+                      <span className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isActive ? "bg-[#EC008C] text-white" : "bg-[#FCE8F3] text-[#EC008C]"}`}>
                         <Icon size={18} />
                       </span>
-                      <span className="text-[13px] font-semibold text-[#364152]">{language === "bn" ? link.labelBn : link.label}</span>
+                      <span className={`text-[13px] font-semibold ${isActive ? "text-[#EC008C]" : "text-[#364152]"}`}>{language === "bn" ? link.labelBn : link.label}</span>
                     </Link>
                   );
                 })}
@@ -640,7 +652,7 @@ export default function Header() {
                           <span className="w-10 h-10 rounded-xl bg-[#F4F7FB] flex items-center justify-center text-[#00215B] flex-shrink-0">
                             <CategoryIcon icon={cat.icon} size={20} />
                           </span>
-                          <span className="text-[13px] font-semibold text-[#364152] flex-1">{cat.name}</span>
+                          <span className="text-[13px] font-semibold text-[#364152] flex-1">{catName(cat)}</span>
                           {hasSubs && (
                             <span className="text-[9px] bg-[#F4F7FB] text-[#667085] px-1.5 py-0.5 rounded-full">{cat.subcategories.length}</span>
                           )}
@@ -664,7 +676,7 @@ export default function Header() {
                               className="flex items-center gap-2 px-2 py-2 text-[11px] text-[#667085] hover:text-[#EC008C] hover:bg-[#FCE8F3] rounded-lg transition"
                             >
                               <span className="w-1.5 h-1.5 rounded-full bg-[#E5E7EB] flex-shrink-0"></span>
-                              {sub.name}
+                              {subName(sub)}
                             </Link>
                           ))}
                           <Link

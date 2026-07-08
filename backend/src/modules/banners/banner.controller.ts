@@ -4,12 +4,17 @@ import { sendSuccess, sendError } from "../../utils/apiResponse";
 
 export const getBanners = async (req: Request, res: Response) => {
   try {
-    const { position, all } = req.query;
+    const { position, categoryId, all } = req.query;
     const where: any = {};
     if (position) where.position = position;
+    if (categoryId) where.categoryId = categoryId;
     if (!all) where.isActive = true;
 
-    const banners = await prisma.banner.findMany({ where, orderBy: { sortOrder: "asc" } });
+    const banners = await prisma.banner.findMany({ 
+      where, 
+      orderBy: { sortOrder: "asc" },
+      include: { category: true }
+    });
     return sendSuccess(res, "Banners fetched", banners);
   } catch (error: any) {
     return sendError(res, error.message);
@@ -18,7 +23,7 @@ export const getBanners = async (req: Request, res: Response) => {
 
 export const createBanner = async (req: Request, res: Response) => {
   try {
-    const { title, subtitle, link, position, bgColor, sortOrder } = req.body;
+    const { title, subtitle, link, position, bgColor, sortOrder, categoryId } = req.body;
     let image = req.body.image || "";
     let mobileImage = req.body.mobileImage || "";
 
@@ -31,7 +36,7 @@ export const createBanner = async (req: Request, res: Response) => {
     }
 
     const banner = await prisma.banner.create({
-      data: { title, subtitle, image, mobileImage, link, position, bgColor, sortOrder: sortOrder ? parseInt(sortOrder) : 0 },
+      data: { title, subtitle, image, mobileImage, link, position, bgColor, categoryId: categoryId || null, sortOrder: sortOrder ? parseInt(sortOrder) : 0 },
     });
     return sendSuccess(res, "Banner created", banner, 201);
   } catch (error: any) {
@@ -44,6 +49,7 @@ export const updateBanner = async (req: Request, res: Response) => {
     const dataToUpdate: any = { ...req.body };
     if (dataToUpdate.sortOrder) dataToUpdate.sortOrder = parseInt(dataToUpdate.sortOrder);
     if (dataToUpdate.isActive !== undefined) dataToUpdate.isActive = dataToUpdate.isActive === 'true' || dataToUpdate.isActive === true;
+    if (dataToUpdate.categoryId !== undefined) dataToUpdate.categoryId = dataToUpdate.categoryId || null;
 
     if (req.files && Array.isArray(req.files)) {
       const imgFile = req.files.find((f: any) => f.fieldname === 'image');
