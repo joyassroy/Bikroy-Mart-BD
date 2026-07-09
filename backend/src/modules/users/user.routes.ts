@@ -160,6 +160,9 @@ router.delete("/:id", authenticate, authorize("ADMIN"), async (req: AuthRequest,
 
 router.put("/:id/block", authenticate, authorize("ADMIN"), async (req: AuthRequest, res: Response) => {
   try {
+    if (req.user!.userId === String(req.params.id)) {
+      return sendError(res, "You cannot block yourself", 400);
+    }
     const user = await prisma.user.update({
       where: { id: String(req.params.id) },
       data: { isBlocked: true },
