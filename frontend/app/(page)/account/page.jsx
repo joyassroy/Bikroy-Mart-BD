@@ -506,9 +506,9 @@ export default function AccountPage() {
                             <button
                               onClick={(e) => { e.stopPropagation(); printInvoice(order); }}
                               className="flex items-center gap-1 text-sm text-gray-500 hover:text-[#0067A0] font-medium transition"
-                              title={t.printInvoice}
+                              title="Print Invoice"
                             >
-                              <Printer size={14} /> {t.printInvoice}
+                              <Printer size={14} /> Print Invoice
                             </button>
                             <button
                               onClick={(e) => { e.stopPropagation(); router.push(`/track-order?order=${order.orderNumber}`); }}
