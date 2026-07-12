@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import api from "@/lib/axios";
-import { CheckCircle, Package, Search, TrendingUp, Calendar, Printer, X, Phone, MapPin } from "lucide-react";
+import { CheckCircle, Package, Search, TrendingUp, Calendar, Printer, X, Phone, MapPin, ExternalLink } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { printInvoice } from "@/lib/generateInvoice";
 import Pagination from "@/components/ui/Pagination";
@@ -283,6 +283,9 @@ export default function RiderHistoryPage() {
             <div className="p-5 border-t border-gray-100 flex gap-2">
               <button onClick={() => printInvoice(selectedOrder)} className="flex-1 flex items-center justify-center gap-2 bg-[#00215B] text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-[#001845] transition">
                 <Printer size={14} /> {t.printInvoice || "Print Invoice"}
+              </button>
+              <button onClick={() => { window.location.href = `/track-order?order=${selectedOrder.orderNumber}`; }} className="flex-1 flex items-center justify-center gap-2 bg-white border border-[#E5E7EB] text-gray-700 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50 transition">
+                <ExternalLink size={14} /> Track Order
               </button>
               <button onClick={() => setSelectedOrder(null)} className="flex-1 flex items-center justify-center gap-2 bg-gray-100 text-gray-700 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-200 transition">
                 {t.close || "Close"}

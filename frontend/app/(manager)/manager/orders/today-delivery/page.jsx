@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import api from "@/lib/axios";
-import { Search, Eye, Printer, Truck, ArrowLeft, RefreshCw } from "lucide-react";
+import { Search, Eye, Printer, Truck, ArrowLeft, RefreshCw, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { printInvoice } from "@/lib/generateInvoice";
 import Pagination from "@/components/ui/Pagination";
@@ -150,7 +150,15 @@ export default function ManagerTodayDeliveryPage() {
                 ))}
               </div>
             </div>
-            <button onClick={() => setSelectedOrder(null)} className="w-full mt-4 bg-gray-100 py-2 rounded-lg text-sm hover:bg-gray-200">{t.close}</button>
+            <div className="flex gap-2 mt-4">
+              <button onClick={() => printInvoice(selectedOrder)} className="flex-1 flex items-center justify-center gap-2 bg-[#00215B] text-white py-2 rounded-lg text-sm hover:bg-[#001A4A] transition">
+                <Printer size={14} /> {t.printInvoice || "Print Invoice"}
+              </button>
+              <button onClick={() => { window.location.href = `/track-order?order=${selectedOrder.orderNumber}`; }} className="flex-1 flex items-center justify-center gap-2 bg-white border border-[#E5E7EB] text-gray-700 py-2 rounded-lg text-sm hover:bg-gray-50 transition">
+                <ExternalLink size={14} /> Track Order
+              </button>
+              <button onClick={() => setSelectedOrder(null)} className="flex-1 bg-gray-100 py-2 rounded-lg text-sm hover:bg-gray-200">{t.close}</button>
+            </div>
           </div>
         </div>
       )}

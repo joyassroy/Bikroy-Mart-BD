@@ -1,5 +1,5 @@
 "use client";
-import { X, Printer, MapPin, User, CreditCard, Package, Truck, StickyNote, AlertTriangle } from "lucide-react";
+import { X, Printer, MapPin, User, CreditCard, Package, Truck, StickyNote, AlertTriangle, ExternalLink } from "lucide-react";
 import { printInvoice } from "@/lib/generateInvoice";
 import { OrderStatusBadge, PaymentStatusBadge } from "./OrderStatusBadge";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -142,6 +142,9 @@ export default function OrderDetailModal({ order, onClose }) {
         <div className="sticky bottom-0 bg-white border-t px-5 py-3 flex gap-2 rounded-b-xl">
           <button onClick={() => printInvoice(order)} className="flex-1 flex items-center justify-center gap-2 bg-[#00215B] text-white py-2.5 rounded-lg text-sm font-medium hover:bg-[#001A4A] transition cursor-pointer">
             <Printer size={14} /> {t.printInvoice}
+          </button>
+          <button onClick={() => { window.location.href = `/track-order?order=${order.orderNumber}`; }} className="flex-1 flex items-center justify-center gap-2 bg-white border border-[#E5E7EB] text-gray-700 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition cursor-pointer">
+            <ExternalLink size={14} /> Track Order
           </button>
           <button onClick={onClose} className="flex-1 bg-gray-100 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition cursor-pointer">{t.close}</button>
         </div>
