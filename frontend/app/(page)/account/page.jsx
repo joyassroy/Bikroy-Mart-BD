@@ -16,6 +16,7 @@ import FloatingChatButton from "@/components/layout/FloatingChatButton";
 import { printInvoice } from "@/lib/generateInvoice";
 import Pagination from "@/components/ui/Pagination";
 import { useLanguage } from "@/i18n/LanguageContext";
+import OrderStatusStepper from "@/components/admin/OrderStatusStepper";
 
 const statusSteps = ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED"];
 
@@ -704,24 +705,7 @@ export default function AccountPage() {
                 </button>
               )}
 
-              <div className="space-y-2">
-                {statusSteps.map((step, index) => {
-                  const currentIndex = getStatusIndex(selectedOrder.orderStatus);
-                  const isCompleted = index <= currentIndex;
-                  const isCurrent = index === currentIndex;
-                  return (
-                    <div key={step} className="flex items-center gap-3">
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold ${
-                        isCompleted ? "bg-[#EC008C] text-white" : "bg-gray-100 text-gray-400"
-                      } ${isCurrent ? "ring-2 ring-pink-200" : ""}`}>
-                        {isCompleted ? "✓" : index + 1}
-                      </div>
-                      <span className={`text-sm ${isCompleted ? "text-gray-900 font-medium" : "text-gray-400"}`}>{step.replace(/_/g, " ")}</span>
-                      {isCurrent && <span className="text-xs text-[#EC008C] font-semibold ml-1">Current</span>}
-                    </div>
-                  );
-                })}
-              </div>
+              <OrderStatusStepper orderStatus={selectedOrder.orderStatus} />
 
               <div className="border-t border-gray-100 pt-4">
                 <h3 className="font-medium text-gray-900 mb-2 text-sm">Items</h3>

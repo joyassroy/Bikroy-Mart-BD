@@ -6,6 +6,7 @@ import Link from "next/link";
 import { printInvoice } from "@/lib/generateInvoice";
 import Pagination from "@/components/ui/Pagination";
 import { useLanguage } from "@/i18n/LanguageContext";
+import OrderStatusStepper from "@/components/admin/OrderStatusStepper";
 
 const statusColors = {
   PENDING: "bg-yellow-100 text-yellow-700",
@@ -144,6 +145,7 @@ export default function ManagerPendingTodayPage() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setSelectedOrder(null)}>
           <div className="bg-white rounded-lg max-w-lg w-full p-6 max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <h2 className="font-semibold text-[#00215B] mb-4">{t.orderHash}{selectedOrder.orderNumber}</h2>
+            <OrderStatusStepper orderStatus={selectedOrder.orderStatus} />
             <div className="space-y-2 text-sm">
               <p><span className="text-[#667085]">{t.customerLabel}</span> {selectedOrder.user?.name}</p>
               <p><span className="text-[#667085]">{t.phoneLabel}</span> {selectedOrder.user?.phone}</p>

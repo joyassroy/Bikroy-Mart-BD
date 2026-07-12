@@ -2,6 +2,7 @@
 import { X, Printer, MapPin, User, CreditCard, Package, Truck, StickyNote, AlertTriangle, ExternalLink } from "lucide-react";
 import { printInvoice } from "@/lib/generateInvoice";
 import { OrderStatusBadge, PaymentStatusBadge } from "./OrderStatusBadge";
+import OrderStatusStepper from "./OrderStatusStepper";
 import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function OrderDetailModal({ order, onClose }) {
@@ -25,9 +26,11 @@ export default function OrderDetailModal({ order, onClose }) {
         </div>
 
         <div className="p-5 space-y-4">
-          {/* Status Badges */}
+          {/* Status Stepper */}
+          <OrderStatusStepper orderStatus={order.orderStatus} />
+
+          {/* Payment Badge */}
           <div className="flex items-center gap-2">
-            <OrderStatusBadge status={order.orderStatus} />
             <PaymentStatusBadge status={order.paymentStatus} />
           </div>
 

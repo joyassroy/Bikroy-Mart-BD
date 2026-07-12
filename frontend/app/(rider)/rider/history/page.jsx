@@ -5,6 +5,7 @@ import { CheckCircle, Package, Search, TrendingUp, Calendar, Printer, X, Phone, 
 import { useLanguage } from "@/i18n/LanguageContext";
 import { printInvoice } from "@/lib/generateInvoice";
 import Pagination from "@/components/ui/Pagination";
+import OrderStatusStepper from "@/components/admin/OrderStatusStepper";
 
 const statusColors = {
   PENDING: "bg-yellow-100 text-yellow-700",
@@ -213,15 +214,8 @@ export default function RiderHistoryPage() {
             </div>
 
             <div className="p-5 space-y-4">
-              {/* Status */}
-              <div className="flex items-center justify-between">
-                <span className={`px-3 py-1 rounded-lg text-xs font-semibold ${statusColors[selectedOrder.orderStatus] || "bg-gray-100 text-gray-700"}`}>
-                  {selectedOrder.orderStatus?.replace(/_/g, " ")}
-                </span>
-                <span className="text-[11px] text-[#667085]">
-                  {selectedOrder.actualDelivery ? new Date(selectedOrder.actualDelivery).toLocaleDateString("en-BD", { day: "numeric", month: "long", year: "numeric" }) : ""}
-                </span>
-              </div>
+              {/* Status Stepper */}
+              <OrderStatusStepper orderStatus={selectedOrder.orderStatus} />
 
               {/* Customer Info */}
               <div className="bg-[#F4F7FB] rounded-xl p-4">
