@@ -15,12 +15,14 @@ import toast from "react-hot-toast";
 import FloatingChatButton from "@/components/layout/FloatingChatButton";
 import { printInvoice } from "@/lib/generateInvoice";
 import Pagination from "@/components/ui/Pagination";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const statusSteps = ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED"];
 
 export default function AccountPage() {
   const dispatch = useDispatch();
   const router = useRouter();
+  const { t } = useLanguage();
   const user = useSelector((state) => state.user.data);
   const location = useSelector((state) => state.location);
   const { authChecked } = useAuthChecked();
