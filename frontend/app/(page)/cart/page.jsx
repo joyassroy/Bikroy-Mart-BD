@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { removeFromCart, updateQuantity, clearCart } from "@/redux/cartSlice";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import CountdownTimer from "@/components/ui/CountdownTimer";
 import { Trash2, Plus, Minus, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -44,6 +45,11 @@ export default function CartPage() {
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium text-[#000000] text-[11px] sm:text-xs truncate">{item.name}</h3>
                     <p className="text-[#000000] font-bold text-xs sm:text-sm mt-0.5">৳{item.price}</p>
+                    {item.endsAt && (
+                      <div className="mt-1">
+                        <CountdownTimer endsAt={item.endsAt} compact />
+                      </div>
+                    )}
                   </div>
                   <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
                     <button

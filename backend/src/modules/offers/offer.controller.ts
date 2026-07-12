@@ -23,7 +23,7 @@ export const getActivePromoOffers = async (req: Request, res: Response) => {
 export const getAllPromoOffers = async (req: Request, res: Response) => {
   try {
     const offers = await prisma.promoOffer.findMany({
-      include: { items: { include: { product: { select: { id: true, name: true, price: true, images: true } } } } },
+      include: { items: { include: { product: { select: { id: true, name: true, slug: true, price: true, images: true } } } } },
       orderBy: { createdAt: "desc" },
     });
     return sendSuccess(res, "All promo offers fetched", offers);

@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { ShoppingCart, Package, Users, DollarSign, TrendingUp, Truck, Clock, Loader2 } from "lucide-react";
+import { ShoppingCart, Package, Users, DollarSign, TrendingUp, Truck, Loader2 } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import api from "@/lib/axios";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
@@ -60,8 +60,6 @@ export default function DashboardPage() {
   ];
 
   const todayCards = [
-    { label: t.todayOrders, value: stats?.todayOrders?.toLocaleString() || "0", icon: ShoppingCart, color: "text-[#7C3AED] bg-[#F3E8FF]" },
-    { label: t.todayPending, value: stats?.todayPendingOrders?.toLocaleString() || "0", icon: Clock, color: "text-[#D4A017] bg-[#FFF8E1]" },
     { label: t.todayDelivered, value: stats?.todayDeliveredOrders?.toLocaleString() || "0", icon: Truck, color: "text-[#10B981] bg-[#ECFDF5]" },
     { label: t.todaySales, value: `৳${(stats?.todaySales || 0).toLocaleString()}`, icon: DollarSign, color: "text-[#EC008C] bg-[#FCE8F3]" },
   ];

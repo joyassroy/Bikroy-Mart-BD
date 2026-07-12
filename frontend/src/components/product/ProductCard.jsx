@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 
 const EditProductModal = dynamic(() => import("./EditProductModal"), { ssr: false });
+const CountdownTimer = dynamic(() => import("@/components/ui/CountdownTimer"), { ssr: false });
 
 function DeleteModal({ product, onConfirm, onCancel }) {
   return (
@@ -42,7 +43,7 @@ function DeleteModal({ product, onConfirm, onCancel }) {
 
 const ProductCard = memo(function ProductCard({ product, showActions, onDelete, onProductUpdated }) {
   const dispatch = useDispatch();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [imgError, setImgError] = useState(false);
@@ -71,6 +72,7 @@ const ProductCard = memo(function ProductCard({ product, showActions, onDelete, 
       price: cartPrice,
       image: product.images?.[0],
       quantity: 1,
+      endsAt: product.flashDealEndsAt || null,
     }));
     toast.success(t.addToCart);
   }, [dispatch, product, t]);
@@ -131,7 +133,7 @@ const ProductCard = memo(function ProductCard({ product, showActions, onDelete, 
 
         <div className="p-2.5 sm:p-3 space-y-1.5">
           <h3 className="text-xs sm:text-sm font-bold text-[#364152] line-clamp-2 min-h-[32px] sm:min-h-[36px] leading-tight group-hover:text-[#EC008C] transition-colors">
-            {product.name}
+            {language === "bn" ? (product.nameBn || product.name) : product.name}
           </h3>
 
           <div className="flex items-center gap-1 flex-wrap">
@@ -179,6 +181,12 @@ const ProductCard = memo(function ProductCard({ product, showActions, onDelete, 
               <TrendingUp size={9} />
               Save ৳{savings}
             </p>
+          )}
+
+          {product.flashDealEndsAt && (
+            <div className="pt-0.5">
+              <CountdownTimer endsAt={product.flashDealEndsAt} compact />
+            </div>
           )}
 
           {showActions ? (

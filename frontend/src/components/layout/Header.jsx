@@ -536,7 +536,7 @@ function HeaderContent() {
                   </Link>
                 );
               })}
-              <Link href="/shop" className="px-3 py-2.5 text-[12px] text-[#EC008C] font-semibold hover:bg-[#FCE8F3] transition">Shop</Link>
+              <Link href="/shop" className={`px-3 py-2.5 text-[12px] font-semibold transition ${pathname === "/shop" && !activeOffer ? "text-[#EC008C] bg-[#FCE8F3]" : "text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3]"}`}>Shop</Link>
               <Link href="/about" className="px-3 py-2.5 text-[12px] text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3] transition font-semibold">About</Link>
               <Link href="/custom-request" className="px-3 py-2.5 text-[12px] text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3] transition font-semibold flex items-center gap-1">
                 <ClipboardList size={12} />{t.customRequest}
@@ -711,25 +711,25 @@ function HeaderContent() {
         {/* Bottom Nav */}
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#E5E7EB] shadow-[0_-2px_12px_rgba(0,0,0,0.1)] pb-[max(6px,env(safe-area-inset-bottom))] pointer-events-auto" style={{ zIndex: 70 }}>
           <div className="flex items-center justify-around py-1.5">
-            <Link href="/" className={`flex flex-col items-center gap-0.5 min-w-[50px] ${pathname === "/" ? "text-[#EC008C]" : "text-[#667085]"}`}>
+            <Link href="/" className={`flex flex-col items-center gap-0.5 flex-1 min-w-0 ${pathname === "/" ? "text-[#EC008C]" : "text-[#667085]"}`}>
               <div className={`w-8 h-8 rounded-full flex items-center justify-center transition ${pathname === "/" ? "bg-[#FCE8F3]" : "bg-[#F4F7FB]"}`}>
                 <img src="/icon.png" alt="Home" className="w-5 h-5 object-contain" />
               </div>
-              <span className="text-[9px] font-semibold">{t.home}</span>
+              <span className="text-[9px] font-semibold truncate">{t.home}</span>
             </Link>
-            <button onClick={() => setDrawerOpen(true)} className="flex flex-col items-center gap-0.5 min-w-[50px] text-[#667085]">
+            <button onClick={() => setDrawerOpen(true)} className="flex flex-col items-center gap-0.5 flex-1 min-w-0 text-[#667085]">
               <div className="w-8 h-8 rounded-full bg-[#F4F7FB] flex items-center justify-center transition">
                 <Menu size={18} />
               </div>
-              <span className="text-[9px] font-semibold">{t.categories}</span>
+              <span className="text-[9px] font-semibold truncate">{t.categories}</span>
             </button>
-            <Link href="/custom-request" className={`flex flex-col items-center gap-0.5 min-w-[50px] ${pathname === "/custom-request" ? "text-[#EC008C]" : "text-[#667085]"}`}>
+            <Link href="/custom-request" className={`flex flex-col items-center gap-0.5 flex-1 min-w-0 ${pathname === "/custom-request" ? "text-[#EC008C]" : "text-[#667085]"}`}>
               <div className={`w-8 h-8 rounded-full flex items-center justify-center transition ${pathname === "/custom-request" ? "bg-[#FCE8F3]" : "bg-[#F4F7FB]"}`}>
                 <ClipboardList size={18} />
               </div>
-              <span className="text-[9px] font-semibold">{t.customRequest}</span>
+              <span className="text-[9px] font-semibold truncate">{t.customRequest}</span>
             </Link>
-            <Link href="/cart" className={`relative flex flex-col items-center gap-0.5 min-w-[50px] ${pathname === "/cart" ? "text-[#EC008C]" : "text-[#667085]"}`}>
+            <Link href="/cart" className={`relative flex flex-col items-center gap-0.5 flex-1 min-w-0 ${pathname === "/cart" ? "text-[#EC008C]" : "text-[#667085]"}`}>
               <div className={`relative w-8 h-8 rounded-full flex items-center justify-center transition ${pathname === "/cart" ? "bg-[#FCE8F3]" : "bg-[#F4F7FB]"}`}>
                 <ShoppingCart size={18} />
                 {cartCount > 0 && (
@@ -738,9 +738,9 @@ function HeaderContent() {
                   </span>
                 )}
               </div>
-              <span className="text-[9px] font-semibold">{t.cart}</span>
+              <span className="text-[9px] font-semibold truncate">{t.cart}</span>
             </Link>
-            <Link href={authChecked ? (user ? "/account" : "/signin") : "#"} className={`flex flex-col items-center gap-0.5 min-w-[50px] ${pathname === "/account" || pathname === "/signin" ? "text-[#EC008C]" : "text-[#667085]"}`}>
+            <Link href={authChecked ? (user ? "/account" : "/signin") : "#"} className={`flex flex-col items-center gap-0.5 flex-1 min-w-0 ${pathname === "/account" || pathname === "/signin" ? "text-[#EC008C]" : "text-[#667085]"}`}>
               <div className={`w-8 h-8 rounded-full flex items-center justify-center overflow-hidden transition ${pathname === "/account" || pathname === "/signin" ? "bg-[#FCE8F3]" : "bg-[#F4F7FB]"}`}>
                 {user?.avatar ? (
                   <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full object-cover" />
@@ -748,10 +748,10 @@ function HeaderContent() {
                   <User size={18} />
                 )}
               </div>
-              <span className="text-[9px] font-semibold">{authChecked ? (user ? t.myAccount : t.signIn) : "..."}</span>
+              <span className="text-[9px] font-semibold truncate">{authChecked ? (user ? t.myAccount : t.signIn) : "..."}</span>
             </Link>
             {authChecked && user && user.role && user.role !== "CUSTOMER" && (user.role === "ADMIN" || user.role === "MANAGER" || user.role === "RIDER") && (
-              <Link href={getDashboardHref()} className={`flex flex-col items-center gap-0.5 min-w-[50px] ${pathname.startsWith(getDashboardHref()) ? "text-[#EC008C]" : "text-[#667085]"}`}>
+              <Link href={getDashboardHref()} className={`flex flex-col items-center gap-0.5 flex-1 min-w-0 ${pathname.startsWith(getDashboardHref()) ? "text-[#EC008C]" : "text-[#667085]"}`}>
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center transition ${pathname.startsWith(getDashboardHref()) ? "bg-[#FCE8F3]" : "bg-[#F4F7FB]"}`}>
                   <LayoutDashboard size={18} />
                 </div>

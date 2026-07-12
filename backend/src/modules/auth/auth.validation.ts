@@ -3,7 +3,7 @@ import { body } from "express-validator";
 export const registerValidation = [
   body("name").trim().notEmpty().withMessage("Name is required"),
   body("email").isEmail().withMessage("Valid email is required"),
-  body("phone").optional().isMobilePhone("bn-BD").withMessage("Valid Bangladeshi phone number required"),
+  body("phone").optional().matches(/^01[3-9]\d{8}$/).withMessage("Valid Bangladeshi phone number required (e.g. 01XXXXXXXXX)"),
   body("password")
     .isLength({ min: 6 })
     .withMessage("Password must be at least 6 characters"),
@@ -28,5 +28,5 @@ export const verifyOtpValidation = [
 
 export const updateMeValidation = [
   body("name").optional().trim().notEmpty().withMessage("Name cannot be empty"),
-  body("phone").optional().isMobilePhone("bn-BD").withMessage("Valid Bangladeshi phone number required"),
+  body("phone").optional().matches(/^01[3-9]\d{8}$/).withMessage("Valid Bangladeshi phone number required (e.g. 01XXXXXXXXX)"),
 ];

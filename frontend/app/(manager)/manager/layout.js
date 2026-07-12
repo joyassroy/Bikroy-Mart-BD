@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, Package, ShoppingCart, Users, MapPin, Menu, X, ClipboardList, Loader2, Clock } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Users, MapPin, Menu, X, ClipboardList, Loader2, Clock, ChevronDown } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useAuthChecked } from "@/helper/AuthInit";
@@ -11,6 +11,7 @@ export default function ManagerLayout({ children }) {
   const pathname = usePathname();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [openSubmenu, setOpenSubmenu] = useState(pathname.startsWith("/manager/orders") ? "Orders" : "");
   const { authChecked } = useAuthChecked();
   const user = useSelector((state) => state.user?.data);
   const { t } = useLanguage();
@@ -18,7 +19,16 @@ export default function ManagerLayout({ children }) {
   const menu = [
     { label: t.dashboard, href: "/manager", icon: LayoutDashboard },
     { label: t.products, href: "/manager/products", icon: Package },
-    { label: t.orders, href: "/manager/orders", icon: ShoppingCart },
+    {
+      label: t.orders, icon: ShoppingCart,
+      subItems: [
+        { label: t.allOrders, href: "/manager/orders" },
+        { label: t.pendingToday, href: "/manager/orders/pending-today" },
+        { label: t.todayDelivery, href: "/manager/orders/today-delivery" },
+        { label: t.totalSales, href: "/manager/orders/total-sales" },
+        { label: t.todaySales, href: "/manager/orders/today-sales" },
+      ]
+    },
     { label: t.customRequest, href: "/manager/custom-requests", icon: ClipboardList },
     { label: t.inventory, href: "/manager/inventory", icon: Package },
     { label: t.riders, href: "/manager/riders", icon: Users },
@@ -57,17 +67,51 @@ export default function ManagerLayout({ children }) {
         </div>
         <nav className="p-2 space-y-0.5 overflow-y-auto" role="navigation" aria-label="Manager navigation">
           {menu.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setSidebarOpen(false)}
-              className={`flex items-center gap-2 px-2.5 py-2 rounded-md text-[11px] font-medium transition ${
-                pathname === item.href ? "bg-[#EC008C] text-white" : "text-white/60 hover:bg-white/10 hover:text-white"
-              }`}
-            >
-              <item.icon size={15} />
-              {item.label}
-            </Link>
+            <div key={item.label || item.href}>
+              {item.subItems ? (
+                <div>
+                  <button
+                    onClick={() => setOpenSubmenu(openSubmenu === item.label ? "" : item.label)}
+                    className="w-full flex items-center justify-between gap-2 px-2.5 py-2 rounded-md text-[11px] font-medium transition text-white/60 hover:bg-white/10 hover:text-white"
+                  >
+                    <div className="flex items-center gap-2">
+                      <item.icon size={15} />
+                      {item.label}
+                    </div>
+                    <span className="text-xs">{openSubmenu === item.label ? "▼" : "▶"}</span>
+                  </button>
+                  {openSubmenu === item.label && (
+                    <div className="pl-8 space-y-0.5 mt-0.5">
+                      {item.subItems.map((sub) => (
+                        <Link
+                          key={sub.href}
+                          href={sub.href}
+                          onClick={() => setSidebarOpen(false)}
+                          className={`block px-2.5 py-1.5 rounded-md text-[10px] font-medium transition ${
+                            pathname === sub.href || (sub.href === "/manager/orders" && pathname.startsWith("/manager/orders"))
+                              ? "bg-[#EC008C] text-white"
+                              : "text-white/60 hover:text-white"
+                          }`}
+                        >
+                          {sub.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Link
+                  href={item.href}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex items-center gap-2 px-2.5 py-2 rounded-md text-[11px] font-medium transition ${
+                    pathname === item.href ? "bg-[#EC008C] text-white" : "text-white/60 hover:bg-white/10 hover:text-white"
+                  }`}
+                >
+                  <item.icon size={15} />
+                  {item.label}
+                </Link>
+              )}
+            </div>
           ))}
         </nav>
       </aside>

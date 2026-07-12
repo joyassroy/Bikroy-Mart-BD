@@ -332,10 +332,27 @@ export const getAllProducts = async (req: Request, res: Response) => {
       : [];
     const salesMap = new Map(salesRows.map((r) => [r.productId, Number(r._sum.quantity || 0)]));
 
+    const now = new Date();
+    const activeDeals = productIds.length > 0
+      ? await prisma.flashDeal.findMany({
+          where: { productId: { in: productIds }, isActive: true, startsAt: { lte: now }, endsAt: { gte: now } },
+          select: { productId: true, endsAt: true, dealPrice: true },
+        })
+      : [];
+    const dealEndsAtMap = new Map(activeDeals.map((d) => [d.productId, d.endsAt]));
+    const dealPriceMap = new Map(activeDeals.map((d) => [d.productId, d.dealPrice]));
+
     const resolved = products.map((p) => {
       const { effectivePrice, effectiveDiscountPrice } = resolveDistrictPrice(p, district as string);
       const { districtPrices, ...rest } = p;
-      return { ...rest, effectivePrice, effectiveDiscountPrice, totalSales: salesMap.get(p.id) || 0 };
+      const dealPrice = dealPriceMap.get(p.id);
+      return {
+        ...rest,
+        effectivePrice,
+        effectiveDiscountPrice: dealPrice ?? effectiveDiscountPrice,
+        totalSales: salesMap.get(p.id) || 0,
+        flashDealEndsAt: dealEndsAtMap.get(p.id) || null,
+      };
     });
 
     return sendSuccess(res, "Products fetched", resolved, 200, {
@@ -369,7 +386,24 @@ export const getProductBySlug = async (req: Request, res: Response) => {
     if (!product) return sendError(res, "Product not found", 404);
 
     const { effectivePrice, effectiveDiscountPrice } = resolveDistrictPrice(product, district as string);
-    return sendSuccess(res, "Product fetched", { ...product, effectivePrice, effectiveDiscountPrice });
+
+    const now = new Date();
+    const activeDeal = await prisma.flashDeal.findFirst({
+      where: {
+        productId: product.id,
+        isActive: true,
+        startsAt: { lte: now },
+        endsAt: { gte: now },
+      },
+      select: { endsAt: true },
+    });
+
+    return sendSuccess(res, "Product fetched", {
+      ...product,
+      effectivePrice,
+      effectiveDiscountPrice,
+      flashDealEndsAt: activeDeal?.endsAt || null,
+    });
   } catch (error: any) {
     return sendError(res, error.message);
   }

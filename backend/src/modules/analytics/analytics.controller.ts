@@ -4,8 +4,8 @@ import { sendSuccess, sendError } from "../../utils/apiResponse";
 
 export const getAdminStats = async (req: Request, res: Response) => {
   try {
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
+    const bdNow = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Dhaka" }));
+    const todayStart = new Date(bdNow.getFullYear(), bdNow.getMonth(), bdNow.getDate(), 0, 0, 0, 0);
 
     const [
       totalUsers,
@@ -36,8 +36,8 @@ export const getAdminStats = async (req: Request, res: Response) => {
       prisma.coupon.count(),
       prisma.flashDeal.count({ where: { isActive: true } }),
       prisma.order.count({ where: { orderStatus: "PENDING", createdAt: { gte: todayStart } } }),
-      prisma.order.count({ where: { orderStatus: "DELIVERED", actualDelivery: { gte: todayStart } } }),
-      prisma.order.aggregate({ _sum: { total: true }, where: { paymentStatus: "PAID", createdAt: { gte: todayStart } } }),
+      prisma.order.count({ where: { orderStatus: "DELIVERED", OR: [{ actualDelivery: { gte: todayStart } }, { AND: [{ actualDelivery: null }, { updatedAt: { gte: todayStart } }] }] } }),
+      prisma.order.aggregate({ _sum: { total: true }, where: { paymentStatus: "PAID", updatedAt: { gte: todayStart } } }),
       prisma.order.count({ where: { createdAt: { gte: todayStart } } }),
     ]);
 

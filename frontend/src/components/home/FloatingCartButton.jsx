@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import { ShoppingCart, X, Plus, Minus, Trash2, ShoppingBag } from "lucide-react";
 import { updateQuantity, removeFromCart } from "@/redux/cartSlice";
+import CountdownTimer from "@/components/ui/CountdownTimer";
 import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function FloatingCartButton() {
@@ -110,6 +111,11 @@ export default function FloatingCartButton() {
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium text-[#000000] text-[11px] truncate">{item.name}</h3>
                     <p className="text-[#000000] font-bold text-xs mt-0.5">৳{item.price}</p>
+                    {item.endsAt && (
+                      <div className="mt-1">
+                        <CountdownTimer endsAt={item.endsAt} compact />
+                      </div>
+                    )}
                     <div className="flex items-center gap-1.5 mt-1.5">
                       <button
                         onClick={() =>

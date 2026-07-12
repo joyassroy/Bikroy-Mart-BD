@@ -17,6 +17,7 @@ import FloatingCartButton from "@/components/home/FloatingCartButton";
 import { setQuery as setSearchQueryRedux } from "@/redux/searchSlice";
 
 const OFFER_TITLES = {
+  FLASH_DEAL: "Flash Deals",
   STOCK_CLEARANCE: "Stock Clearance Sale",
   EXECUTIVE: "Executive Offer",
   COMBO: "Combo Offer",
@@ -180,6 +181,7 @@ function ShopContent() {
       else setShopBanners([]);
     } else if (offerType) {
       const positionMap = {
+        FLASH_DEAL: "offer_flash_deal",
         COMBO: "offer_combo",
         EXECUTIVE: "offer_executive",
         STOCK_CLEARANCE: "offer_stock_clearance",

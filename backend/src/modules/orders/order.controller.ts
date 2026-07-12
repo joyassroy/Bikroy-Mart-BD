@@ -135,6 +135,7 @@ export const updateOrderStatus = async (req: AuthRequest, res: Response) => {
     const { status, paymentStatus } = req.body;
     const data: any = { orderStatus: status };
     if (paymentStatus) data.paymentStatus = paymentStatus;
+    if (status === "DELIVERED") data.actualDelivery = new Date();
     const order = await prisma.order.update({
       where: { id: String(req.params.id) },
       data,

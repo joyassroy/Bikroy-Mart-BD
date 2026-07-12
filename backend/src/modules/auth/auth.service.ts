@@ -23,10 +23,12 @@ interface LoginInput {
 const otpStore = new Map<string, { otp: string; expiresAt: Date }>();
 
 export const register = async (input: RegisterInput) => {
+  const orConditions: any[] = [{ email: input.email }];
+  if (input.phone) {
+    orConditions.push({ phone: input.phone });
+  }
   const existingUser = await prisma.user.findFirst({
-    where: {
-      OR: [{ email: input.email }, input.phone ? { phone: input.phone } : {}].filter(Boolean),
-    },
+    where: { OR: orConditions },
   });
 
   if (existingUser) {

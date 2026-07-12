@@ -368,13 +368,14 @@ export default function OffersPage() {
                 <th className="px-4 py-3 font-medium">Product(s)</th>
                 <th className="px-4 py-3 font-medium">Price</th>
                 <th className="px-4 py-3 font-medium">Duration</th>
+                <th className="px-4 py-3 font-medium">Created</th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">Loading...</td></tr>
+                <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">Loading...</td></tr>
               ) : (
                 <>
                   {paginatedFlash.map((deal) => (
@@ -398,6 +399,9 @@ export default function OffersPage() {
                       </td>
                       <td className="px-4 py-3 text-xs text-gray-500">
                         {new Date(deal.startsAt).toLocaleDateString()} - {new Date(deal.endsAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-4 py-3 text-xs text-gray-500">
+                        {new Date(deal.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-4 py-3">
                         <button onClick={() => toggleActive("flash", deal.id, deal.isActive)}
@@ -432,6 +436,9 @@ export default function OffersPage() {
                       <td className="px-4 py-3 text-xs text-gray-500">
                         {new Date(offer.startsAt).toLocaleDateString()} - {new Date(offer.endsAt).toLocaleDateString()}
                       </td>
+                      <td className="px-4 py-3 text-xs text-gray-500">
+                        {new Date(offer.createdAt).toLocaleDateString()}
+                      </td>
                       <td className="px-4 py-3">
                         <button onClick={() => toggleActive("promo", offer.id, offer.isActive)}
                           className={`px-2 py-1 rounded-full text-xs font-medium cursor-pointer transition ${
@@ -447,7 +454,7 @@ export default function OffersPage() {
                     </tr>
                   ))}
                   {currentItems.length === 0 && currentPromoItems.length === 0 && (
-                    <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">No offers of this type yet</td></tr>
+                    <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">No offers of this type yet</td></tr>
                   )}
                 </>
               )}

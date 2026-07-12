@@ -11,6 +11,7 @@ import ProductCard from "@/components/product/ProductCard";
 import api from "@/lib/axios";
 import { useLanguage } from "@/i18n/LanguageContext";
 import useDistrict from "@/helper/useDistrict";
+import CountdownTimer from "@/components/ui/CountdownTimer";
 import { ShoppingCart, Heart, Star, StarOff, ChevronRight, Minus, Plus, Truck, Shield, RotateCcw, Clock, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -66,6 +67,7 @@ export default function ProductDetailPage() {
         price: cartPrice,
         image: product.images?.[0],
         quantity: 1,
+        endsAt: product.flashDealEndsAt || null,
       }));
     }
     toast.success(`${quantity} x ${product.name} added to cart`);
@@ -168,7 +170,7 @@ export default function ProductDetailPage() {
               <ChevronRight size={10} />
             </>
           )}
-          <span className="text-[#000000] truncate">{product.name}</span>
+          <span className="text-[#000000] truncate">{language === "bn" ? (product.nameBn || product.name) : product.name}</span>
         </nav>
 
         <div className="bg-white rounded-lg border border-[#E5E7EB] shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] overflow-hidden">
@@ -214,7 +216,7 @@ export default function ProductDetailPage() {
 
             {/* Info */}
             <div className="p-4 sm:p-6">
-              <h1 className="text-base sm:text-lg md:text-xl font-semibold text-[#000000] mb-2 leading-tight">{product.name}</h1>
+              <h1 className="text-base sm:text-lg md:text-xl font-semibold text-[#000000] mb-2 leading-tight">{language === "bn" ? (product.nameBn || product.name) : product.name}</h1>
 
               {/* Rating */}
               <div className="flex items-center gap-2 mb-3">
@@ -238,6 +240,12 @@ export default function ProductDetailPage() {
                   <span className="text-xl sm:text-2xl font-bold text-[#000000]">৳{product.effectivePrice || product.price}</span>
                 )}
               </div>
+
+              {product.flashDealEndsAt && (
+                <div className="mb-3">
+                  <CountdownTimer endsAt={product.flashDealEndsAt} />
+                </div>
+              )}
 
               {/* Unit */}
               <p className="text-[11px] text-[#667085] mb-3">per {product.unit || "piece"}</p>

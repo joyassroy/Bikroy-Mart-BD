@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, Package, ShoppingCart, Users, BarChart3, Settings, Tag, Truck, MapPin, Menu, X, Loader2, Gift } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Users, BarChart3, Settings, Tag, Truck, MapPin, Menu, X, Loader2, Gift, Clock, TrendingUp, DollarSign } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useAuthChecked } from "@/helper/AuthInit";
@@ -12,7 +12,7 @@ export default function DashboardLayout({ children }) {
   const pathname = usePathname();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [openSubmenu, setOpenSubmenu] = useState("Products");
+  const [openSubmenu, setOpenSubmenu] = useState(pathname.startsWith("/dashboard/orders") ? "Orders" : "Products");
   const user = useSelector((state) => state.user.data);
 
   const menu = [
@@ -27,7 +27,16 @@ export default function DashboardLayout({ children }) {
         { label: t.inventory, href: "/dashboard/products/inventory" }
       ]
     },
-    { label: t.orders, href: "/dashboard/orders", icon: ShoppingCart },
+    { 
+      label: t.orders, icon: ShoppingCart,
+      subItems: [
+        { label: t.allOrders, href: "/dashboard/orders" },
+        { label: t.pendingToday, href: "/dashboard/orders/pending-today" },
+        { label: t.todayDelivery, href: "/dashboard/orders/today-delivery" },
+        { label: t.totalSales, href: "/dashboard/orders/total-sales" },
+        { label: t.todaySales, href: "/dashboard/orders/today-sales" },
+      ]
+    },
     { label: t.offers, href: "/dashboard/offers", icon: Gift },
     { label: t.customers, href: "/dashboard/customers", icon: Users },
     { label: t.riders, href: "/dashboard/riders", icon: Truck },
@@ -116,7 +125,7 @@ export default function DashboardLayout({ children }) {
                           href={sub.href}
                           onClick={() => setSidebarOpen(false)}
                           className={`block px-2.5 py-1.5 rounded-md text-[10px] font-medium transition ${
-                            pathname === sub.href
+                            pathname === sub.href || (sub.href === "/dashboard/orders" && pathname.startsWith("/dashboard/orders"))
                               ? "bg-[#EC008C] text-white"
                               : "text-white/60 hover:text-white"
                           }`}

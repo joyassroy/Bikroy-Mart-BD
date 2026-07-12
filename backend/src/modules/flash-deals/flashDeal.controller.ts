@@ -50,7 +50,7 @@ export const updateFlashDeal = async (req: Request, res: Response) => {
     if (endsAt !== undefined) data.endsAt = toValidDate(endsAt);
     if (isActive !== undefined) data.isActive = isActive;
 
-    const deal = await prisma.flashDeal.update({ where: { id: String(req.params.id) }, data });
+    const deal = await prisma.flashDeal.update({ where: { id: String(req.params.id) }, data, include: { product: true } });
     return sendSuccess(res, "Flash deal updated", deal);
   } catch (error: any) {
     return sendError(res, error.message, 400);

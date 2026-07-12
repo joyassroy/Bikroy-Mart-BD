@@ -8,13 +8,6 @@ import CountdownTimer from "@/components/ui/CountdownTimer";
 
 const IMG_BASE = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5004/api").replace("/api", "");
 
-const PLACEHOLDER_PRODUCTS = [
-  { name: "Premium Basmati Rice 5kg", price: 650, emoji: "🍚" },
-  { name: "Fresh Chicken Breast 1kg", price: 380, emoji: "🍗" },
-  { name: "Organic Turmeric Powder", price: 120, emoji: "🌿" },
-  { name: "Aashirvaad Atta 10kg", price: 520, emoji: "🌾" },
-];
-
 export default function OfferSection({ type, title, subtitle, bgColor = "from-[#00215B] to-[#00AFCC]", badgeColor = "bg-[#EC008C]" }) {
   const { t } = useLanguage();
   const TYPE_LABELS = {
@@ -35,7 +28,6 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
     const fetches = [];
     if (!isMulti) fetches.push(api.get(`/flash-deals?type=${type}`).catch(() => ({ data: { data: [] } })));
     if (isMulti) fetches.push(api.get(`/offers?type=${type}`).catch(() => ({ data: { data: [] } })));
-    fetches.push(Promise.resolve({ data: { data: [] } }));
 
     Promise.all(fetches).then((results) => {
       if (isMulti) {
@@ -84,7 +76,6 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
           discount,
           stock,
           endsAt: deal.endsAt,
-          isPlaceholder: false,
           badge: null,
         };
       })
@@ -104,23 +95,11 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
           discount,
           stock: firstItem?.stock,
           endsAt: offer.endsAt,
-          isPlaceholder: false,
-              badge: type === "BOGO" ? `${t.buyXGetY.replace("{buy}", offer.buyQuantity).replace("{get}", offer.getQuantity)}` : type === "COMBO" ? t.bundleDeal : null,
+          badge: type === "BOGO" ? `${t.buyXGetY.replace("{buy}", offer.buyQuantity).replace("{get}", offer.getQuantity)}` : type === "COMBO" ? t.bundleDeal : null,
           items: offer.items,
         };
       })
-    : PLACEHOLDER_PRODUCTS.map((p, i) => ({
-        id: `placeholder-${i}`,
-        slug: null,
-        name: p.name,
-        price: p.price,
-        dealPrice: Math.round(p.price * 0.7),
-        image: null,
-        emoji: p.emoji,
-        discount: 30,
-        isPlaceholder: true,
-        badge: null,
-      }));
+    : [];
 
   if (loading) {
     return (
@@ -134,6 +113,8 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
       </section>
     );
   }
+
+  if (displayItems.length === 0) return null;
 
   return (
     <section className="max-w-[1200px] mx-auto mt-4 md:mt-6 px-2 sm:px-0">
@@ -185,7 +166,7 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
             return (
               <Link
                 key={item.id}
-                href={item.slug ? `/product/${item.slug}` : (item.isPlaceholder ? "/shop" : "#")}
+                href={item.slug ? `/product/${item.slug}` : "#"}
                 className={`bg-white rounded-2xl overflow-hidden hover:shadow-[0_4px_16px_rgba(0,0,0,0.1)] transition-all duration-200 flex-shrink-0 w-[160px] sm:w-auto snap-start group ${
                   isBogo ? "border-2 border-[#F59E0B]" : "border border-[#E5E7EB]"
                 }`}
@@ -212,9 +193,7 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
                       {t.hotDeal}
                     </span>
                   )}
-                  {item.isPlaceholder ? (
-                    <span className="text-5xl sm:text-6xl md:text-7xl group-hover:scale-110 transition-transform duration-200">{item.emoji}</span>
-                  ) : item.image ? (
+                  {item.image ? (
                     (item.image.startsWith("http") || item.image.startsWith("/")) ? (
                       <img
                         src={item.image.startsWith("/") ? `${IMG_BASE}${item.image}` : item.image}
@@ -250,7 +229,7 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
                       {item.stock > 0 ? t.stockLabel.replace("{count}", item.stock) : t.outOfStock}
                     </div>
                   )}
-                  {item.endsAt && !item.isPlaceholder && (
+                  {item.endsAt && (
                     <div className="mt-1">
                       <CountdownTimer endsAt={item.endsAt} compact />
                     </div>
