@@ -2,9 +2,10 @@
 import { useState, useEffect } from "react";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
-import { X, Truck, Search, Package, Clock, CheckCircle, MapPin, Phone, User, ChevronDown, RefreshCw, Printer } from "lucide-react";
+import { X, Truck, Search, Package, Clock, CheckCircle, MapPin, Phone, User, ChevronDown, RefreshCw, Printer, Banknote } from "lucide-react";
 import { printInvoice } from "@/lib/generateInvoice";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { paymentStatusColors } from "@/lib/orderConstants";
 import Pagination from "@/components/ui/Pagination";
 
 const statusColors = {
@@ -28,6 +29,7 @@ export default function ManagerOrdersPage() {
   const [search, setSearch] = useState("");
   const [updatingStatus, setUpdatingStatus] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [approvingPayment, setApprovingPayment] = useState(null);
   const ITEMS_PER_PAGE = 10;
 
   const statusLabels = {
@@ -45,7 +47,6 @@ export default function ManagerOrdersPage() {
     { key: "PENDING", label: t.pending },
     { key: "CONFIRMED", label: t.confirmed },
     { key: "OUT_FOR_DELIVERY", label: t.outForDelivery },
-    { key: "DELIVERED", label: t.delivered },
   ];
 
   useEffect(() => { fetchOrders(); fetchRiders(); }, []);
@@ -91,6 +92,19 @@ export default function ManagerOrdersPage() {
       fetchOrders();
     } catch (err) {
       toast.error(t.riderAssignError);
+    }
+  };
+
+  const approvePayment = async (orderId) => {
+    setApprovingPayment(orderId);
+    try {
+      await api.put(`/orders/${orderId}/approve-payment`);
+      toast.success(t.paymentApprovedSuccess);
+      fetchOrders();
+    } catch (err) {
+      toast.error(err.response?.data?.message || t.failedToApprovePayment);
+    } finally {
+      setApprovingPayment(null);
     }
   };
 
@@ -174,10 +188,12 @@ export default function ManagerOrdersPage() {
         <table className="w-full min-w-[640px]">
           <thead>
             <tr className="text-left text-[10px] sm:text-[11px] text-[#667085] border-b border-[#E5E7EB]">
+              <th className="px-3 py-2.5 font-medium">#</th>
               <th className="px-3 py-2.5 font-medium">{t.orderHash}</th>
               <th className="px-3 py-2.5 font-medium">{t.customer}</th>
               <th className="px-3 py-2.5 font-medium">{t.items}</th>
               <th className="px-3 py-2.5 font-medium">{t.total}</th>
+              <th className="px-3 py-2.5 font-medium">{t.paymentStatusLabel}</th>
               <th className="px-3 py-2.5 font-medium">{t.status}</th>
               <th className="px-3 py-2.5 font-medium">{t.rider}</th>
               <th className="px-3 py-2.5 font-medium text-right">{t.action}</th>
@@ -185,15 +201,16 @@ export default function ManagerOrdersPage() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={7} className="px-3 py-8 text-center text-[11px] text-gray-400">{t.loadingOrders}</td></tr>
+              <tr><td colSpan={9} className="px-3 py-8 text-center text-[11px] text-gray-400">{t.loadingOrders}</td></tr>
             ) : filtered.length === 0 ? (
-              <tr><td colSpan={7} className="px-3 py-8 text-center text-[11px] text-gray-400">
+              <tr><td colSpan={9} className="px-3 py-8 text-center text-[11px] text-gray-400">
                 <Package size={24} className="mx-auto mb-2 text-gray-300" />
                 <p>{search ? t.noSearchResults : t.noOrdersFound}</p>
               </td></tr>
             ) : (
-              paginated.map((order) => (
+              paginated.map((order, idx) => (
                 <tr key={order.id} className="border-b border-[#F4F7FB] hover:bg-[#F4F7FB] transition">
+                  <td className="px-3 py-2.5 text-[10px] sm:text-[11px] text-[#667085]">{(currentPage - 1) * ITEMS_PER_PAGE + idx + 1}</td>
                   <td className="px-3 py-2.5 font-medium text-[#EC008C] text-[11px] sm:text-xs">{order.orderNumber}</td>
                   <td className="px-3 py-2.5">
                     <p className="text-[11px] sm:text-xs text-[#000000] font-medium">{order.user?.name}</p>
@@ -203,6 +220,23 @@ export default function ManagerOrdersPage() {
                   </td>
                   <td className="px-3 py-2.5 text-[11px] sm:text-xs text-[#000000]">{order.items?.length || 0}</td>
                   <td className="px-3 py-2.5 text-[11px] sm:text-xs font-semibold text-[#000000]">৳{order.total}</td>
+                  <td className="px-3 py-2.5">
+                    <div className="flex items-center gap-1.5">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold ${paymentStatusColors[order.paymentStatus] || "bg-gray-100 text-gray-600"}`}>
+                        {order.paymentStatus}
+                      </span>
+                      {order.paymentMethod === "COD" && order.orderStatus === "DELIVERED" && order.paymentStatus === "PENDING" && (
+                        <button
+                          onClick={() => approvePayment(order.id)}
+                          disabled={approvingPayment === order.id}
+                          className="flex items-center gap-1 text-[10px] sm:text-[11px] bg-green-600 text-white px-2 py-1 rounded-lg hover:bg-green-700 transition disabled:opacity-50"
+                        >
+                          <Banknote size={10} />
+                          {approvingPayment === order.id ? t.approving : t.approve}
+                        </button>
+                      )}
+                    </div>
+                  </td>
                   <td className="px-3 py-2.5">
                     <select
                       value={order.orderStatus}

@@ -217,7 +217,6 @@ export const deliverOrder = async (req: AuthRequest, res: Response) => {
       data: {
         orderStatus: "DELIVERED",
         actualDelivery: new Date(),
-        paymentStatus: req.body.paymentMethod === "COD" ? "PAID" : undefined,
       },
     });
 

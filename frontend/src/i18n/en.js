@@ -864,6 +864,10 @@ const en = {
   noRidersAvailable: "No riders available in your district",
   riderAssignedSuccess: "Rider assigned successfully!",
   riderAssignError: "Failed to assign rider",
+  paymentApprovedSuccess: "Payment approved successfully!",
+  failedToApprovePayment: "Failed to approve payment",
+  approve: "Approve",
+  approving: "Approving...",
 
   // Manager Products
   myProducts: "My Products",

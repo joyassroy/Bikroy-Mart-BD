@@ -113,6 +113,7 @@ export default function OrdersPage() {
           <table className="w-full">
             <thead>
               <tr className="text-left text-sm text-gray-500 border-b">
+                <th className="px-4 py-3 font-medium">#</th>
                 <th className="px-4 py-3 font-medium">{t.orderHash}</th>
                 <th className="px-4 py-3 font-medium">{t.customer}</th>
                 <th className="px-4 py-3 font-medium">{t.items}</th>
@@ -125,12 +126,13 @@ export default function OrdersPage() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-400">{t.loading}</td></tr>
+                <tr><td colSpan={9} className="px-4 py-8 text-center text-gray-400">{t.loading}</td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-400">{t.noOrdersFound}</td></tr>
+                <tr><td colSpan={9} className="px-4 py-8 text-center text-gray-400">{t.noOrdersFound}</td></tr>
               ) : (
-                paginated.map((order) => (
+                paginated.map((order, idx) => (
                   <tr key={order.id} className="border-b hover:bg-gray-50">
+                    <td className="px-4 py-3 text-xs text-gray-400">{(currentPage - 1) * ITEMS_PER_PAGE + idx + 1}</td>
                     <td className="px-4 py-3 font-medium text-primary-600">{order.orderNumber}</td>
                     <td className="px-4 py-3 text-sm">
                       <p>{order.user?.name}</p>

@@ -480,11 +480,12 @@ export default function AccountPage() {
                 ) : (
                   <>
                     <div className="divide-y divide-gray-100">
-                      {paginatedOrders.map((order) => (
+                      {paginatedOrders.map((order, idx) => (
                       <div key={order.id} className="p-6 hover:bg-gray-50 transition cursor-pointer" onClick={() => setSelectedOrder(order)}>
                         <div className="flex justify-between items-start">
                           <div>
                             <div className="flex items-center gap-2">
+                              <span className="text-xs text-gray-400 font-medium mr-1">#{(currentPage - 1) * ITEMS_PER_PAGE + idx + 1}</span>
                               <p className="font-medium text-[#0067A0] text-base">Order {order.orderNumber}</p>
                               <button onClick={(e) => handleCopyOrderNumber(order.orderNumber, e)} className="p-1 hover:bg-blue-100 rounded transition text-[#0067A0]" title="Copy order ID">
                                 {copiedId === order.orderNumber ? <Check size={14} /> : <Copy size={14} />}

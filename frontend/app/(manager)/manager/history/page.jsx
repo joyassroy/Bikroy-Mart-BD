@@ -1,8 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
 import api from "@/lib/axios";
-import { CheckCircle, XCircle, Package, Search, TrendingUp, Calendar } from "lucide-react";
+import { CheckCircle, XCircle, Package, Search, TrendingUp, Calendar, Banknote } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { paymentStatusColors } from "@/lib/orderConstants";
 import Pagination from "@/components/ui/Pagination";
 
 const STATUS_CONFIG = {
@@ -17,6 +18,7 @@ export default function ManagerHistoryPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [approvingPayment, setApprovingPayment] = useState(null);
   const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
@@ -38,6 +40,19 @@ export default function ManagerHistoryPage() {
       setOrders(res.data.data || []);
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
+  };
+
+  const approvePayment = async (orderId) => {
+    setApprovingPayment(orderId);
+    try {
+      await api.put(`/orders/${orderId}/approve-payment`);
+      toast.success(t.paymentApprovedSuccess);
+      fetchHistory();
+    } catch (err) {
+      toast.error(err.response?.data?.message || t.failedToApprovePayment);
+    } finally {
+      setApprovingPayment(null);
+    }
   };
 
   const totalRevenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
@@ -160,10 +175,12 @@ export default function ManagerHistoryPage() {
           <table className="w-full min-w-[600px]">
             <thead>
               <tr className="text-left bg-[#F9FAFB]">
+                <th className="px-5 py-3 text-[10px] sm:text-[11px] text-[#667085] font-semibold uppercase tracking-wider">#</th>
                 <th className="px-5 py-3 text-[10px] sm:text-[11px] text-[#667085] font-semibold uppercase tracking-wider">Order #</th>
                 <th className="px-5 py-3 text-[10px] sm:text-[11px] text-[#667085] font-semibold uppercase tracking-wider">Customer</th>
                 <th className="px-5 py-3 text-[10px] sm:text-[11px] text-[#667085] font-semibold uppercase tracking-wider">Items</th>
                 <th className="px-5 py-3 text-[10px] sm:text-[11px] text-[#667085] font-semibold uppercase tracking-wider">Total</th>
+                <th className="px-5 py-3 text-[10px] sm:text-[11px] text-[#667085] font-semibold uppercase tracking-wider">Payment</th>
                 <th className="px-5 py-3 text-[10px] sm:text-[11px] text-[#667085] font-semibold uppercase tracking-wider">Status</th>
                 <th className="px-5 py-3 text-[10px] sm:text-[11px] text-[#667085] font-semibold uppercase tracking-wider">Date</th>
               </tr>
@@ -171,7 +188,7 @@ export default function ManagerHistoryPage() {
             <tbody className="divide-y divide-[#F4F7FB]">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-5 py-12 text-center">
+                  <td colSpan={8} className="px-5 py-12 text-center">
                     <div className="w-14 h-14 rounded-2xl bg-[#F4F7FB] flex items-center justify-center mx-auto mb-3">
                       <Package size={24} className="text-[#D0D5DD]" />
                     </div>
@@ -180,11 +197,12 @@ export default function ManagerHistoryPage() {
                   </td>
                 </tr>
               ) : (
-                paginated.map((order) => {
+                paginated.map((order, idx) => {
                   const statusCfg = STATUS_CONFIG[order.orderStatus] || STATUS_CONFIG.DELIVERED;
                   const StatusIcon = statusCfg.icon;
                   return (
                     <tr key={order.id} className="hover:bg-[#F9FAFB] transition-colors">
+                      <td className="px-5 py-3.5 text-[10px] text-[#667085]">{(currentPage - 1) * ITEMS_PER_PAGE + idx + 1}</td>
                       <td className="px-5 py-3.5">
                         <span className="text-xs font-semibold text-[#EC008C]">{order.orderNumber}</span>
                       </td>
@@ -204,6 +222,23 @@ export default function ManagerHistoryPage() {
                       </td>
                       <td className="px-5 py-3.5">
                         <span className="text-xs font-bold text-[#000000]">৳{order.total}</span>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-1.5">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${paymentStatusColors[order.paymentStatus] || "bg-gray-100 text-gray-600"}`}>
+                            {order.paymentStatus}
+                          </span>
+                          {order.paymentMethod === "COD" && order.orderStatus === "DELIVERED" && order.paymentStatus === "PENDING" && (
+                            <button
+                              onClick={() => approvePayment(order.id)}
+                              disabled={approvingPayment === order.id}
+                              className="flex items-center gap-1 text-[10px] bg-green-600 text-white px-2 py-1 rounded-lg hover:bg-green-700 transition disabled:opacity-50"
+                            >
+                              <Banknote size={10} />
+                              {approvingPayment === order.id ? "..." : "Approve"}
+                            </button>
+                          )}
+                        </div>
                       </td>
                       <td className="px-5 py-3.5">
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusCfg.color}`}>

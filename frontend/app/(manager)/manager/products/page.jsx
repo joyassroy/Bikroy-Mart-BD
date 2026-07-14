@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import api from "@/lib/axios";
-import { Plus, Edit, X, Loader2 } from "lucide-react";
+import { Plus, Edit, X, Loader2, Search, Package } from "lucide-react";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -28,6 +28,7 @@ export default function ManagerProductsPage() {
   const [managerProfile, setManagerProfile] = useState(null);
   const [existingImages, setExistingImages] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
   const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
@@ -57,9 +58,13 @@ export default function ManagerProductsPage() {
     finally { setLoading(false); }
   };
 
-  const filtered = products;
+  const filtered = searchQuery
+    ? products.filter((p) => p.name?.toLowerCase().includes(searchQuery.toLowerCase()))
+    : products;
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  useEffect(() => { setCurrentPage(1); }, [searchQuery]);
 
   const fetchCategories = async () => {
     try { const res = await api.get("/categories"); setCategories(res.data.data || []); }
@@ -150,10 +155,23 @@ export default function ManagerProductsPage() {
       </div>
 
       <div className="bg-white rounded-xl shadow-sm">
+        <div className="p-4 border-b border-gray-100">
+          <div className="relative">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder={t.searchPlaceholder || "Search products..."}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:border-[#EC008C] transition"
+            />
+          </div>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="text-left text-sm text-gray-500 border-b">
+                <th className="px-4 py-3 font-medium">#</th>
                 <th className="px-4 py-3 font-medium">{t.product}</th>
                 <th className="px-4 py-3 font-medium">{t.category}</th>
                 <th className="px-4 py-3 font-medium">{t.price}</th>
@@ -164,13 +182,25 @@ export default function ManagerProductsPage() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">{t.loading}</td></tr>
+                <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">{t.loading}</td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">{t.notFound}</td></tr>
+                <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">{t.notFound}</td></tr>
               ) : (
-                paginated.map((p) => (
+                paginated.map((p, idx) => (
                   <tr key={p.id} className="border-b hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm font-medium">{p.name}</td>
+                    <td className="px-4 py-3 text-xs text-gray-400">{(currentPage - 1) * ITEMS_PER_PAGE + idx + 1}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
+                          {p.images?.[0] ? (
+                            <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <Package size={16} className="text-gray-400" />
+                          )}
+                        </div>
+                        <span className="text-sm font-medium">{p.name}</span>
+                      </div>
+                    </td>
                     <td className="px-4 py-3 text-sm">{p.category?.name}</td>
                     <td className="px-4 py-3 text-sm">৳{p.price}</td>
                     <td className="px-4 py-3 text-sm">{p.stock}</td>

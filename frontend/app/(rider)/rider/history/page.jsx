@@ -133,6 +133,7 @@ export default function RiderHistoryPage() {
           <table className="w-full min-w-[580px]">
             <thead>
               <tr className="text-left bg-[#F9FAFB]">
+                <th className="px-5 py-3 text-[10px] sm:text-[11px] text-[#667085] font-semibold uppercase tracking-wider">#</th>
                 <th className="px-5 py-3 text-[10px] sm:text-[11px] text-[#667085] font-semibold uppercase tracking-wider">{t.orderNumber || "Order #"}</th>
                 <th className="px-5 py-3 text-[10px] sm:text-[11px] text-[#667085] font-semibold uppercase tracking-wider">{t.customer || "Customer"}</th>
                 <th className="px-5 py-3 text-[10px] sm:text-[11px] text-[#667085] font-semibold uppercase tracking-wider">{t.items || "Items"}</th>
@@ -144,7 +145,7 @@ export default function RiderHistoryPage() {
             <tbody className="divide-y divide-[#F4F7FB]">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-5 py-12 text-center">
+                  <td colSpan={7} className="px-5 py-12 text-center">
                     <div className="w-14 h-14 rounded-2xl bg-[#F4F7FB] flex items-center justify-center mx-auto mb-3">
                       <Package size={24} className="text-[#D0D5DD]" />
                     </div>
@@ -153,8 +154,9 @@ export default function RiderHistoryPage() {
                   </td>
                 </tr>
               ) : (
-                paginated.map((order) => (
+                paginated.map((order, idx) => (
                   <tr key={order.id} className="hover:bg-[#F9FAFB] transition-colors cursor-pointer" onClick={() => setSelectedOrder(order)}>
+                    <td className="px-5 py-3.5 text-[10px] text-[#667085]">{(currentPage - 1) * ITEMS_PER_PAGE + idx + 1}</td>
                     <td className="px-5 py-3.5">
                       <span className="text-xs font-semibold text-[#EC008C]">{order.orderNumber}</span>
                     </td>

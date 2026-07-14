@@ -159,6 +159,33 @@ export const updateOrderStatus = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const approvePayment = async (req: AuthRequest, res: Response) => {
+  try {
+    const order = await prisma.order.findUnique({
+      where: { id: String(req.params.id) },
+      select: { paymentMethod: true, paymentStatus: true, orderStatus: true },
+    });
+    if (!order) return sendError(res, "Order not found", 404);
+    if (order.paymentMethod !== "COD") return sendError(res, "Payment approval is only for COD orders", 400);
+    if (order.paymentStatus === "PAID") return sendError(res, "Payment already approved", 400);
+    if (order.orderStatus !== "DELIVERED") return sendError(res, "Order must be delivered before approving payment", 400);
+
+    const manager = await prisma.managerProfile.findUnique({
+      where: { userId: req.user!.userId },
+    });
+    if (!manager) return sendError(res, "Manager profile not found", 404);
+
+    const updated = await prisma.order.update({
+      where: { id: String(req.params.id) },
+      data: { paymentStatus: "PAID" },
+    });
+
+    return sendSuccess(res, "Payment approved", updated);
+  } catch (error: any) {
+    return sendError(res, error.message, 400);
+  }
+};
+
 const EDITABLE_STATUSES = ["PENDING", "CONFIRMED", "PROCESSING"];
 
 export const updateOrder = async (req: AuthRequest, res: Response) => {

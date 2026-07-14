@@ -894,6 +894,10 @@ const bn = {
   quoteSubmitError: "কোট জমা দিতে ব্যর্থ",
   statusUpdatedSuccess: "স্ট্যাটাস আপডেট হয়েছে",
   statusUpdateError: "স্ট্যাটাস আপডেট করতে ব্যর্থ",
+  paymentApprovedSuccess: "পেমেন্ট সফলভাবে অনুমোদিত হয়েছে!",
+  failedToApprovePayment: "পেমেন্ট অনুমোদন করতে ব্যর্থ",
+  approve: "অনুমোদন",
+  approving: "অনুমোদন হচ্ছে...",
 
   // Rider Panel
   myDeliveries: "আমার ডেলিভারি",

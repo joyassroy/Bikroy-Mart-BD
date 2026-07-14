@@ -14,5 +14,6 @@ router.put("/:id", authenticate, orderController.updateOrder);
 router.put("/:id/status", authenticate, authorize("ADMIN", "MANAGER"), orderController.updateOrderStatus);
 router.put("/:id/cancel", authenticate, orderController.cancelOrder);
 router.put("/:id/assign-rider", authenticate, authorize("ADMIN", "MANAGER"), orderController.assignRider);
+router.put("/:id/approve-payment", authenticate, authorize("MANAGER"), orderController.approvePayment);
 
 export default router;
