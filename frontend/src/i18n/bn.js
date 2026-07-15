@@ -261,6 +261,8 @@ const bn = {
   allOrders: "সব অর্ডার",
   pendingToday: "আজকে মুলতুবি",
   todayDelivery: "আজকের ডেলিভারি",
+  totalDelivery: "মোট ডেলিভারি",
+  totalSell: "মোট বিক্রয়",
   totalOrders: "মোট অর্ডার",
   totalProducts: "মোট পণ্য",
   activeProducts: "সক্রিয় পণ্য",
@@ -414,6 +416,43 @@ const bn = {
   customerApproved: "অনুমোদিত",
   customerRejected: "প্রত্যাখ্যাত",
   cancelled: "বাতিল",
+  returned: "ফেরত",
+  todayOrders: "আজকের অর্ডার",
+
+  // Rider Rating
+  rateRider: "রাইডারকে রেটিং দিন",
+  rateRiderTitle: "আপনার ডেলিভারি অভিজ্ঞতা রেটিং দিন",
+  rateRiderHint: "আপনার ডেলিভারি অভিজ্ঞতা কেমন ছিল?",
+  riderRatingSubmitted: "আপনার ফিডব্যাকের জন্য ধন্যবাদ!",
+  riderRatingError: "রেটিং জমা দিতে ব্যর্থ",
+  alreadyRated: "ইতিমধ্যে রেটিং দেওয়া হয়েছে",
+  deliveryExperience: "ডেলিভারি কেমন ছিল?",
+
+  // Custom Request Payment
+  confirmPayment: "পেমেন্ট নিশ্চিত করুন",
+  paymentConfirmed: "পেমেন্ট নিশ্চিত হয়েছে!",
+  paymentConfirmError: "পেমেন্ট নিশ্চিত করতে ব্যর্থ",
+  paid: "পরিশোধিত",
+  unpaid: "অপরিশোধিত",
+  refunded: "ফেরত দেওয়া হয়েছে",
+  markPaid: "পরিশোধিত হিসেবে চিহ্নিত করুন",
+
+  // Custom Request Invoice
+  printCustomInvoice: "ইনভয়েস প্রিন্ট করুন",
+  customRequestInvoice: "কাস্টম অনুরোধ ইনভয়েস",
+
+  // Admin Custom Requests
+  customRequests: "কাস্টম অনুরোধ",
+  allCustomRequests: "সব কাস্টম অনুরোধ",
+  noCustomRequests: "কোনো কাস্টম অনুরোধ পাওয়া যায়নি",
+
+  // Profile Custom Requests
+  myCustomRequests: "আমার কাস্টম অনুরোধ",
+  myCustomRequestsSubtitle: "আপনার কাস্টম পণ্য অনুরোধ ট্র্যাক করুন",
+
+  // Product Request (Wishlist)
+  unavailable: "অনুপলব্ধ",
+  productUnavailable: "পণ্য আর পাওয়া যাচ্ছে না",
 
   // Auth Additional
   loginTitle: "আপনার অ্যাকাউন্টে লগইন করুন",

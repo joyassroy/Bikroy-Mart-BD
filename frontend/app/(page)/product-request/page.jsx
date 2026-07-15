@@ -38,10 +38,17 @@ export default function ProductRequestPage() {
         try {
           const res = await api.get(`/products/${id}`);
           if (res.data.data) {
-            fetchedProducts.push(res.data.data);
+            fetchedProducts.push({ ...res.data.data, _available: true });
           }
         } catch {
-          // Product may have been deleted, skip it
+          const item = productRequestItems.find((i) => i.productId === id);
+          fetchedProducts.push({
+            id,
+            name: item?.name || "Unknown Product",
+            images: item?.image ? [item.image] : [],
+            price: item?.price || 0,
+            _available: false,
+          });
         }
       }
 
@@ -103,11 +110,17 @@ export default function ProductRequestPage() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3">
             {products.map((product) => {
               const isOutOfStock = product.stock <= 0;
+              const isUnavailable = product._available === false;
               return (
-                <div key={product.id} className="bg-white rounded-lg border border-[#E5E7EB] shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] overflow-hidden group">
-                  <Link href={`/product/${product.slug}`}>
+                <div key={product.id} className={`bg-white rounded-lg border border-[#E5E7EB] shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] overflow-hidden group ${isUnavailable ? "opacity-60" : ""}`}>
+                  <Link href={isUnavailable ? "#" : `/product/${product.slug}`}>
                     <div className="relative p-3 flex items-center justify-center aspect-square bg-[#F9FAFB]">
-                      {product.badges?.length > 0 && (
+                      {isUnavailable && (
+                        <span className="absolute top-1.5 left-1.5 bg-gray-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded z-10">
+                          {t.unavailable}
+                        </span>
+                      )}
+                      {!isUnavailable && product.badges?.length > 0 && (
                         <span className="absolute top-1.5 left-1.5 bg-[#FF6B6B] text-white text-[9px] font-bold px-1.5 py-0.5 rounded z-10">
                           {product.badges[0]}
                         </span>
@@ -131,16 +144,18 @@ export default function ProductRequestPage() {
                   </Link>
 
                   <div className="p-2.5">
-                    <Link href={`/product/${product.slug}`}>
+                    <Link href={isUnavailable ? "#" : `/product/${product.slug}`}>
                       <h3 className="text-[11px] sm:text-xs font-semibold text-[#364152] line-clamp-2 mb-1 leading-tight hover:text-[#EC008C] transition">
                         {product.name}
                       </h3>
                     </Link>
 
+                    {!isUnavailable && (
                     <div className="text-[9px] sm:text-[10px] text-[#00AFCC] mb-1 flex items-center gap-1">
                       <span className="w-1 h-1 bg-[#00AFCC] rounded-full flex-shrink-0"></span>
                       <span className="truncate">{product.deliveryTime || "1-2 hours"}</span>
                     </div>
+                    )}
 
                     <div className="flex items-center gap-1 mb-2">
                         {product.effectiveDiscountPrice || product.discountPrice ? (
@@ -153,7 +168,11 @@ export default function ProductRequestPage() {
                         )}
                     </div>
 
-                    {isOutOfStock ? (
+                    {isUnavailable ? (
+                      <button disabled className="w-full py-1.5 text-[10px] sm:text-[11px] font-semibold bg-gray-200 text-gray-500 rounded cursor-not-allowed">
+                        {t.productUnavailable}
+                      </button>
+                    ) : isOutOfStock ? (
                       <button disabled className="w-full py-1.5 text-[10px] sm:text-[11px] font-semibold bg-gray-200 text-gray-500 rounded cursor-not-allowed">
                         {t.outOfStock}
                       </button>

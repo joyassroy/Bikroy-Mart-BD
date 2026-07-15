@@ -311,10 +311,8 @@ export const getLocalOrders = async (req: AuthRequest, res: Response) => {
       deliveryDistrict: manager.assignedDistrict,
     };
 
-    if (status && typeof status === "string" && ["DELIVERED", "CANCELLED"].includes(status)) {
+    if (status && typeof status === "string" && status !== "ALL") {
       where.orderStatus = status;
-    } else {
-      where.orderStatus = { notIn: ["DELIVERED", "CANCELLED"] };
     }
 
     if (search && typeof search === "string" && search.trim()) {
@@ -331,6 +329,7 @@ export const getLocalOrders = async (req: AuthRequest, res: Response) => {
       include: {
         user: { select: { id: true, name: true, phone: true } },
         items: { include: { product: true } },
+        rider: { select: { id: true, user: { select: { name: true, phone: true } } } },
       },
       orderBy: { createdAt: "desc" },
     });

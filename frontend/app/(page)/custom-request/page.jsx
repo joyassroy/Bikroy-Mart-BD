@@ -9,10 +9,11 @@ import { useRouter } from "next/navigation";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useAuthChecked } from "@/helper/AuthInit";
 import { BANGLADESH_LOCATIONS, DELIVERY_AREAS, getUpazilas } from "@/lib/constants";
-import { ClipboardList, Upload, X, MapPin, Loader2, CheckCircle, Clock, Eye, Truck, XCircle } from "lucide-react";
+import { ClipboardList, Upload, X, MapPin, Loader2, CheckCircle, Clock, Eye, Truck, XCircle, Printer, DollarSign } from "lucide-react";
 import dynamic from "next/dynamic";
 const DeliveryMapPicker = dynamic(() => import("@/components/checkout/DeliveryMapPicker"), { ssr: false });
 import FloatingChatButton from "@/components/layout/FloatingChatButton";
+import { printCustomRequestInvoice } from "@/lib/generateInvoice";
 
 const STATUS_CONFIG = {
   PENDING: { color: "bg-yellow-100 text-yellow-800", icon: Clock },
@@ -300,6 +301,16 @@ export default function CustomRequestPage() {
     }
   };
 
+  const handlePay = async (id) => {
+    try {
+      await api.put(`/custom-requests/${id}/pay`);
+      toast.success(t.paymentConfirmed);
+      fetchMyRequests();
+    } catch {
+      toast.error(t.paymentConfirmError);
+    }
+  };
+
   const renderStatusBadge = (status) => {
     const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.PENDING;
     const Icon = cfg.icon;
@@ -535,6 +546,26 @@ export default function CustomRequestPage() {
                     {req.status === "CUSTOMER_REJECTED" && req.rejectionReason && (
                       <div className="bg-red-50 rounded-lg p-2 mt-2">
                         <p className="text-[10px] text-red-600">{t.rejectionReason}: {req.rejectionReason}</p>
+                      </div>
+                    )}
+
+                    {req.status === "DELIVERED" && (
+                      <div className="flex gap-2 mt-3">
+                        {req.paymentStatus !== "PAID" && (
+                          <button onClick={() => handlePay(req.id)}
+                            className="flex-1 flex items-center justify-center gap-1 bg-green-500 text-white py-1.5 rounded text-xs font-semibold hover:bg-green-600 transition">
+                            <DollarSign size={12} /> {t.confirmPayment}
+                          </button>
+                        )}
+                        {req.paymentStatus === "PAID" && (
+                          <span className="flex-1 flex items-center justify-center gap-1 bg-green-100 text-green-700 py-1.5 rounded text-xs font-semibold">
+                            <CheckCircle size={12} /> {t.paid}
+                          </span>
+                        )}
+                        <button onClick={() => printCustomRequestInvoice(req)}
+                          className="flex-1 flex items-center justify-center gap-1 bg-white border border-gray-200 text-gray-700 py-1.5 rounded text-xs font-semibold hover:bg-gray-50 transition">
+                          <Printer size={12} /> {t.printCustomInvoice}
+                        </button>
                       </div>
                     )}
 

@@ -117,7 +117,7 @@ export const getManagerStats = async (req: AuthRequest, res: Response) => {
 
     const districtWhere = { deliveryDistrict: manager.assignedDistrict };
 
-    const [totalProducts, activeProducts, totalOrders, pendingOrders, todayPendingOrders, todayDeliveredOrders, todaySales, todayOrders] = await Promise.all([
+    const [totalProducts, activeProducts, totalOrders, pendingOrders, todayPendingOrders, todayDeliveredOrders, todaySales, todayOrders, totalDeliveredOrders, totalRevenue] = await Promise.all([
       prisma.product.count({ where: productWhere }),
       prisma.product.count({ where: { ...productWhere, isActive: true } }),
       prisma.order.count({ where: districtWhere }),
@@ -128,6 +128,8 @@ export const getManagerStats = async (req: AuthRequest, res: Response) => {
       prisma.order.count({ where: { ...districtWhere, orderStatus: "DELIVERED", actualDelivery: { gte: todayStart } } }),
       prisma.order.aggregate({ _sum: { total: true }, where: { ...districtWhere, paymentStatus: "PAID", createdAt: { gte: todayStart } } }),
       prisma.order.count({ where: { ...districtWhere, createdAt: { gte: todayStart } } }),
+      prisma.order.count({ where: { ...districtWhere, orderStatus: "DELIVERED" } }),
+      prisma.order.aggregate({ _sum: { total: true }, where: { ...districtWhere, paymentStatus: "PAID" } }),
     ]);
 
     return sendSuccess(res, "Manager stats fetched", {
@@ -139,6 +141,8 @@ export const getManagerStats = async (req: AuthRequest, res: Response) => {
       todayDeliveredOrders,
       todaySales: todaySales._sum?.total || 0,
       todayOrders,
+      totalDeliveredOrders,
+      totalRevenue: totalRevenue._sum?.total || 0,
       assignedZila: manager.assignedZila,
       assignedDistrict: manager.assignedDistrict,
     });

@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
-import { X, Eye, ClipboardList, Truck, CheckCircle, XCircle, Clock } from "lucide-react";
+import { X, Eye, ClipboardList, Truck, CheckCircle, XCircle, Clock, DollarSign, ShoppingCart } from "lucide-react";
 import Pagination from "@/components/ui/Pagination";
 
 const STATUS_CONFIG = {
@@ -11,14 +11,26 @@ const STATUS_CONFIG = {
   PRICING_SET: { color: "bg-purple-100 text-purple-700", label: "Price Quoted" },
   CUSTOMER_APPROVED: { color: "bg-green-100 text-green-700", label: "Approved" },
   CUSTOMER_REJECTED: { color: "bg-red-100 text-red-700", label: "Rejected" },
+  CONFIRMED: { color: "bg-blue-100 text-blue-700", label: "Confirmed" },
   PROCESSING: { color: "bg-indigo-100 text-indigo-700", label: "Processing" },
-  SHIPPED: { color: "bg-orange-100 text-orange-700", label: "Shipped" },
+  SHIPPED: { color: "bg-purple-100 text-purple-700", label: "Shipped" },
   OUT_FOR_DELIVERY: { color: "bg-orange-100 text-orange-700", label: "Out for Delivery" },
   DELIVERED: { color: "bg-green-100 text-green-700", label: "Delivered" },
   CANCELLED: { color: "bg-red-100 text-red-700", label: "Cancelled" },
+  RETURNED: { color: "bg-gray-100 text-gray-700", label: "Returned" },
 };
 
-const TABS = ["ALL", "PENDING", "MANAGER_REVIEW", "CUSTOMER_APPROVED", "PROCESSING", "OUT_FOR_DELIVERY"];
+const TABS = [
+  { key: "ALL", label: "All" },
+  { key: "PENDING", label: "Pending" },
+  { key: "CONFIRMED", label: "Confirmed" },
+  { key: "PROCESSING", label: "Processing" },
+  { key: "SHIPPED", label: "Shipped" },
+  { key: "OUT_FOR_DELIVERY", label: "Out for Delivery" },
+  { key: "DELIVERED", label: "Delivered" },
+  { key: "CANCELLED", label: "Cancelled" },
+  { key: "RETURNED", label: "Returned" },
+];
 
 export default function ManagerCustomRequestsPage() {
   const [requests, setRequests] = useState([]);
@@ -61,13 +73,6 @@ export default function ManagerCustomRequestsPage() {
   const paginatedRequests = filteredRequests.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   useEffect(() => { setCurrentPage(1); }, [activeTab]);
-
-  const stats = {
-    pending: requests.filter((r) => r.status === "PENDING" || r.status === "MANAGER_REVIEW").length,
-    approved: requests.filter((r) => r.status === "CUSTOMER_APPROVED").length,
-    processing: requests.filter((r) => r.status === "PROCESSING").length,
-    delivered: requests.filter((r) => r.status === "DELIVERED").length,
-  };
 
   const handleQuote = (req) => {
     setSelectedRequest(req);
@@ -122,22 +127,40 @@ export default function ManagerCustomRequestsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Custom Requests</h1>
+      <h1 className="text-base sm:text-lg md:text-xl font-semibold text-[#00215B] mb-3">Custom Requests</h1>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 mb-4">
         {[
-          { label: "Pending", value: stats.pending, color: "text-yellow-600 bg-yellow-50", icon: Clock },
-          { label: "Approved", value: stats.approved, color: "text-green-600 bg-green-50", icon: CheckCircle },
-          { label: "Processing", value: stats.processing, color: "text-indigo-600 bg-indigo-50", icon: ClipboardList },
-          { label: "Delivered", value: stats.delivered, color: "text-green-600 bg-green-50", icon: Truck },
+          { label: "Today Orders", value: requests.filter((r) => {
+            const d = new Date(r.createdAt);
+            const now = new Date();
+            return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+          }).length, icon: ShoppingCart, color: "text-[#7C3AED] bg-[#F3E8FF]" },
+          { label: "Today Delivery", value: requests.filter((r) => {
+            const d = new Date(r.updatedAt || r.createdAt);
+            const now = new Date();
+            return r.status === "DELIVERED" && d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+          }).length, icon: Truck, color: "text-[#10B981] bg-[#ECFDF5]" },
+          { label: "Today Sales", value: `৳${requests.filter((r) => {
+            const d = new Date(r.createdAt);
+            const now = new Date();
+            return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+          }).reduce((sum, r) => sum + (r.totalAmount || 0), 0).toLocaleString()}`, icon: DollarSign, color: "text-[#EC008C] bg-[#FCE8F3]" },
+          { label: "Total Requests", value: requests.length, icon: ClipboardList, color: "text-[#00AFCC] bg-[#E8F4F8]" },
+          { label: "Pending", value: requests.filter((r) => r.status === "PENDING").length, icon: Clock, color: "text-[#D4A017] bg-[#FFF8E1]" },
+          { label: "Delivered", value: requests.filter((r) => r.status === "DELIVERED").length, icon: CheckCircle, color: "text-green-500 bg-green-50" },
         ].map((s) => (
-          <div key={s.label} className={`rounded-xl p-4 ${s.color}`}>
-            <div className="flex items-center gap-2">
-              <s.icon size={20} />
-              <span className="text-2xl font-bold">{s.value}</span>
+          <div key={s.label} className="bg-white rounded-lg p-2.5 sm:p-3 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] sm:text-[11px] text-[#667085]">{s.label}</p>
+                <p className="text-base sm:text-lg font-bold text-[#000000] mt-0.5">{s.value}</p>
+              </div>
+              <div className={`${s.color} p-2 rounded-lg flex-shrink-0`}>
+                <s.icon size={18} />
+              </div>
             </div>
-            <p className="text-sm mt-1">{s.label}</p>
           </div>
         ))}
       </div>
@@ -145,12 +168,12 @@ export default function ManagerCustomRequestsPage() {
       {/* Tabs */}
       <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
         {TABS.map((tab) => (
-          <button key={tab} onClick={() => setActiveTab(tab)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition ${activeTab === tab ? "bg-[#EC008C] text-white" : "bg-white text-gray-600 hover:bg-gray-100"}`}>
-            {tab === "ALL" ? "All" : STATUS_CONFIG[tab]?.label || tab}
-            {tab !== "ALL" && (
-              <span className="ml-1 bg-white/20 px-1.5 rounded-full text-[10px]">
-                {requests.filter((r) => r.status === tab).length}
+          <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+            className={`px-3 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold whitespace-nowrap transition ${activeTab === tab.key ? "bg-[#EC008C] text-white" : "bg-white text-gray-600 hover:bg-gray-100 border border-[#E5E7EB]"}`}>
+            {tab.label}
+            {tab.key !== "ALL" && (
+              <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[9px] ${activeTab === tab.key ? "bg-white/20" : "bg-[#F4F7FB]"}`}>
+                {requests.filter((r) => r.status === tab.key).length}
               </span>
             )}
           </button>
@@ -167,15 +190,16 @@ export default function ManagerCustomRequestsPage() {
                 <th className="px-4 py-3 font-medium">Customer</th>
                 <th className="px-4 py-3 font-medium">Product</th>
                 <th className="px-4 py-3 font-medium">Qty</th>
+                <th className="px-4 py-3 font-medium">Payment</th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 font-medium">Action</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">Loading...</td></tr>
+                <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">Loading...</td></tr>
               ) : filteredRequests.length === 0 ? (
-                <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">No custom requests found</td></tr>
+                <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">No custom requests found</td></tr>
               ) : (
                 paginatedRequests.map((req) => {
                   const st = STATUS_CONFIG[req.status] || STATUS_CONFIG.PENDING;
@@ -186,7 +210,20 @@ export default function ManagerCustomRequestsPage() {
                       <td className="px-4 py-3 text-sm">{req.productName}</td>
                       <td className="px-4 py-3 text-sm">{req.quantity} {req.unit}</td>
                       <td className="px-4 py-3">
-                        <span className={`px-2 py-1 rounded-lg text-xs font-medium ${st.color}`}>{st.label}</span>
+                        <span className={`px-2 py-1 rounded-lg text-xs font-medium ${req.paymentStatus === "PAID" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>
+                          {req.paymentStatus || "UNPAID"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <select
+                          value={req.status}
+                          onChange={(e) => updateStatus(req.id, e.target.value)}
+                          className={`px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-semibold border-0 cursor-pointer focus:outline-none ${st.color}`}
+                        >
+                          {["PENDING", "MANAGER_REVIEW", "PRICING_SET", "CUSTOMER_APPROVED", "CUSTOMER_REJECTED", "CONFIRMED", "PROCESSING", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED", "RETURNED"].map((s) => (
+                            <option key={s} value={s}>{STATUS_CONFIG[s]?.label || s}</option>
+                          ))}
+                        </select>
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex gap-1.5">

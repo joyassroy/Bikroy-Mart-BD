@@ -292,6 +292,8 @@ const en = {
   allOrders: "All Orders",
   pendingToday: "Pending Today",
   todayDelivery: "Today's Delivery",
+  totalDelivery: "Total Delivery",
+  totalSell: "Total Sell",
   totalOrders: "Total Orders",
   totalProducts: "Total Products",
   activeProducts: "Active Products",
@@ -445,6 +447,43 @@ const en = {
   customerApproved: "Approved",
   customerRejected: "Rejected",
   cancelled: "Cancelled",
+  returned: "Returned",
+  todayOrders: "Today's Orders",
+
+  // Rider Rating
+  rateRider: "Rate Rider",
+  rateRiderTitle: "Rate Your Delivery Experience",
+  rateRiderHint: "How was your delivery experience?",
+  riderRatingSubmitted: "Thank you for your feedback!",
+  riderRatingError: "Failed to submit rating",
+  alreadyRated: "Already Rated",
+  deliveryExperience: "How was the delivery?",
+
+  // Custom Request Payment
+  confirmPayment: "Confirm Payment",
+  paymentConfirmed: "Payment confirmed!",
+  paymentConfirmError: "Failed to confirm payment",
+  paid: "Paid",
+  unpaid: "Unpaid",
+  refunded: "Refunded",
+  markPaid: "Mark as Paid",
+
+  // Custom Request Invoice
+  printCustomInvoice: "Print Invoice",
+  customRequestInvoice: "Custom Request Invoice",
+
+  // Admin Custom Requests
+  customRequests: "Custom Requests",
+  allCustomRequests: "All Custom Requests",
+  noCustomRequests: "No custom requests found",
+
+  // Profile Custom Requests
+  myCustomRequests: "My Custom Requests",
+  myCustomRequestsSubtitle: "Track your custom product requests",
+
+  // Product Request (Wishlist)
+  unavailable: "Unavailable",
+  productUnavailable: "Product no longer available",
 
   // Auth Additional
   loginTitle: "Login to your account",

@@ -302,3 +302,61 @@ export const completeCustomDelivery = async (req: AuthRequest, res: Response) =>
     return sendError(res, error.message, 400);
   }
 };
+
+export const getAdminAllRequests = async (req: AuthRequest, res: Response) => {
+  try {
+    const { status } = req.query;
+    const where: any = {};
+    if (status) where.status = status;
+
+    const requests = await prisma.customRequest.findMany({
+      where,
+      include: {
+        user: { select: { id: true, name: true, phone: true, email: true } },
+        rider: { select: { id: true, user: { select: { name: true } } } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    return sendSuccess(res, "All custom requests fetched", requests);
+  } catch (error: any) {
+    return sendError(res, error.message);
+  }
+};
+
+export const markAsPaid = async (req: AuthRequest, res: Response) => {
+  try {
+    const customRequest = await prisma.customRequest.findUnique({
+      where: { id: String(req.params.id) },
+    });
+    if (!customRequest) return sendError(res, "Custom request not found", 404);
+    if (customRequest.userId !== req.user!.userId) return sendError(res, "Unauthorized", 403);
+    if (customRequest.status !== "DELIVERED") return sendError(res, "Order is not delivered yet", 400);
+
+    const updated = await prisma.customRequest.update({
+      where: { id: String(req.params.id) },
+      data: { paymentStatus: "PAID" },
+    });
+
+    return sendSuccess(res, "Payment confirmed", updated);
+  } catch (error: any) {
+    return sendError(res, error.message, 400);
+  }
+};
+
+export const updatePaymentStatus = async (req: AuthRequest, res: Response) => {
+  try {
+    const { paymentStatus } = req.body;
+    if (!["UNPAID", "PAID", "REFUNDED"].includes(paymentStatus)) {
+      return sendError(res, "Invalid payment status", 400);
+    }
+
+    const updated = await prisma.customRequest.update({
+      where: { id: String(req.params.id) },
+      data: { paymentStatus },
+    });
+
+    return sendSuccess(res, "Payment status updated", updated);
+  } catch (error: any) {
+    return sendError(res, error.message, 400);
+  }
+};

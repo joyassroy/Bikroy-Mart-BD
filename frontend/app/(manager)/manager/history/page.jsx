@@ -1,14 +1,20 @@
 "use client";
 import { useState, useEffect } from "react";
 import api from "@/lib/axios";
-import { CheckCircle, XCircle, Package, Search, TrendingUp, Calendar, Banknote } from "lucide-react";
+import { CheckCircle, XCircle, Package, Search, TrendingUp, Calendar, Clock, Truck, RotateCcw } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { paymentStatusColors } from "@/lib/orderConstants";
 import Pagination from "@/components/ui/Pagination";
 
 const STATUS_CONFIG = {
+  PENDING: { label: "Pending", color: "bg-yellow-100 text-yellow-700", icon: Clock },
+  CONFIRMED: { label: "Confirmed", color: "bg-blue-100 text-blue-700", icon: CheckCircle },
+  PROCESSING: { label: "Processing", color: "bg-indigo-100 text-indigo-700", icon: Package },
+  SHIPPED: { label: "Shipped", color: "bg-purple-100 text-purple-700", icon: Truck },
+  OUT_FOR_DELIVERY: { label: "Out for Delivery", color: "bg-orange-100 text-orange-700", icon: Truck },
   DELIVERED: { label: "Delivered", color: "bg-green-100 text-green-700", icon: CheckCircle },
   CANCELLED: { label: "Cancelled", color: "bg-red-100 text-red-700", icon: XCircle },
+  RETURNED: { label: "Returned", color: "bg-gray-100 text-gray-700", icon: RotateCcw },
 };
 
 export default function ManagerHistoryPage() {
@@ -18,7 +24,6 @@ export default function ManagerHistoryPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [approvingPayment, setApprovingPayment] = useState(null);
   const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
@@ -42,18 +47,21 @@ export default function ManagerHistoryPage() {
     finally { setLoading(false); }
   };
 
-  const approvePayment = async (orderId) => {
-    setApprovingPayment(orderId);
-    try {
-      await api.put(`/orders/${orderId}/approve-payment`);
-      toast.success(t.paymentApprovedSuccess);
-      fetchHistory();
-    } catch (err) {
-      toast.error(err.response?.data?.message || t.failedToApprovePayment);
-    } finally {
-      setApprovingPayment(null);
-    }
-  };
+  const statusBreakdown = [
+    { key: "PENDING", label: t.pending, color: "text-yellow-600 bg-yellow-50 border-yellow-200" },
+    { key: "CONFIRMED", label: t.confirmed, color: "text-blue-600 bg-blue-50 border-blue-200" },
+    { key: "PROCESSING", label: "Processing", color: "text-indigo-600 bg-indigo-50 border-indigo-200" },
+    { key: "SHIPPED", label: t.shipped, color: "text-purple-600 bg-purple-50 border-purple-200" },
+    { key: "OUT_FOR_DELIVERY", label: t.outForDelivery, color: "text-orange-600 bg-orange-50 border-orange-200" },
+    { key: "DELIVERED", label: t.delivered, color: "text-green-600 bg-green-50 border-green-200" },
+    { key: "CANCELLED", label: t.cancelled, color: "text-red-600 bg-red-50 border-red-200" },
+    { key: "RETURNED", label: t.returned, color: "text-gray-600 bg-gray-50 border-gray-200" },
+  ];
+
+  const statusCounts = {};
+  orders.forEach((o) => {
+    statusCounts[o.orderStatus] = (statusCounts[o.orderStatus] || 0) + 1;
+  });
 
   const totalRevenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
   const deliveredCount = orders.filter((o) => o.orderStatus === "DELIVERED").length;
@@ -64,9 +72,7 @@ export default function ManagerHistoryPage() {
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
   }).length;
 
-  const filtered = statusFilter
-    ? orders.filter((o) => o.orderStatus === statusFilter)
-    : orders;
+  const filtered = orders.filter((o) => !statusFilter || o.orderStatus === statusFilter);
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
@@ -148,22 +154,33 @@ export default function ManagerHistoryPage() {
             className="w-full pl-10 pr-4 py-3 bg-white border border-[#E5E7EB] rounded-xl text-xs focus:outline-none focus:border-[#EC008C] focus:ring-2 focus:ring-[#EC008C]/10 transition-all"
           />
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 overflow-x-auto pb-1">
           {[
             { key: "", label: "All" },
+            { key: "PENDING", label: "Pending" },
+            { key: "CONFIRMED", label: "Confirmed" },
+            { key: "PROCESSING", label: "Processing" },
+            { key: "SHIPPED", label: "Shipped" },
+            { key: "OUT_FOR_DELIVERY", label: "Out for Delivery" },
             { key: "DELIVERED", label: "Delivered" },
             { key: "CANCELLED", label: "Cancelled" },
+            { key: "RETURNED", label: "Returned" },
           ].map((tab) => (
             <button
               key={tab.key}
               onClick={() => setStatusFilter(tab.key)}
-              className={`px-3 py-2 rounded-xl text-[11px] font-semibold transition ${
+              className={`px-3 py-2 rounded-xl text-[10px] sm:text-[11px] font-semibold whitespace-nowrap transition ${
                 statusFilter === tab.key
                   ? "bg-[#EC008C] text-white"
                   : "bg-white border border-[#E5E7EB] text-[#667085] hover:bg-[#F4F7FB]"
               }`}
             >
               {tab.label}
+              {tab.key !== "" && (
+                <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[9px] ${statusFilter === tab.key ? "bg-white/20" : "bg-[#F4F7FB]"}`}>
+                  {statusCounts[tab.key] || 0}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -224,21 +241,9 @@ export default function ManagerHistoryPage() {
                         <span className="text-xs font-bold text-[#000000]">৳{order.total}</span>
                       </td>
                       <td className="px-5 py-3.5">
-                        <div className="flex items-center gap-1.5">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${paymentStatusColors[order.paymentStatus] || "bg-gray-100 text-gray-600"}`}>
-                            {order.paymentStatus}
-                          </span>
-                          {order.paymentMethod === "COD" && order.orderStatus === "DELIVERED" && order.paymentStatus === "PENDING" && (
-                            <button
-                              onClick={() => approvePayment(order.id)}
-                              disabled={approvingPayment === order.id}
-                              className="flex items-center gap-1 text-[10px] bg-green-600 text-white px-2 py-1 rounded-lg hover:bg-green-700 transition disabled:opacity-50"
-                            >
-                              <Banknote size={10} />
-                              {approvingPayment === order.id ? "..." : "Approve"}
-                            </button>
-                          )}
-                        </div>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${paymentStatusColors[order.paymentStatus] || "bg-gray-100 text-gray-600"}`}>
+                          {order.paymentStatus}
+                        </span>
                       </td>
                       <td className="px-5 py-3.5">
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusCfg.color}`}>

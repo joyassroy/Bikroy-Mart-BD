@@ -22,6 +22,7 @@ model User {
   customRequests  CustomRequest[]
   productRequests ProductRequest[]
   reviews         Review[]
+  riderReviews    RiderReview[]
   riderProfile    RiderProfile?
   managerProfile  ManagerProfile?
   createdAt       DateTime         @default(now())
@@ -157,6 +158,7 @@ model Order {
   actualDelivery     DateTime?
   notes              String?
   cancelReason       String?
+  riderReviews       RiderReview[]
   createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt
 }
@@ -225,6 +227,7 @@ model RiderProfile {
   customRequests  CustomRequest[]
   ratings         Float            @default(0)
   totalDeliveries Int              @default(0)
+  reviews         RiderReview[]
   createdAt       DateTime         @default(now())
 }
 
@@ -257,6 +260,20 @@ model Review {
   rating    Int
   comment   String?
   createdAt DateTime @default(now())
+}
+
+model RiderReview {
+  id        String       @id @default(uuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id])
+  riderId   String
+  rider     RiderProfile @relation(fields: [riderId], references: [id])
+  orderId   String
+  order     Order        @relation(fields: [orderId], references: [id])
+  rating    Int
+  comment   String?
+  createdAt DateTime     @default(now())
+  @@unique([userId, orderId])
 }
 
 model Banner {
@@ -398,6 +415,7 @@ model CustomRequest {
   quotedPrice       Float?
   totalAmount       Float?
   deliveryCharge    Float?              @default(0)
+  paymentStatus     String              @default("UNPAID")
   status            CustomRequestStatus @default(PENDING)
   customerNotes     String?
   managerNotes      String?

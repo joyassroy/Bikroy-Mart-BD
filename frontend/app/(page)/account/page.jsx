@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import api from "@/lib/axios";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { User, Package, MapPin, LogOut, Loader2, ExternalLink, X, Plus, Pencil, Trash2, Star, ChevronDown, Camera, Copy, Check, Ban, Printer } from "lucide-react";
+import { User, Package, MapPin, LogOut, Loader2, ExternalLink, X, Plus, Pencil, Trash2, Star, ChevronDown, Camera, Copy, Check, Ban, Printer, ClipboardList, Truck } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { updateUser, clearUser } from "@/redux/userSlice";
 import { useRouter } from "next/navigation";
@@ -44,6 +44,13 @@ export default function AccountPage() {
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [savingProfile, setSavingProfile] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
+  const [customRequests, setCustomRequests] = useState([]);
+  const [loadingCustomRequests, setLoadingCustomRequests] = useState(false);
+  const [ratingModal, setRatingModal] = useState(null);
+  const [ratingValue, setRatingValue] = useState(0);
+  const [ratingComment, setRatingComment] = useState("");
+  const [submittingRating, setSubmittingRating] = useState(false);
+  const [ratedOrders, setRatedOrders] = useState(new Set());
   const fileInputRef = useRef(null);
   const [editingOrder, setEditingOrder] = useState(false);
   const [orderEditForm, setOrderEditForm] = useState({
@@ -83,11 +90,41 @@ export default function AccountPage() {
     if (user) {
       api.get("/orders/my-orders").then((res) => setOrders(res.data.data || [])).catch(console.error);
       fetchAddresses();
+      fetchCustomRequests();
     }
   }, [user]);
 
   const fetchAddresses = () => {
     api.get("/addresses").then((res) => setAddresses(res.data.data || [])).catch(console.error);
+  };
+
+  const fetchCustomRequests = () => {
+    setLoadingCustomRequests(true);
+    api.get("/custom-requests/my-requests").then((res) => {
+      setCustomRequests(res.data.data || []);
+    }).catch(console.error).finally(() => setLoadingCustomRequests(false));
+  };
+
+  const submitRiderRating = async () => {
+    if (!ratingModal || !ratingValue) return;
+    setSubmittingRating(true);
+    try {
+      await api.post("/reviews/rider", {
+        orderId: ratingModal.id,
+        riderId: ratingModal.riderId,
+        rating: ratingValue,
+        comment: ratingComment,
+      });
+      toast.success(t.riderRatingSubmitted);
+      setRatedOrders((prev) => new Set(prev).add(ratingModal.id));
+      setRatingModal(null);
+      setRatingValue(0);
+      setRatingComment("");
+    } catch (err) {
+      toast.error(err.response?.data?.message || t.riderRatingError);
+    } finally {
+      setSubmittingRating(false);
+    }
   };
 
   const handleLogout = async () => {
@@ -406,6 +443,9 @@ export default function AccountPage() {
               <button onClick={() => setActiveTab("addresses")} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition ${activeTab === "addresses" ? "bg-blue-50 text-[#0067A0]" : "text-gray-600 hover:bg-gray-50"}`}>
                 <MapPin size={20} /> Addresses
               </button>
+              <button onClick={() => setActiveTab("custom-requests")} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition ${activeTab === "custom-requests" ? "bg-blue-50 text-[#0067A0]" : "text-gray-600 hover:bg-gray-50"}`}>
+                <ClipboardList size={20} /> {t.myCustomRequests}
+              </button>
               <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium text-red-600 hover:bg-red-50 transition">
                 <LogOut size={20} /> Logout
               </button>
@@ -658,6 +698,56 @@ export default function AccountPage() {
                 )}
               </div>
             )}
+
+            {activeTab === "custom-requests" && (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+                <div className="p-6 border-b border-gray-100">
+                  <h3 className="font-semibold text-gray-900 text-lg">{t.myCustomRequests}</h3>
+                  <p className="text-sm text-gray-500 mt-1">{t.myCustomRequestsSubtitle}</p>
+                </div>
+                <div className="p-6">
+                  {loadingCustomRequests ? (
+                    <div className="text-center py-10"><Loader2 size={24} className="animate-spin text-[#0067A0] mx-auto" /></div>
+                  ) : customRequests.length === 0 ? (
+                    <div className="text-center py-10">
+                      <ClipboardList size={40} className="mx-auto text-gray-300 mb-3" />
+                      <p className="text-sm font-medium text-gray-600">{t.noRequestsYet}</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {customRequests.map((req) => (
+                        <div key={req.id} className="border border-gray-100 rounded-xl p-4 hover:shadow-sm transition">
+                          <div className="flex items-start justify-between mb-2">
+                            <div>
+                              <p className="text-xs text-gray-500">{t.requestNumber} {req.requestNumber}</p>
+                              <p className="text-sm font-semibold text-[#00215B]">{req.productName}</p>
+                            </div>
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                              req.status === "DELIVERED" ? "bg-green-100 text-green-700" :
+                              req.status === "CANCELLED" ? "bg-red-100 text-red-700" :
+                              req.status === "CUSTOMER_APPROVED" ? "bg-green-100 text-green-700" :
+                              "bg-yellow-100 text-yellow-700"
+                            }`}>{req.status}</span>
+                          </div>
+                          <p className="text-xs text-gray-500 mb-1">{req.quantity} {req.unit}</p>
+                          {req.quotedPrice != null && (
+                            <p className="text-xs font-medium text-[#00215B]">৳{req.totalAmount}</p>
+                          )}
+                          <div className="flex items-center gap-2 mt-2 text-[10px] text-gray-400">
+                            <span>{new Date(req.createdAt).toLocaleDateString("en-BD")}</span>
+                            {req.paymentStatus && (
+                              <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${req.paymentStatus === "PAID" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>
+                                {req.paymentStatus}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </main>
@@ -842,6 +932,14 @@ export default function AccountPage() {
                 <div className="border-t border-gray-100 pt-4 text-sm">
                   <p className="text-gray-500 mb-1">Rider Info</p>
                   <p className="text-gray-900">{selectedOrder.rider.user?.name} &middot; {selectedOrder.rider.user?.phone}</p>
+                  {selectedOrder.orderStatus === "DELIVERED" && selectedOrder.riderId && !ratedOrders.has(selectedOrder.id) && (
+                    <button onClick={() => { setRatingModal(selectedOrder); setRatingValue(0); setRatingComment(""); }} className="mt-2 flex items-center gap-1.5 text-sm text-[#EC008C] hover:text-[#b8007a] font-medium transition">
+                      <Star size={14} /> {t.rateRider}
+                    </button>
+                  )}
+                  {selectedOrder.orderStatus === "DELIVERED" && ratedOrders.has(selectedOrder.id) && (
+                    <p className="mt-2 flex items-center gap-1.5 text-sm text-green-600 font-medium"><Check size={14} /> {t.alreadyRated}</p>
+                  )}
                 </div>
               )}
 
@@ -906,6 +1004,50 @@ export default function AccountPage() {
               >
                 {cancellingLoading ? <Loader2 size={16} className="animate-spin" /> : <Ban size={16} />}
                 {cancellingLoading ? "Cancelling..." : "Cancel Order"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {ratingModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setRatingModal(null)}>
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="p-5 border-b border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-[#EC008C]/10 flex items-center justify-center flex-shrink-0">
+                  <Star size={20} className="text-[#EC008C]" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">{t.rateRiderTitle}</h2>
+                  <p className="text-sm text-gray-500">{t.rateRiderHint}</p>
+                </div>
+              </div>
+            </div>
+            <div className="p-5 space-y-4">
+              <div className="flex justify-center gap-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button key={star} onClick={() => setRatingValue(star)} className="p-1 transition hover:scale-110">
+                    <Star size={32} className={star <= ratingValue ? "text-yellow-400 fill-yellow-400" : "text-gray-300"} />
+                  </button>
+                ))}
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">{t.deliveryExperience}</label>
+                <textarea
+                  value={ratingComment}
+                  onChange={(e) => setRatingComment(e.target.value)}
+                  placeholder={t.rateRiderHint}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#0067A0] resize-none"
+                />
+              </div>
+            </div>
+            <div className="p-5 border-t border-gray-100 flex gap-3">
+              <button onClick={() => setRatingModal(null)} className="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-gray-300 text-gray-700 hover:bg-gray-50 transition">Cancel</button>
+              <button onClick={submitRiderRating} disabled={submittingRating || !ratingValue} className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-[#EC008C] text-white hover:bg-[#b8007a] transition disabled:opacity-50 flex items-center justify-center gap-2">
+                {submittingRating ? <Loader2 size={16} className="animate-spin" /> : <Star size={16} />}
+                {submittingRating ? "Submitting..." : t.rateRider}
               </button>
             </div>
           </div>

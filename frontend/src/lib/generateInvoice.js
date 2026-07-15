@@ -314,3 +314,61 @@ export function printInvoice(order, lang = "en") {
   win.focus();
   win.onload = () => { win.print(); };
 }
+
+export function printCustomRequestInvoice(request, lang = "en") {
+  const L = lang === "bn"
+    ? { shopName: "Bikroy-Mart-BD", invoice: "ইনভয়েস", requestNo: "অনুরোধ নং", date: "তারিখ", customer: "গ্রাহক", phone: "ফোন", product: "পণ্য", qty: "পরিমাণ", unit: "একক", unitPrice: "একক মূল্য", subtotal: "উপমোট", deliveryFee: "ডেলিভারি ফি", total: "মোট", payment: "পেমেন্ট", paid: "পরিশোধিত", unpaid: "অপরিশোধিত", address: "ঠিকানা", notes: "নোট", thankYou: "আমাদের সাথে কেনাকাটার জন্য ধন্যবাদ!", powered: "পাওয়ার্ড বাই Bikroy-Mart-BD" }
+    : { shopName: "Bikroy-Mart-BD", invoice: "INVOICE", requestNo: "Request No.", date: "Date", customer: "Customer", phone: "Phone", product: "Product", qty: "Qty", unit: "Unit", unitPrice: "Unit Price", subtotal: "Subtotal", deliveryFee: "Delivery Fee", total: "Total", payment: "Payment", paid: "PAID", unpaid: "UNPAID", address: "Address", notes: "Notes", thankYou: "Thank you for shopping with us!", powered: "Powered by Bikroy-Mart-BD" };
+
+  const items = `<tr style="background:#f4f7fb;">
+    <td style="padding:8px 10px;font-weight:600;font-size:11px;color:#4a6590;">${L.product}</td>
+    <td style="padding:8px 10px;font-weight:600;font-size:11px;color:#4a6590;">${L.qty}</td>
+    <td style="padding:8px 10px;font-weight:600;font-size:11px;color:#4a6590;">${L.unit}</td>
+    <td style="padding:8px 10px;font-weight:600;font-size:11px;color:#4a6590;text-align:right;">${L.unitPrice}</td>
+  </tr>
+  <tr>
+    <td style="padding:8px 10px;font-size:11px;">${request.productName || "N/A"}</td>
+    <td style="padding:8px 10px;font-size:11px;">${request.quantity || 1}</td>
+    <td style="padding:8px 10px;font-size:11px;">${request.unit || "piece"}</td>
+    <td style="padding:8px 10px;font-size:11px;text-align:right;">৳${(request.quotedPrice || 0).toLocaleString()}</td>
+  </tr>`;
+
+  const payLabel = request.paymentStatus === "PAID" ? L.paid : L.unpaid;
+  const payColor = request.paymentStatus === "PAID" ? "#10b981" : "#eab308";
+
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${L.invoice} - ${request.requestNumber}</title>
+<style>@media print{body{margin:0;}}</style></head><body style="margin:0;padding:20px;font-family:'Segoe UI',Tahoma,sans-serif;background:#fff;">
+<div style="max-width:520px;margin:0 auto;border:1px solid #e5e7eb;border-radius:8px;padding:20px;">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+<div><h1 style="margin:0;font-size:20px;color:#00215B;">${L.shopName}</h1><p style="margin:2px 0 0;font-size:10px;color:#999;">Bikroy-Mart-BD</p></div>
+<div style="text-align:right;"><h2 style="margin:0;font-size:16px;color:#EC008C;">${L.invoice}</h2></div></div>
+
+<div style="display:flex;justify-content:space-between;margin-bottom:16px;font-size:11px;">
+<div><p style="margin:2px 0;color:#666;">${L.requestNo}: <strong>${request.requestNumber || "N/A"}</strong></p><p style="margin:2px 0;color:#666;">${L.date}: ${new Date(request.createdAt).toLocaleDateString("en-BD")}</p></div>
+<div style="text-align:right;"><p style="margin:2px 0;color:#666;"><span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;color:#fff;background:${payColor};">${payLabel}</span></p></div></div>
+
+<div style="margin-bottom:16px;padding:10px;background:#f9fafb;border-radius:6px;font-size:11px;">
+<p style="margin:2px 0;"><strong>${L.customer}:</strong> ${request.user?.name || "N/A"}</p>
+<p style="margin:2px 0;"><strong>${L.phone}:</strong> ${request.user?.phone || "N/A"}</p>
+<p style="margin:2px 0;"><strong>${L.address}:</strong> ${request.deliveryAddress || ""}, ${request.deliveryUpazila || ""}, ${request.deliveryDistrict || ""}</p></div>
+
+<table style="width:100%;border-collapse:collapse;margin-bottom:16px;">${items}</table>
+
+<div style="border-top:2px solid #e5e7eb;padding-top:10px;">
+<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px;"><span>${L.subtotal}</span><span>৳${((request.quotedPrice || 0) * (request.quantity || 1)).toLocaleString()}</span></div>
+${request.deliveryCharge > 0 ? `<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px;"><span>${L.deliveryFee}</span><span>৳${(request.deliveryCharge || 0).toLocaleString()}</span></div>` : ""}
+<div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700;color:#00215B;border-top:2px solid #e5e7eb;padding-top:8px;margin-top:8px;"><span>${L.total}</span><span style="color:#EC008C;">৳${(request.totalAmount || 0).toLocaleString()}</span></div></div>
+
+${request.customerNotes ? `<div style="margin-top:12px;font-size:10px;color:#666;"><strong>${L.notes}:</strong> ${request.customerNotes}</div>` : ""}
+
+<div style="text-align:center;margin-top:20px;padding-top:12px;border-top:1px solid #e5e7eb;">
+<p style="font-size:11px;color:#EC008C;font-weight:600;">${L.thankYou}</p>
+<p style="font-size:9px;color:#999;margin-top:4px;">${L.powered}</p></div></div></body></html>`;
+
+  const win = window.open("", "_blank");
+  if (!win) return;
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  win.onload = () => { win.print(); };
+}

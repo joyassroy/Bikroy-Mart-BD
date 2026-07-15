@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, Package, ShoppingCart, Users, BarChart3, Settings, Tag, Truck, MapPin, Menu, X, Loader2, Gift, Clock, TrendingUp, DollarSign } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Users, BarChart3, Settings, Tag, Truck, MapPin, Menu, X, Loader2, Gift, Clock, TrendingUp, DollarSign, ClipboardList } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useAuthChecked } from "@/helper/AuthInit";
@@ -41,6 +41,7 @@ export default function DashboardLayout({ children }) {
     { label: t.customers, href: "/dashboard/customers", icon: Users },
     { label: t.riders, href: "/dashboard/riders", icon: Truck },
     { label: t.managers, href: "/dashboard/managers", icon: MapPin },
+    { label: t.customRequests, href: "/dashboard/custom-requests", icon: ClipboardList },
     { label: t.banners, href: "/dashboard/banners", icon: Tag },
     { 
       label: t.content, icon: Users,

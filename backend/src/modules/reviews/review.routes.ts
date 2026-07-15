@@ -8,4 +8,7 @@ router.get("/product/:productId", reviewController.getProductReviews);
 router.post("/", authenticate, reviewController.createReview);
 router.delete("/:id", authenticate, reviewController.deleteReview);
 
+router.get("/rider/:riderId", reviewController.getRiderReviews);
+router.post("/rider", authenticate, reviewController.createRiderReview);
+
 export default router;

@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
-import { X, Truck, Search, Package, Clock, CheckCircle, MapPin, Phone, User, ChevronDown, RefreshCw, Printer, Banknote } from "lucide-react";
+import { X, Truck, Search, Package, Clock, CheckCircle, MapPin, Phone, User, ChevronDown, RefreshCw, Printer, Banknote, Calendar } from "lucide-react";
 import { printInvoice } from "@/lib/generateInvoice";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { paymentStatusColors } from "@/lib/orderConstants";
@@ -16,6 +16,7 @@ const statusColors = {
   OUT_FOR_DELIVERY: "bg-orange-100 text-orange-700",
   DELIVERED: "bg-green-100 text-green-700",
   CANCELLED: "bg-red-100 text-red-700",
+  RETURNED: "bg-gray-100 text-gray-700",
 };
 
 export default function ManagerOrdersPage() {
@@ -31,6 +32,7 @@ export default function ManagerOrdersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [approvingPayment, setApprovingPayment] = useState(null);
   const ITEMS_PER_PAGE = 10;
+  useEffect(() => { fetchOrders(); fetchRiders(); }, []);
 
   const statusLabels = {
     PENDING: t.pending,
@@ -40,13 +42,19 @@ export default function ManagerOrdersPage() {
     OUT_FOR_DELIVERY: t.outForDelivery,
     DELIVERED: t.delivered,
     CANCELLED: t.cancelled,
+    RETURNED: t.returned,
   };
 
   const filterTabs = [
     { key: "ALL", label: t.all },
     { key: "PENDING", label: t.pending },
     { key: "CONFIRMED", label: t.confirmed },
+    { key: "PROCESSING", label: t.processing },
+    { key: "SHIPPED", label: t.shipped },
     { key: "OUT_FOR_DELIVERY", label: t.outForDelivery },
+    { key: "DELIVERED", label: t.delivered },
+    { key: "CANCELLED", label: t.cancelled },
+    { key: "RETURNED", label: t.returned },
   ];
 
   useEffect(() => { fetchOrders(); fetchRiders(); }, []);
@@ -117,9 +125,25 @@ export default function ManagerOrdersPage() {
 
   const stats = {
     total: orders.length,
-    pending: orders.filter((o) => o.orderStatus === "PENDING").length,
-    active: orders.filter((o) => ["OUT_FOR_DELIVERY", "SHIPPED"].includes(o.orderStatus)).length,
     delivered: orders.filter((o) => o.orderStatus === "DELIVERED").length,
+    totalSell: orders.reduce((sum, o) => sum + (o.total || 0), 0),
+    todayOrders: orders.filter((o) => {
+      const d = new Date(o.createdAt);
+      const now = new Date();
+      return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    }).length,
+    todayDelivery: orders.filter((o) => {
+      if (!o.actualDelivery) return false;
+      const d = new Date(o.actualDelivery);
+      const now = new Date();
+      return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear() && o.orderStatus === "DELIVERED";
+    }).length,
+    todaySales: orders.filter((o) => {
+      if (o.orderStatus !== "DELIVERED" || !o.actualDelivery) return false;
+      const d = new Date(o.actualDelivery);
+      const now = new Date();
+      return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    }).reduce((sum, o) => sum + (o.total || 0), 0),
   };
 
   return (
@@ -132,12 +156,14 @@ export default function ManagerOrdersPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 mb-4">
         {[
           { label: t.totalOrders, value: stats.total, icon: Package, color: "text-[#00AFCC] bg-[#E8F4F8]" },
-          { label: t.pending, value: stats.pending, icon: Clock, color: "text-[#D4A017] bg-[#FFF8E1]" },
-          { label: t.outForDelivery, value: stats.active, icon: Truck, color: "text-orange-500 bg-orange-50" },
           { label: t.delivered, value: stats.delivered, icon: CheckCircle, color: "text-green-500 bg-green-50" },
+          { label: "Total Sell", value: `৳${stats.totalSell.toLocaleString()}`, icon: Banknote, color: "text-[#8B5CF6] bg-purple-50" },
+          { label: t.todayOrders, value: stats.todayOrders, icon: Clock, color: "text-[#D4A017] bg-[#FFF8E1]" },
+          { label: t.todayDelivery, value: stats.todayDelivery, icon: Truck, color: "text-orange-500 bg-orange-50" },
+          { label: t.todaySales, value: `৳${stats.todaySales.toLocaleString()}`, icon: Banknote, color: "text-[#EC008C] bg-pink-50" },
         ].map((s) => (
           <div key={s.label} className="bg-white rounded-lg p-2.5 sm:p-3 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">
             <div className="flex items-center justify-between">
@@ -151,6 +177,44 @@ export default function ManagerOrdersPage() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Order Status Breakdown */}
+      <div className="bg-white rounded-lg p-3 mb-3 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-[#000000] text-xs">Order Status Overview</h3>
+          <span className="text-[10px] text-[#667085]">Total: {filtered.length}</span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setFilter("ALL")}
+            className={`px-3 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold whitespace-nowrap transition ${
+              filter === "ALL" ? "bg-[#EC008C] text-white" : "bg-white text-[#667085] hover:bg-[#F4F7FB] border border-[#E5E7EB]"
+            }`}
+          >
+            All
+            <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[9px] ${filter === "ALL" ? "bg-white/20" : "bg-[#F4F7FB]"}`}>
+              {orders.length}
+            </span>
+          </button>
+          {filterTabs.filter(t => t.key !== "ALL").map((tab) => {
+            const count = orders.filter((o) => o.orderStatus === tab.key).length;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setFilter(filter === tab.key ? "ALL" : tab.key)}
+                className={`px-3 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold whitespace-nowrap transition ${
+                  filter === tab.key ? "bg-[#EC008C] text-white ring-2 ring-offset-1" : "bg-white text-[#667085] hover:bg-[#F4F7FB] border border-[#E5E7EB]"
+                }`}
+              >
+                {tab.label}
+                <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[9px] ${filter === tab.key ? "bg-white/30" : "bg-[#F4F7FB]"}`}>
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Search + Filters */}
@@ -167,22 +231,6 @@ export default function ManagerOrdersPage() {
         </div>
       </div>
 
-      <div className="flex gap-1.5 mb-3 overflow-x-auto pb-1">
-        {filterTabs.map((tab) => (
-          <button key={tab.key} onClick={() => setFilter(tab.key)}
-            className={`px-3 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold whitespace-nowrap transition ${
-              filter === tab.key ? "bg-[#EC008C] text-white" : "bg-white text-[#667085] hover:bg-[#F4F7FB] border border-[#E5E7EB]"
-            }`}>
-            {tab.label}
-            {tab.key !== "ALL" && (
-              <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[9px] ${filter === tab.key ? "bg-white/20" : "bg-[#F4F7FB]"}`}>
-                {orders.filter((o) => o.orderStatus === tab.key).length}
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
-
       {/* Orders Table */}
       <div className="bg-white rounded-lg shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB] overflow-x-auto">
         <table className="w-full min-w-[640px]">
@@ -191,6 +239,7 @@ export default function ManagerOrdersPage() {
               <th className="px-3 py-2.5 font-medium">#</th>
               <th className="px-3 py-2.5 font-medium">{t.orderHash}</th>
               <th className="px-3 py-2.5 font-medium">{t.customer}</th>
+              <th className="px-3 py-2.5 font-medium">{t.date}</th>
               <th className="px-3 py-2.5 font-medium">{t.items}</th>
               <th className="px-3 py-2.5 font-medium">{t.total}</th>
               <th className="px-3 py-2.5 font-medium">{t.paymentStatusLabel}</th>
@@ -201,9 +250,9 @@ export default function ManagerOrdersPage() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={9} className="px-3 py-8 text-center text-[11px] text-gray-400">{t.loadingOrders}</td></tr>
+              <tr><td colSpan={10} className="px-3 py-8 text-center text-[11px] text-gray-400">{t.loadingOrders}</td></tr>
             ) : filtered.length === 0 ? (
-              <tr><td colSpan={9} className="px-3 py-8 text-center text-[11px] text-gray-400">
+              <tr><td colSpan={10} className="px-3 py-8 text-center text-[11px] text-gray-400">
                 <Package size={24} className="mx-auto mb-2 text-gray-300" />
                 <p>{search ? t.noSearchResults : t.noOrdersFound}</p>
               </td></tr>
@@ -217,6 +266,12 @@ export default function ManagerOrdersPage() {
                     <p className="text-[10px] text-[#667085] flex items-center gap-1 mt-0.5">
                       <Phone size={9} />{order.user?.phone || t.notAvailable}
                     </p>
+                  </td>
+                  <td className="px-3 py-2.5 text-[10px] sm:text-[11px] text-[#667085]">
+                    <div className="flex items-center gap-1">
+                      <Calendar size={10} />
+                      <span>{new Date(order.createdAt).toLocaleDateString("en-BD")}</span>
+                    </div>
                   </td>
                   <td className="px-3 py-2.5 text-[11px] sm:text-xs text-[#000000]">{order.items?.length || 0}</td>
                   <td className="px-3 py-2.5 text-[11px] sm:text-xs font-semibold text-[#000000]">৳{order.total}</td>
@@ -244,7 +299,7 @@ export default function ManagerOrdersPage() {
                       disabled={updatingStatus === order.id}
                       className={`px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-semibold border-0 cursor-pointer focus:outline-none ${statusColors[order.orderStatus] || "bg-gray-100 text-gray-600"}`}
                     >
-                      {["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED"].map((s) => (
+                      {["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED", "RETURNED"].map((s) => (
                         <option key={s} value={s}>{statusLabels[s]}</option>
                       ))}
                     </select>
