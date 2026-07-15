@@ -352,6 +352,8 @@ const bn = {
   riderInfo: "রাইডার তথ্য",
   riderName: "রাইডারের নাম",
   riderPhone: "রাইডারের ফোন",
+  tracking: "ট্র্যাকিং",
+  orderNumber: "অর্ডার নং",
 
   // Addresses
   savedAddresses: "সংরক্ষিত ঠিকানা",

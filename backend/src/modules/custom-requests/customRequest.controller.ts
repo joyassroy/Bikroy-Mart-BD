@@ -70,7 +70,9 @@ export const getMyRequests = async (req: AuthRequest, res: Response) => {
     const requests = await prisma.customRequest.findMany({
       where: { userId: req.user!.userId },
       include: {
-        rider: { select: { id: true, user: { select: { name: true, phone: true } } } },
+        user: { select: { id: true, name: true, email: true, phone: true } },
+        rider: { select: { id: true, user: { select: { name: true, phone: true } }, currentLat: true, currentLng: true } },
+        order: true,
       },
       orderBy: { createdAt: "desc" },
     });

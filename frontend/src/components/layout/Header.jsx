@@ -424,7 +424,7 @@ function HeaderContent() {
                             <div
                               key={cat.slug}
                               onMouseEnter={() => setHoveredCatSlug(cat.slug)}
-                              className={`flex items-center gap-3 px-3 py-3 rounded-xl text-[13px] cursor-pointer transition-all duration-150 ${
+                              className={`flex items-center gap-3 px-3 py-3 rounded-xl text-[14px] cursor-pointer transition-all duration-150 ${
                                 isActive
                                   ? "bg-[#FCE8F3] text-[#EC008C] shadow-sm"
                                   : "text-[#364152] hover:bg-white hover:shadow-sm"
@@ -496,7 +496,7 @@ function HeaderContent() {
                                   key={sub.slug}
                                   href={`/shop?category=${hoveredCatSlug}&subcategory=${sub.slug}`}
                                   onClick={() => { setMegaMenuOpen(false); setHoveredCatSlug(null); }}
-                                  className="flex items-center gap-3 px-3 py-3 rounded-xl text-[12px] text-[#364152] hover:bg-[#FCE8F3] hover:text-[#EC008C] transition-all duration-150 group"
+                                  className="flex items-center gap-3 px-3 py-3 rounded-xl text-[13px] text-[#364152] hover:bg-[#FCE8F3] hover:text-[#EC008C] transition-all duration-150 group"
                                 >
                                   {sub.image ? (
                                     <img src={sub.image} alt={subName(sub)} className="w-9 h-9 rounded-lg object-contain flex-shrink-0 bg-[#F4F7FB] p-0.5" />

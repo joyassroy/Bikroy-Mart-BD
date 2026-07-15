@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useAuthChecked } from "@/helper/AuthInit";
 import { BANGLADESH_LOCATIONS, DELIVERY_AREAS, getUpazilas } from "@/lib/constants";
-import { ClipboardList, Upload, X, MapPin, Loader2, CheckCircle, Clock, Eye, Truck, XCircle, Printer, DollarSign } from "lucide-react";
+import { ClipboardList, Upload, X, MapPin, Loader2, CheckCircle, Clock, Eye, Truck, XCircle, Printer, DollarSign, Package, FileText } from "lucide-react";
 import dynamic from "next/dynamic";
 const DeliveryMapPicker = dynamic(() => import("@/components/checkout/DeliveryMapPicker"), { ssr: false });
 import FloatingChatButton from "@/components/layout/FloatingChatButton";
@@ -566,6 +566,77 @@ export default function CustomRequestPage() {
                           className="flex-1 flex items-center justify-center gap-1 bg-white border border-gray-200 text-gray-700 py-1.5 rounded text-xs font-semibold hover:bg-gray-50 transition">
                           <Printer size={12} /> {t.printCustomInvoice}
                         </button>
+                      </div>
+                    )}
+
+                    {/* Invoice button for non-delivered but priced/approved requests */}
+                    {req.status !== "DELIVERED" && ["PRICING_SET", "CUSTOMER_APPROVED", "PROCESSING", "SHIPPED", "OUT_FOR_DELIVERY"].includes(req.status) && req.quotedPrice && (
+                      <div className="flex gap-2 mt-3">
+                        <button onClick={() => printCustomRequestInvoice(req)}
+                          className="flex-1 flex items-center justify-center gap-1 bg-white border border-gray-200 text-gray-700 py-1.5 rounded text-xs font-semibold hover:bg-gray-50 transition">
+                          <Printer size={12} /> {t.printCustomInvoice}
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Order Details */}
+                    {req.order && (
+                      <div className="bg-blue-50 rounded-lg p-3 mt-3">
+                        <div className="flex items-center gap-1.5 mb-2">
+                          <FileText size={12} className="text-blue-600" />
+                          <p className="text-[11px] font-semibold text-blue-800">{t.orderDetails || "Order Details"}</p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[10px]">
+                          <span className="text-[#667085]">{t.orderNumber || "Order #"}:</span>
+                          <span className="font-medium text-[#00215B]">{req.order.orderNumber}</span>
+                          <span className="text-[#667085]">{t.totalAmount}:</span>
+                          <span className="font-medium text-[#00215B]">৳{req.order.total}</span>
+                          <span className="text-[#667085]">{t.paymentMethod || "Payment"}:</span>
+                          <span className="font-medium text-[#00215B]">{req.order.paymentMethod}</span>
+                          <span className="text-[#667085]">{t.paymentStatus || "Status"}:</span>
+                          <span className={`font-medium ${req.order.paymentStatus === "PAID" ? "text-green-600" : "text-yellow-600"}`}>{req.order.paymentStatus}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Rider Info */}
+                    {req.rider && (
+                      <div className="bg-orange-50 rounded-lg p-3 mt-3">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <Truck size={12} className="text-orange-600" />
+                          <p className="text-[11px] font-semibold text-orange-800">{t.riderInfo || "Rider"}</p>
+                        </div>
+                        <p className="text-[10px] text-[#667085]">{req.rider.user?.name} - {req.rider.user?.phone}</p>
+                      </div>
+                    )}
+
+                    {/* Tracking Timeline */}
+                    {["PROCESSING", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED"].includes(req.status) && (
+                      <div className="mt-3 border-t border-[#E5E7EB] pt-3">
+                        <p className="text-[10px] font-semibold text-[#00215B] mb-2 flex items-center gap-1">
+                          <Package size={11} /> {t.tracking || "Tracking"}
+                        </p>
+                        <div className="flex items-center gap-0">
+                          {["PROCESSING", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED"].map((step, i) => {
+                            const stepIndex = ["PROCESSING", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED"].indexOf(req.status);
+                            const isCompleted = i <= stepIndex;
+                            const isCurrent = i === stepIndex;
+                            const labels = { PROCESSING: t.processing || "Processing", SHIPPING: t.shipped || "Shipped", SHIPPED: t.shipped || "Shipped", OUT_FOR_DELIVERY: t.outForDelivery || "Out", DELIVERED: t.delivered || "Done" };
+                            return (
+                              <div key={step} className="flex-1 flex flex-col items-center relative">
+                                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold z-10 ${isCurrent ? "bg-[#EC008C] text-white ring-2 ring-[#EC008C]/30" : isCompleted ? "bg-green-500 text-white" : "bg-gray-200 text-gray-400"}`}>
+                                  {isCompleted ? <CheckCircle size={10} /> : i + 1}
+                                </div>
+                                <span className={`text-[8px] mt-1 text-center leading-tight ${isCurrent ? "text-[#EC008C] font-bold" : isCompleted ? "text-green-600" : "text-gray-400"}`}>
+                                  {labels[step] || step}
+                                </span>
+                                {i < 3 && (
+                                  <div className={`absolute top-2.5 left-1/2 w-full h-0.5 ${i < stepIndex ? "bg-green-500" : "bg-gray-200"}`} style={{ zIndex: 0 }} />
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     )}
 

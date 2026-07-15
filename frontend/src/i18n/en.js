@@ -383,6 +383,8 @@ const en = {
   riderInfo: "Rider Info",
   riderName: "Rider Name",
   riderPhone: "Rider Phone",
+  tracking: "Tracking",
+  orderNumber: "Order #",
 
   // Addresses
   savedAddresses: "Saved Addresses",
