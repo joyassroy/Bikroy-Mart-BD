@@ -121,8 +121,8 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
       <div className={`bg-gradient-to-r ${bgColor} rounded-2xl p-3 sm:p-4 mb-3`}>
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-base sm:text-lg md:text-xl font-bold text-white">{title}</h2>
-            <p className="text-[10px] sm:text-[11px] text-white/80 mt-0.5">{subtitle}</p>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white">{title}</h2>
+            <p className="text-[11px] sm:text-xs text-white/80 mt-0.5">{subtitle}</p>
           </div>
           <div className="flex items-center gap-2">
             <div className="flex gap-1">
@@ -209,15 +209,15 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
                   )}
                 </div>
                 <div className="p-3 sm:p-3.5">
-                  <h3 className="text-xs sm:text-[13px] md:text-sm font-medium text-[#181717] line-clamp-2 mb-1.5 min-h-[36px] sm:min-h-[40px] leading-tight">{item.name}</h3>
+                  <h3 className="text-sm sm:text-base font-bold text-[#181717] line-clamp-2 mb-1.5 min-h-[36px] sm:min-h-[40px] leading-tight">{item.name}</h3>
                   {item.items && item.items.length > 1 && (
                     <div className="text-[9px] text-gray-400 mb-1">
                       {item.items.map((i) => i.product?.name).filter(Boolean).join(" + ")}
                     </div>
                   )}
                   <div className="flex items-center gap-1.5 mb-1.5">
-                    <span className={`font-bold text-sm sm:text-[15px] md:text-base ${isBogo ? "text-[#F59E0B]" : "text-[#EC008C]"}`}>৳{item.dealPrice}</span>
-                    <span className="text-[#667085] text-[11px] sm:text-xs line-through">৳{item.price}</span>
+                    <span className={`font-bold text-base sm:text-lg md:text-xl ${isBogo ? "text-[#F59E0B]" : "text-[#EC008C]"}`}>৳{item.dealPrice}</span>
+                    <span className="text-[#667085] text-xs sm:text-sm line-through">৳{item.price}</span>
                   </div>
                   {isBogo && (
                     <div className="text-[9px] sm:text-[10px] text-[#16A34A] font-semibold mb-1">

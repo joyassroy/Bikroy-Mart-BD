@@ -102,8 +102,8 @@ export default function FlashDeals() {
     <section className="max-w-[1200px] mx-auto mt-2 md:mt-4 px-2 sm:px-0">
       <div className="flex items-center justify-between mb-2 md:mb-3">
         <div>
-          <h2 className="text-base sm:text-lg md:text-xl font-semibold text-[#181717]">{t.flashDeals}</h2>
-          <p className="text-[10px] sm:text-[11px] text-[#667085] mt-0.5">{t.viewAllDeals}</p>
+          <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-[#181717]">{t.flashDeals}</h2>
+          <p className="text-[11px] sm:text-xs text-[#667085] mt-0.5">{t.viewAllDeals}</p>
         </div>
         <div className="flex items-center gap-2">
           <CountdownTimer endsAt={deals[0]?.endsAt || new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString()} />
@@ -155,10 +155,10 @@ export default function FlashDeals() {
                 <ProductImage src={deal.image} alt={deal.name} />
               </div>
               <div className="p-3 sm:p-3.5">
-                <h3 className="text-xs sm:text-[13px] md:text-sm font-medium text-[#181717] line-clamp-2 mb-1.5 min-h-[36px] sm:min-h-[40px] leading-tight">{deal.name}</h3>
+                <h3 className="text-sm sm:text-base font-bold text-[#181717] line-clamp-2 mb-1.5 min-h-[36px] sm:min-h-[40px] leading-tight">{deal.name}</h3>
                 <div className="flex items-center gap-1.5 mb-1.5">
-                  <span className="text-[#EC008C] font-bold text-sm sm:text-[15px] md:text-base">৳{deal.dealPrice}</span>
-                  <span className="text-[#667085] text-[11px] sm:text-xs line-through">৳{deal.price}</span>
+                  <span className="text-[#EC008C] font-bold text-base sm:text-lg md:text-xl">৳{deal.dealPrice}</span>
+                  <span className="text-[#667085] text-xs sm:text-sm line-through">৳{deal.price}</span>
                 </div>
               </div>
             </Link>

@@ -29,7 +29,7 @@ export default function ManagerLayout({ children }) {
         { label: t.todaySales, href: "/manager/orders/today-sales" },
       ]
     },
-    { label: t.customRequest, href: "/manager/custom-requests", icon: ClipboardList },
+    { label: t.productRequests || t.customRequest, href: "/manager/product-requests", icon: ClipboardList },
     { label: t.inventory, href: "/manager/inventory", icon: Package },
     { label: t.riders, href: "/manager/riders", icon: Users },
     { label: t.history || "History", href: "/manager/history", icon: Clock },

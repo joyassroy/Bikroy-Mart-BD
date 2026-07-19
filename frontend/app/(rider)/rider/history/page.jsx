@@ -18,7 +18,7 @@ const statusColors = {
 };
 
 export default function RiderHistoryPage() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -184,7 +184,7 @@ export default function RiderHistoryPage() {
                     </td>
                     <td className="px-5 py-3.5 text-right">
                       <button
-                        onClick={(e) => { e.stopPropagation(); printInvoice(order); }}
+                        onClick={(e) => { e.stopPropagation(); printInvoice(order, language); }}
                         className="p-1.5 text-[#667085] hover:text-[#00215B] hover:bg-[#F4F7FB] rounded-lg transition"
                         title={t.printInvoice || "Print Invoice"}
                       >
@@ -277,8 +277,8 @@ export default function RiderHistoryPage() {
 
             {/* Footer */}
             <div className="p-5 border-t border-gray-100 flex gap-2">
-              <button onClick={() => printInvoice(selectedOrder)} className="flex-1 flex items-center justify-center gap-2 bg-[#00215B] text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-[#001845] transition">
-                <Printer size={14} /> {t.printInvoice || "Print Invoice"}
+              <button onClick={() => printInvoice(selectedOrder, language)} className="flex-1 flex items-center justify-center gap-2 bg-[#00215B] text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-[#001845] transition">
+                <Printer size={14} /> {language === "bn" ? "ইনভয়েস প্রিন্ট" : (t.printInvoice || "Print Invoice")}
               </button>
               <button onClick={() => { window.location.href = `/track-order?order=${selectedOrder.orderNumber}`; }} className="flex-1 flex items-center justify-center gap-2 bg-white border border-[#E5E7EB] text-gray-700 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50 transition">
                 <ExternalLink size={14} /> Track Order

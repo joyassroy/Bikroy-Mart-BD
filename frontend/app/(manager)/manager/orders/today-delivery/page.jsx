@@ -15,7 +15,7 @@ export default function ManagerTodayDeliveryPage() {
   const [search, setSearch] = useState("");
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const ITEMS_PER_PAGE = 10;
 
   useEffect(() => { fetchData(); }, []);
@@ -123,7 +123,7 @@ export default function ManagerTodayDeliveryPage() {
                   <td className="px-3 py-2.5 text-right">
                     <div className="flex items-center justify-end gap-1.5">
                       <button onClick={() => setSelectedOrder(order)} className="p-1.5 text-[#667085] hover:text-[#00215B] hover:bg-[#F4F7FB] rounded-lg transition"><Eye size={14} /></button>
-                      <button onClick={() => printInvoice(order)} className="p-1.5 text-[#667085] hover:text-[#00215B] hover:bg-[#F4F7FB] rounded-lg transition"><Printer size={14} /></button>
+                      <button onClick={() => printInvoice(order, language)} className="p-1.5 text-[#667085] hover:text-[#00215B] hover:bg-[#F4F7FB] rounded-lg transition"><Printer size={14} /></button>
                     </div>
                   </td>
                 </tr>
@@ -153,8 +153,8 @@ export default function ManagerTodayDeliveryPage() {
               </div>
             </div>
             <div className="flex gap-2 mt-4">
-              <button onClick={() => printInvoice(selectedOrder)} className="flex-1 flex items-center justify-center gap-2 bg-[#00215B] text-white py-2 rounded-lg text-sm hover:bg-[#001A4A] transition">
-                <Printer size={14} /> {t.printInvoice || "Print Invoice"}
+              <button onClick={() => printInvoice(selectedOrder, language)} className="flex-1 flex items-center justify-center gap-2 bg-[#00215B] text-white py-2 rounded-lg text-sm hover:bg-[#001A4A] transition">
+                <Printer size={14} /> {language === "bn" ? "ইনভয়েস প্রিন্ট" : (t.printInvoice || "Print Invoice")}
               </button>
               <button onClick={() => { window.location.href = `/track-order?order=${selectedOrder.orderNumber}`; }} className="flex-1 flex items-center justify-center gap-2 bg-white border border-[#E5E7EB] text-gray-700 py-2 rounded-lg text-sm hover:bg-gray-50 transition">
                 <ExternalLink size={14} /> Track Order

@@ -81,7 +81,7 @@ export default function CategoryGrid() {
   return (
     <section className="max-w-[1200px] mx-auto mt-2 md:mt-4">
       <div className="flex items-center justify-between pl-2 pr-1 sm:pr-0 mb-2 md:mb-3">
-        <h2 className="text-base sm:text-lg md:text-xl font-semibold text-[#181717]">
+        <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-[#181717]">
           {t.shop} {t.byCategory}
         </h2>
         <div className="flex gap-1">
@@ -128,11 +128,11 @@ export default function CategoryGrid() {
                   <span className="text-2xl sm:text-3xl md:text-4xl group-hover:scale-110 transition-transform duration-200">{cat.icon}</span>
                 )}
               </div>
-              <span className="text-[10px] sm:text-[11px] md:text-xs font-semibold text-[#364152] text-center leading-tight line-clamp-2">
+              <span className="text-xs sm:text-sm font-bold text-[#364152] text-center leading-tight line-clamp-2">
                 {catName(cat)}
               </span>
               {cat.count > 0 && (
-                <span className="text-[8px] sm:text-[9px] text-[#667085] mt-0.5">{cat.count} {t.itemsCount}</span>
+                <span className="text-[9px] sm:text-[10px] text-[#667085] mt-0.5">{cat.count} {t.itemsCount}</span>
               )}
             </Link>
           ))}

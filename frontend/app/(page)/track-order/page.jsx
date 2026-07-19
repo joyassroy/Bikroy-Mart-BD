@@ -9,8 +9,9 @@ const LocationMapModal = dynamic(() => import("@/components/ui/LocationMapModal"
 import useSocket from "@/helper/useSocket";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
-import { Search, Package, Truck, CheckCircle, Clock, MapPin, Phone, User, Navigation, Ban, Loader2 } from "lucide-react";
+import { Search, Package, Truck, CheckCircle, Clock, MapPin, Phone, User, Navigation, Ban, Loader2, FileText } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { printInvoice } from "@/lib/generateInvoice";
 
 function TrackOrderContent() {
   const searchParams = useSearchParams();
@@ -19,7 +20,7 @@ function TrackOrderContent() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { liveRiderLocation, connected, orderStatus } = useSocket(order?.id);
   const [showRiderMap, setShowRiderMap] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -236,6 +237,28 @@ function TrackOrderContent() {
                   </button>
                 </div>
               )}
+              <div className="px-4 sm:px-6 py-3 border-t border-[#F0F2F5] flex items-center gap-3">
+                <button
+                  onClick={() => printInvoice(order, language)}
+                  className="flex items-center gap-1.5 text-xs sm:text-sm text-[#0067A0] hover:text-[#0044AA] font-semibold transition"
+                >
+                  <FileText size={14} /> {language === "bn" ? "ইনভয়েস প্রিন্ট" : "Print Invoice"}
+                </button>
+                <div className="flex items-center gap-1 ml-auto">
+                  <button
+                    onClick={() => printInvoice(order, "en")}
+                    className={`px-2 py-1 text-[10px] font-semibold rounded border transition ${language === "en" ? "bg-[#00215B] text-white border-[#00215B]" : "bg-white text-[#667085] border-[#E5E7EB] hover:border-[#00215B]"}`}
+                  >
+                    EN
+                  </button>
+                  <button
+                    onClick={() => printInvoice(order, "bn")}
+                    className={`px-2 py-1 text-[10px] font-semibold rounded border transition ${language === "bn" ? "bg-[#00215B] text-white border-[#00215B]" : "bg-white text-[#667085] border-[#E5E7EB] hover:border-[#00215B]"}`}
+                  >
+                    বাং
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* Rider Info */}

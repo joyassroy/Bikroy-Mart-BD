@@ -120,6 +120,13 @@ const districtPriceOverrides: Record<string, Record<string, { price: number; dis
     "miniket-rice-5kg": { price: 305, discountPrice: 285 },
     "broiler-chicken-whole-1kg": { price: 178, discountPrice: 162 },
   },
+  // Feni - Chittagong Division, mid-range
+  Feni: {
+    "miniket-rice-5kg": { price: 320, discountPrice: 300 },
+    "broiler-chicken-whole-1kg": { price: 188, discountPrice: 173 },
+    "farm-fresh-eggs-12": { price: 150, discountPrice: 140 },
+    "teer-soybean-oil-5l": { price: 780, discountPrice: 750 },
+  },
 };
 
 // Test users for different real districts
@@ -139,10 +146,12 @@ const testUsers = [
   { name: "Chattogram Manager", email: "manager.ctg@test.com", phone: "01922222222", district: "Chattogram", role: "MANAGER" as const },
   { name: "Rajshahi Manager", email: "manager.raj@test.com", phone: "01933333333", district: "Rajshahi", role: "MANAGER" as const },
   { name: "Gazipur Manager", email: "manager.gazipur@test.com", phone: "01966666666", district: "Gazipur", role: "MANAGER" as const },
+  { name: "Feni Manager", email: "manager.feni@test.com", phone: "01988888888", district: "Feni", role: "MANAGER" as const },
   // Riders
   { name: "Dhaka Rider", email: "rider.dhaka@test.com", phone: "01944444444", district: "Dhaka", role: "RIDER" as const },
   { name: "Chattogram Rider", email: "rider.ctg@test.com", phone: "01955555555", district: "Chattogram", role: "RIDER" as const },
   { name: "Gazipur Rider", email: "rider.gazipur@test.com", phone: "01977777777", district: "Gazipur", role: "RIDER" as const },
+  { name: "Feni Rider", email: "rider.feni@test.com", phone: "01999999999", district: "Feni", role: "RIDER" as const },
 ];
 
 // District coordinates (approximate centers)
@@ -161,6 +170,7 @@ const districtCoords: Record<string, { lat: number; lng: number }> = {
   "Barisal": { lat: 22.7010, lng: 90.3535 },
   "Rangpur": { lat: 25.7460, lng: 89.2500 },
   "Mymensingh": { lat: 24.7471, lng: 90.4203 },
+  "Feni": { lat: 23.0155, lng: 91.3977 },
 };
 
 async function main() {

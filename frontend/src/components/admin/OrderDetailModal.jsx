@@ -6,7 +6,7 @@ import OrderStatusStepper from "./OrderStatusStepper";
 import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function OrderDetailModal({ order, onClose }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   if (!order) return null;
 
   const createdAt = order.createdAt ? new Date(order.createdAt).toLocaleString("en-BD", { timeZone: "Asia/Dhaka", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "-";
@@ -143,8 +143,11 @@ export default function OrderDetailModal({ order, onClose }) {
 
         {/* Footer */}
         <div className="sticky bottom-0 bg-white border-t px-5 py-3 flex gap-2 rounded-b-xl">
-          <button onClick={() => printInvoice(order)} className="flex-1 flex items-center justify-center gap-2 bg-[#00215B] text-white py-2.5 rounded-lg text-sm font-medium hover:bg-[#001A4A] transition cursor-pointer">
-            <Printer size={14} /> {t.printInvoice}
+          <button onClick={() => printInvoice(order, language)} className="flex-1 flex items-center justify-center gap-2 bg-[#00215B] text-white py-2.5 rounded-lg text-sm font-medium hover:bg-[#001A4A] transition cursor-pointer">
+            <Printer size={14} /> {language === "bn" ? "ইনভয়েস প্রিন্ট" : t.printInvoice}
+          </button>
+          <button onClick={() => printInvoice(order, language === "en" ? "bn" : "en")} className="flex items-center justify-center gap-1 bg-white border border-[#E5E7EB] text-gray-700 py-2.5 px-3 rounded-lg text-sm font-medium hover:bg-gray-50 transition cursor-pointer" title={language === "en" ? "বাংলায় প্রিন্ট" : "Print in English"}>
+            {language === "en" ? "বাং" : "EN"}
           </button>
           <button onClick={() => { window.location.href = `/track-order?order=${order.orderNumber}`; }} className="flex-1 flex items-center justify-center gap-2 bg-white border border-[#E5E7EB] text-gray-700 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition cursor-pointer">
             <ExternalLink size={14} /> Track Order

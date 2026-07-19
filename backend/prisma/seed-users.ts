@@ -96,6 +96,58 @@ async function main() {
   });
   console.log("✅ Manager2:", manager2.email, "/ test123");
 
+  // Third manager (Feni)
+  const manager3 = await prisma.user.upsert({
+    where: { email: "manager3@test.com" },
+    update: {},
+    create: {
+      name: "Feni Manager",
+      email: "manager3@test.com",
+      phone: "01766666666",
+      password,
+      role: "MANAGER",
+    },
+  });
+
+  await prisma.managerProfile.upsert({
+    where: { userId: manager3.id },
+    update: {},
+    create: {
+      userId: manager3.id,
+      assignedZila: "Feni",
+      assignedDistrict: "Feni",
+    },
+  });
+  console.log("✅ Manager3:", manager3.email, "/ test123");
+
+  // Third rider (Feni)
+  const rider3 = await prisma.user.upsert({
+    where: { email: "rider3@test.com" },
+    update: {},
+    create: {
+      name: "Feni Rider",
+      email: "rider3@test.com",
+      phone: "01777777777",
+      password,
+      role: "RIDER",
+    },
+  });
+
+  await prisma.riderProfile.upsert({
+    where: { userId: rider3.id },
+    update: {},
+    create: {
+      userId: rider3.id,
+      assignedZila: "Feni",
+      vehicleType: "Motorcycle",
+      licenseNumber: "BD-RIDER-003",
+      isAvailable: true,
+      currentLat: 23.0155,
+      currentLng: 91.3977,
+    },
+  });
+  console.log("✅ Rider3:", rider3.email, "/ test123");
+
   // Second rider (Chattogram)
   const rider2 = await prisma.user.upsert({
     where: { email: "rider2@test.com" },
@@ -132,7 +184,10 @@ async function main() {
   console.log("Manager:   manager@test.com / test123 (Dhaka)");
   console.log("Rider:     rider@test.com / test123 (Dhaka)");
   console.log("Manager2:  manager2@test.com / test123 (Chattogram)");
+  console.log("Manager3:  manager3@test.com / test123 (Feni)");
+  console.log("Rider:     rider@test.com / test123 (Dhaka)");
   console.log("Rider2:    rider2@test.com / test123 (Chattogram)");
+  console.log("Rider3:    rider3@test.com / test123 (Feni)");
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 }
 

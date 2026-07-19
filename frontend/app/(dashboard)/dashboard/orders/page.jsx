@@ -19,7 +19,7 @@ export default function OrdersPage() {
   const [search, setSearch] = useState("");
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const ITEMS_PER_PAGE = 10;
 
   useEffect(() => { fetchOrders(); }, [districtFilter, search]);
@@ -165,8 +165,11 @@ export default function OrdersPage() {
                         <button onClick={() => setSelectedOrder(order)} className="text-blue-500 hover:text-blue-700 cursor-pointer">
                           <Eye size={16} />
                         </button>
-                        <button onClick={() => printInvoice(order)} className="text-gray-500 hover:text-gray-700 cursor-pointer" title={t.printInvoice}>
+                        <button onClick={() => printInvoice(order, language)} className="text-gray-500 hover:text-gray-700 cursor-pointer" title={language === "bn" ? "ইনভয়েস প্রিন্ট করুন" : t.printInvoice}>
                           <Printer size={16} />
+                        </button>
+                        <button onClick={() => printInvoice(order, language === "en" ? "bn" : "en")} className="text-[10px] font-semibold text-gray-400 hover:text-[#EC008C] cursor-pointer px-1" title={language === "en" ? "বাংলায় প্রিন্ট" : "Print in English"}>
+                          {language === "en" ? "বাং" : "EN"}
                         </button>
                       </div>
                     </td>

@@ -25,16 +25,16 @@ export default function CountdownTimer({ endsAt, compact = false }) {
 
   if (compact) {
     return (
-      <div className="flex items-center gap-1 text-[#FF6B6B] font-mono font-bold text-[10px] bg-[#FFF0F0] px-1.5 py-0.5 rounded-full">
-        <Clock size={10} />
+      <div className="flex items-center gap-1 text-[#FF6B6B] font-mono font-bold text-xs bg-[#FFF0F0] px-2 py-0.5 rounded-full">
+        <Clock size={12} />
         <span>{pad(time.hours)}</span>:<span>{pad(time.minutes)}</span>:<span>{pad(time.seconds)}</span>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center gap-1 text-[#FF6B6B] font-mono font-bold text-[11px] sm:text-xs bg-[#FFF0F0] px-2 py-1 rounded-full">
-      <Clock size={12} />
+    <div className="flex items-center gap-1.5 text-[#FF6B6B] font-mono font-bold text-xs sm:text-sm bg-[#FFF0F0] px-2.5 py-1 rounded-full">
+      <Clock size={14} />
       <span>{pad(time.hours)}</span>:<span>{pad(time.minutes)}</span>:<span>{pad(time.seconds)}</span>
     </div>
   );

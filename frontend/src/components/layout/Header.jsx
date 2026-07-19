@@ -361,7 +361,7 @@ function HeaderContent() {
                     <span className="hidden md:inline">{user.role === "ADMIN" ? "Admin" : user.role === "MANAGER" ? "Manager" : "Rider"}</span>
                   </Link>
                 )}
-                <Link href="/custom-request" className="hidden sm:flex text-[#364152] hover:bg-[#F3F4F6] p-1.5 rounded-md transition" aria-label={t.customRequest}>
+                <Link href="/product-request" className="hidden sm:flex text-[#364152] hover:bg-[#F3F4F6] p-1.5 rounded-md transition" aria-label={t.customRequest}>
                   <ClipboardList size={18} className="text-[#EC008C]" />
                 </Link>
                 <Link href="/cart" className="relative text-[#364152] hover:bg-[#F3F4F6] p-1.5 rounded-md transition" aria-label={`${t.cart}, ${cartCount} items`}>
@@ -538,7 +538,7 @@ function HeaderContent() {
               })}
               <Link href="/shop" className={`px-3 py-2.5 text-[12px] font-semibold transition ${pathname === "/shop" && !activeOffer ? "text-[#EC008C] bg-[#FCE8F3]" : "text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3]"}`}>Shop</Link>
               <Link href="/about" className="px-3 py-2.5 text-[12px] text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3] transition font-semibold">About</Link>
-              <Link href="/custom-request" className="px-3 py-2.5 text-[12px] text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3] transition font-semibold flex items-center gap-1">
+              <Link href="/product-request" className="px-3 py-2.5 text-[12px] text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3] transition font-semibold flex items-center gap-1">
                 <ClipboardList size={12} />{t.customRequest}
               </Link>
             </div>
@@ -597,7 +597,7 @@ function HeaderContent() {
               <Link href="/track-order" onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 py-2 text-xs text-[#364152] font-medium hover:text-[#EC008C] transition">
                 <MapPin size={16} className="text-[#EC008C]" />{t.trackOrder}
               </Link>
-              <Link href="/custom-request" onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 py-2 text-xs text-[#364152] font-medium hover:text-[#EC008C] transition">
+              <Link href="/product-request" onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 py-2 text-xs text-[#364152] font-medium hover:text-[#EC008C] transition">
                 <ClipboardList size={16} className="text-[#EC008C]" />{t.customRequest}
               </Link>
               <Link href="/about" onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 py-2 text-xs text-[#364152] font-medium hover:text-[#EC008C] transition">
@@ -723,8 +723,8 @@ function HeaderContent() {
               </div>
               <span className="text-[9px] font-semibold truncate">{t.categories}</span>
             </button>
-            <Link href="/custom-request" className={`flex flex-col items-center gap-0.5 flex-1 min-w-0 ${pathname === "/custom-request" ? "text-[#EC008C]" : "text-[#667085]"}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center transition ${pathname === "/custom-request" ? "bg-[#FCE8F3]" : "bg-[#F4F7FB]"}`}>
+            <Link href="/product-request" className={`flex flex-col items-center gap-0.5 flex-1 min-w-0 ${pathname === "/product-request" ? "text-[#EC008C]" : "text-[#667085]"}`}>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center transition ${pathname === "/product-request" ? "bg-[#FCE8F3]" : "bg-[#F4F7FB]"}`}>
                 <ClipboardList size={18} />
               </div>
               <span className="text-[9px] font-semibold truncate">{t.customRequest}</span>

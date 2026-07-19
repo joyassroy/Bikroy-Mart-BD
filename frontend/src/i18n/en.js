@@ -474,10 +474,15 @@ const en = {
   printCustomInvoice: "Print Invoice",
   customRequestInvoice: "Custom Request Invoice",
 
-  // Admin Custom Requests
-  customRequests: "Custom Requests",
-  allCustomRequests: "All Custom Requests",
-  noCustomRequests: "No custom requests found",
+  // Product Requests (Manager)
+  productRequests: "Product Requests",
+  allProductRequests: "All Product Requests",
+  noProductRequests: "No product requests found",
+  viewDetails: "View Details",
+  startReview: "Review",
+  setQuote: "Quote",
+  printInvoiceAction: "Print Invoice",
+  assignRiderAction: "Assign Rider",
 
   // Profile Custom Requests
   myCustomRequests: "My Custom Requests",

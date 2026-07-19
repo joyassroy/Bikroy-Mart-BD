@@ -34,11 +34,11 @@ const FilterSidebar = memo(function FilterSidebar({ categories, selectedCategory
   return (
     <div>
       <div className="bg-white border border-[#E5E7EB] rounded-lg p-3 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px]">
-        <h3 className="font-semibold text-[#000000] mb-2 text-xs">{t.categories}</h3>
+        <h3 className="font-bold text-[#000000] mb-2 text-xs">{t.categories}</h3>
         <div className="space-y-1">
           <button
             onClick={() => onCategorySelect("")}
-            className={`w-full text-left px-2.5 py-1.5 rounded-md text-[11px] transition font-medium ${
+            className={`w-full text-left px-2.5 py-1.5 rounded-md text-xs transition font-semibold ${
               selectedCategory === "" ? "bg-[#FCE8F3] text-[#EC008C]" : "text-[#667085] hover:bg-[#F4F7FB]"
             }`}
           >
@@ -48,7 +48,7 @@ const FilterSidebar = memo(function FilterSidebar({ categories, selectedCategory
             <button
               key={cat.id || cat.slug}
               onClick={() => onCategorySelect(cat.slug)}
-              className={`w-full text-left px-2.5 py-1.5 rounded-md text-[11px] transition font-medium flex items-center justify-between ${
+              className={`w-full text-left px-2.5 py-1.5 rounded-md text-xs transition font-semibold flex items-center justify-between ${
                 selectedCategory === cat.slug ? "bg-[#FCE8F3] text-[#EC008C]" : "text-[#667085] hover:bg-[#F4F7FB]"
               }`}
             >
@@ -65,11 +65,11 @@ const FilterSidebar = memo(function FilterSidebar({ categories, selectedCategory
 
       {subcats.length > 0 && (
         <div className="bg-white border border-[#E5E7EB] rounded-lg p-3 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] mt-3">
-          <h3 className="font-semibold text-[#000000] mb-2 text-xs">Subcategories</h3>
+          <h3 className="font-bold text-[#000000] mb-2 text-xs">Subcategories</h3>
           <div className="space-y-1">
             <button
               onClick={() => onSubcategorySelect("")}
-              className={`w-full text-left px-2.5 py-1.5 rounded-md text-[11px] transition font-medium ${
+              className={`w-full text-left px-2.5 py-1.5 rounded-md text-xs transition font-semibold ${
                 selectedSubcategory === "" ? "bg-[#FCE8F3] text-[#EC008C]" : "text-[#667085] hover:bg-[#F4F7FB]"
               }`}
             >
@@ -79,7 +79,7 @@ const FilterSidebar = memo(function FilterSidebar({ categories, selectedCategory
               <button
                 key={sub.slug}
                 onClick={() => onSubcategorySelect(sub.slug)}
-                className={`w-full text-left px-2.5 py-1.5 rounded-md text-[11px] transition font-medium ${
+                className={`w-full text-left px-2.5 py-1.5 rounded-md text-xs transition font-semibold ${
                   selectedSubcategory === sub.slug ? "bg-[#FCE8F3] text-[#EC008C]" : "text-[#667085] hover:bg-[#F4F7FB]"
                 }`}
               >
@@ -362,10 +362,10 @@ function ShopContent() {
       <main className="max-w-[1200px] mx-auto px-3 sm:px-4 md:px-6 lg:px-10 py-3 sm:py-4">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h1 className="text-base sm:text-lg md:text-xl font-semibold text-[#00215B]">
+            <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-[#00215B]">
               {offerType ? (OFFER_TITLES[offerType] || "Shop") : t.shopTitle}
             </h1>
-            <p className="text-[10px] sm:text-[11px] text-[#667085] mt-0.5">
+            <p className="text-[11px] sm:text-xs text-[#667085] mt-0.5">
               {totalProducts} {t.resultsFound}
             </p>
           </div>
@@ -546,7 +546,7 @@ function ShopContent() {
               <div>
                 {groupedProducts.map((group) => (
                   <div key={group.category.id} className="mb-6">
-                    <h2 className="text-base sm:text-lg font-bold text-[#00215B] mb-3 flex items-center gap-2">
+                    <h2 className="text-lg sm:text-xl font-bold text-[#00215B] mb-3 flex items-center gap-2">
                       {group.category.icon && <span className="text-xl">{group.category.icon}</span>}
                       {catName(group.category)}
                     </h2>

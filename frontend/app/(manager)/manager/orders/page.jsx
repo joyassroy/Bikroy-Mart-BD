@@ -20,7 +20,7 @@ const statusColors = {
 };
 
 export default function ManagerOrdersPage() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [riders, setRiders] = useState([]);
@@ -315,8 +315,11 @@ export default function ManagerOrdersPage() {
                   </td>
                   <td className="px-3 py-2.5 text-right">
                     <div className="flex items-center justify-end gap-1.5">
-                      <button onClick={() => printInvoice(order)} className="p-1.5 text-[#667085] hover:text-[#00215B] hover:bg-[#F4F7FB] rounded-lg transition" title={t.printInvoice}>
+                      <button onClick={() => printInvoice(order, language)} className="p-1.5 text-[#667085] hover:text-[#00215B] hover:bg-[#F4F7FB] rounded-lg transition" title={language === "bn" ? "ইনভয়েস প্রিন্ট করুন" : t.printInvoice}>
                         <Printer size={14} />
+                      </button>
+                      <button onClick={() => printInvoice(order, language === "en" ? "bn" : "en")} className="px-1.5 py-1 text-[10px] font-semibold text-[#667085] hover:text-[#EC008C] hover:bg-[#F4F7FB] rounded-lg transition" title={language === "en" ? "বাংলায় প্রিন্ট" : "Print in English"}>
+                        {language === "en" ? "বাং" : "EN"}
                       </button>
                       {!order.riderId && order.orderStatus !== "DELIVERED" && order.orderStatus !== "CANCELLED" && (
                         <button onClick={() => openRiderModal(order)}

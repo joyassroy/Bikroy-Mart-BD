@@ -443,10 +443,15 @@ const bn = {
   printCustomInvoice: "ইনভয়েস প্রিন্ট করুন",
   customRequestInvoice: "কাস্টম অনুরোধ ইনভয়েস",
 
-  // Admin Custom Requests
-  customRequests: "কাস্টম অনুরোধ",
-  allCustomRequests: "সব কাস্টম অনুরোধ",
-  noCustomRequests: "কোনো কাস্টম অনুরোধ পাওয়া যায়নি",
+  // Product Requests (Manager)
+  productRequests: "পণ্য অনুরোধ",
+  allProductRequests: "সব পণ্য অনুরোধ",
+  noProductRequests: "কোনো পণ্য অনুরোধ পাওয়া যায়নি",
+  viewDetails: "বিস্তারিত দেখুন",
+  startReview: "পর্যালোচনা",
+  setQuote: "মূল্য",
+  printInvoiceAction: "ইনভয়েস প্রিন্ট",
+  assignRiderAction: "রাইডার নিয়োগ",
 
   // Profile Custom Requests
   myCustomRequests: "আমার কাস্টম অনুরোধ",

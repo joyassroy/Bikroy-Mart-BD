@@ -23,7 +23,7 @@ const statusSteps = ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "OUT_FOR_D
 export default function AccountPage() {
   const dispatch = useDispatch();
   const router = useRouter();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const user = useSelector((state) => state.user.data);
   const location = useSelector((state) => state.location);
   const { authChecked } = useAuthChecked();
@@ -548,11 +548,19 @@ export default function AccountPage() {
                           <p className="text-base font-medium text-gray-900">Total: ৳{order.total}</p>
                           <div className="flex items-center gap-2">
                             <button
-                              onClick={(e) => { e.stopPropagation(); printInvoice(order); }}
+                              onClick={(e) => { e.stopPropagation(); printInvoice(order, language); }}
                               className="flex items-center gap-1 text-sm text-gray-500 hover:text-[#0067A0] font-medium transition"
-                              title="Print Invoice"
+                              title={language === "bn" ? "ইনভয়েস প্রিন্ট করুন" : "Print Invoice"}
                             >
-                              <Printer size={14} /> Print Invoice
+                              <Printer size={14} /> {language === "bn" ? "ইনভয়েস প্রিন্ট" : "Print Invoice"}
+                            </button>
+                            <span className="text-gray-300">|</span>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); printInvoice(order, language === "en" ? "bn" : "en"); }}
+                              className="flex items-center gap-1 text-xs text-gray-400 hover:text-[#EC008C] font-medium transition"
+                              title={language === "en" ? "বাংলায় প্রিন্ট করুন" : "Print in English"}
+                            >
+                              {language === "en" ? "বাং" : "EN"}
                             </button>
                             <button
                               onClick={(e) => { e.stopPropagation(); router.push(`/track-order?order=${order.orderNumber}`); }}
@@ -950,8 +958,11 @@ export default function AccountPage() {
                 </button>
               ) : (
                 <div className="flex gap-2 mt-2">
-                    <button onClick={() => printInvoice(selectedOrder)} className="flex-1 flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50 transition">
-                    <Printer size={16} /> {t.printInvoice}
+                    <button onClick={() => printInvoice(selectedOrder, language)} className="flex-1 flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50 transition">
+                    <Printer size={16} /> {language === "bn" ? "ইনভয়েস প্রিন্ট" : t.printInvoice}
+                  </button>
+                  <button onClick={() => printInvoice(selectedOrder, language === "en" ? "bn" : "en")} className="flex items-center justify-center gap-1 bg-white border border-gray-200 text-gray-500 py-2.5 px-3 rounded-xl text-sm font-semibold hover:bg-gray-50 transition" title={language === "en" ? "বাংলায় প্রিন্ট" : "Print in English"}>
+                    {language === "en" ? "বাং" : "EN"}
                   </button>
                   <button onClick={() => { setSelectedOrder(null); router.push(`/track-order?order=${selectedOrder.orderNumber}`); }} className="flex-1 flex items-center justify-center gap-2 bg-[#00215B] text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-[#001845] transition">
                     <ExternalLink size={16} /> Track Order

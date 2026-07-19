@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import prisma from "../../config/db";
 import { AuthRequest } from "../../middlewares/auth.middleware";
 import { sendSuccess, sendError } from "../../utils/apiResponse";
+import { generateOrderNumber } from "../../utils/orderNumber";
+import { getIO } from "../../socket/socketHandler";
 import { v4 as uuidv4 } from "uuid";
 
 const generateRequestNumber = (): string => {
@@ -9,6 +11,49 @@ const generateRequestNumber = (): string => {
   const random = uuidv4().split("-")[0].toUpperCase();
   return `CR-${timestamp}-${random}`;
 };
+
+const STATUS_MAP: Record<string, string> = {
+  PROCESSING: "PROCESSING",
+  SHIPPED: "SHIPPED",
+  OUT_FOR_DELIVERY: "OUT_FOR_DELIVERY",
+  DELIVERED: "DELIVERED",
+  CANCELLED: "CANCELLED",
+};
+
+async function syncOrderStatus(customRequestId: string, newStatus: string) {
+  const mappedStatus = STATUS_MAP[newStatus];
+  if (!mappedStatus) return;
+
+  const customRequest = await prisma.customRequest.findUnique({
+    where: { id: customRequestId },
+    select: { id: true },
+  });
+  if (!customRequest) return;
+
+  const order = await prisma.order.findFirst({
+    where: { customRequestId },
+  });
+  if (!order) return;
+
+  const updateData: any = { orderStatus: mappedStatus };
+  if (mappedStatus === "DELIVERED") {
+    updateData.actualDelivery = new Date();
+  }
+
+  const updatedOrder = await prisma.order.update({
+    where: { id: order.id },
+    data: updateData,
+  });
+
+  try {
+    const io = getIO();
+    io.to(`order-${order.id}`).emit("order-status", {
+      orderId: order.id,
+      status: mappedStatus,
+      timestamp: new Date().toISOString(),
+    });
+  } catch {}
+}
 
 export const createCustomRequest = async (req: AuthRequest, res: Response) => {
   try {
@@ -99,6 +144,53 @@ export const getCustomRequestById = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const updateCustomRequest = async (req: AuthRequest, res: Response) => {
+  try {
+    const { productName, description, quantity, unit, images,
+      deliveryAddress, deliveryDivision, deliveryDistrict, deliveryUpazila,
+      deliveryLatitude, deliveryLongitude, customerNotes } = req.body;
+
+    const customRequest = await prisma.customRequest.findUnique({
+      where: { id: String(req.params.id) },
+    });
+    if (!customRequest) return sendError(res, "Custom request not found", 404);
+    if (customRequest.userId !== req.user!.userId) return sendError(res, "Unauthorized", 403);
+
+    const EDITABLE = ["PENDING", "MANAGER_REVIEW"];
+    if (!EDITABLE.includes(customRequest.status)) {
+      return sendError(res, "Request cannot be edited at this stage", 400);
+    }
+
+    const updateData: any = {};
+    if (productName !== undefined) updateData.productName = productName;
+    if (description !== undefined) updateData.description = description;
+    if (quantity !== undefined) updateData.quantity = parseFloat(quantity) || 1;
+    if (unit !== undefined) updateData.unit = unit;
+    if (images !== undefined) updateData.images = images;
+    if (deliveryAddress !== undefined) updateData.deliveryAddress = deliveryAddress;
+    if (deliveryDivision !== undefined) updateData.deliveryDivision = deliveryDivision;
+    if (deliveryDistrict !== undefined) updateData.deliveryDistrict = deliveryDistrict;
+    if (deliveryUpazila !== undefined) updateData.deliveryUpazila = deliveryUpazila;
+    if (deliveryLatitude !== undefined) updateData.deliveryLatitude = deliveryLatitude ? parseFloat(deliveryLatitude) : null;
+    if (deliveryLongitude !== undefined) updateData.deliveryLongitude = deliveryLongitude ? parseFloat(deliveryLongitude) : null;
+    if (customerNotes !== undefined) updateData.customerNotes = customerNotes;
+
+    const updated = await prisma.customRequest.update({
+      where: { id: String(req.params.id) },
+      data: updateData,
+      include: {
+        user: { select: { id: true, name: true, email: true, phone: true } },
+        rider: { select: { id: true, user: { select: { name: true, phone: true } }, currentLat: true, currentLng: true } },
+        order: true,
+      },
+    });
+
+    return sendSuccess(res, "Custom request updated", updated);
+  } catch (error: any) {
+    return sendError(res, error.message, 400);
+  }
+};
+
 export const setQuote = async (req: AuthRequest, res: Response) => {
   try {
     const { quotedPrice, deliveryCharge, managerNotes } = req.body;
@@ -145,12 +237,43 @@ export const approveQuote = async (req: AuthRequest, res: Response) => {
     if (customRequest.userId !== req.user!.userId) return sendError(res, "Unauthorized", 403);
     if (customRequest.status !== "PRICING_SET") return sendError(res, "Request is not in pricing state", 400);
 
-    const updated = await prisma.customRequest.update({
-      where: { id: String(req.params.id) },
-      data: { status: "CUSTOMER_APPROVED" },
+    const orderNumber = generateOrderNumber();
+
+    const result = await prisma.$transaction(async (tx) => {
+      const updated = await tx.customRequest.update({
+        where: { id: String(req.params.id) },
+        data: { status: "CUSTOMER_APPROVED" },
+      });
+
+      const order = await tx.order.create({
+        data: {
+          orderNumber,
+          userId: customRequest.userId,
+          customRequestId: customRequest.id,
+          subtotal: (customRequest.quotedPrice || 0) * customRequest.quantity,
+          deliveryCharge: customRequest.deliveryCharge || 0,
+          total: customRequest.totalAmount || 0,
+          paymentMethod: "COD",
+          deliveryAddress: customRequest.deliveryAddress,
+          deliveryDivision: customRequest.deliveryDivision,
+          deliveryDistrict: customRequest.deliveryDistrict,
+          deliveryUpazila: customRequest.deliveryUpazila,
+          deliveryLatitude: customRequest.deliveryLatitude,
+          deliveryLongitude: customRequest.deliveryLongitude,
+          customRequirement: `${customRequest.productName} (${customRequest.quantity} ${customRequest.unit})`,
+          notes: customRequest.customerNotes || "",
+          orderStatus: "CONFIRMED",
+        },
+        include: {
+          items: { include: { product: true } },
+          user: { select: { id: true, name: true, email: true, phone: true } },
+        },
+      });
+
+      return { updated, order };
     });
 
-    return sendSuccess(res, "Quote approved successfully", updated);
+    return sendSuccess(res, "Quote approved successfully", result);
   } catch (error: any) {
     return sendError(res, error.message, 400);
   }
@@ -184,6 +307,9 @@ export const updateStatus = async (req: AuthRequest, res: Response) => {
       where: { id: String(req.params.id) },
       data: { status },
     });
+
+    await syncOrderStatus(String(req.params.id), status);
+
     return sendSuccess(res, "Status updated", updated);
   } catch (error: any) {
     return sendError(res, error.message, 400);
@@ -197,6 +323,25 @@ export const assignRider = async (req: AuthRequest, res: Response) => {
       where: { id: String(req.params.id) },
       data: { riderId, status: "OUT_FOR_DELIVERY" },
     });
+
+    const order = await prisma.order.findFirst({
+      where: { customRequestId: String(req.params.id) },
+    });
+    if (order) {
+      await prisma.order.update({
+        where: { id: order.id },
+        data: { riderId, orderStatus: "OUT_FOR_DELIVERY" },
+      });
+      try {
+        const io = getIO();
+        io.to(`order-${order.id}`).emit("order-status", {
+          orderId: order.id,
+          status: "OUT_FOR_DELIVERY",
+          timestamp: new Date().toISOString(),
+        });
+      } catch {}
+    }
+
     return sendSuccess(res, "Rider assigned", updated);
   } catch (error: any) {
     return sendError(res, error.message, 400);
@@ -299,6 +444,8 @@ export const completeCustomDelivery = async (req: AuthRequest, res: Response) =>
       data: { totalDeliveries: { increment: 1 } },
     });
 
+    await syncOrderStatus(String(req.params.id), "DELIVERED");
+
     return sendSuccess(res, "Delivery completed", updated);
   } catch (error: any) {
     return sendError(res, error.message, 400);
@@ -339,6 +486,16 @@ export const markAsPaid = async (req: AuthRequest, res: Response) => {
       data: { paymentStatus: "PAID" },
     });
 
+    const order = await prisma.order.findFirst({
+      where: { customRequestId: String(req.params.id) },
+    });
+    if (order) {
+      await prisma.order.update({
+        where: { id: order.id },
+        data: { paymentStatus: "PAID" },
+      });
+    }
+
     return sendSuccess(res, "Payment confirmed", updated);
   } catch (error: any) {
     return sendError(res, error.message, 400);
@@ -358,6 +515,49 @@ export const updatePaymentStatus = async (req: AuthRequest, res: Response) => {
     });
 
     return sendSuccess(res, "Payment status updated", updated);
+  } catch (error: any) {
+    return sendError(res, error.message, 400);
+  }
+};
+
+export const cancelCustomRequest = async (req: AuthRequest, res: Response) => {
+  try {
+    const { cancelReason } = req.body;
+    const customRequest = await prisma.customRequest.findUnique({
+      where: { id: String(req.params.id) },
+    });
+    if (!customRequest) return sendError(res, "Custom request not found", 404);
+    if (customRequest.userId !== req.user!.userId) return sendError(res, "Unauthorized", 403);
+
+    const CANCELLABLE = ["PENDING", "MANAGER_REVIEW", "PRICING_SET", "CUSTOMER_APPROVED"];
+    if (!CANCELLABLE.includes(customRequest.status)) {
+      return sendError(res, "Request cannot be cancelled at this stage", 400);
+    }
+
+    const updated = await prisma.customRequest.update({
+      where: { id: String(req.params.id) },
+      data: { status: "CANCELLED", rejectionReason: cancelReason || "" },
+    });
+
+    const order = await prisma.order.findFirst({
+      where: { customRequestId: String(req.params.id) },
+    });
+    if (order) {
+      await prisma.order.update({
+        where: { id: order.id },
+        data: { orderStatus: "CANCELLED", cancelReason: cancelReason || "" },
+      });
+      try {
+        const io = getIO();
+        io.to(`order-${order.id}`).emit("order-status", {
+          orderId: order.id,
+          status: "CANCELLED",
+          timestamp: new Date().toISOString(),
+        });
+      } catch {}
+    }
+
+    return sendSuccess(res, "Request cancelled", updated);
   } catch (error: any) {
     return sendError(res, error.message, 400);
   }

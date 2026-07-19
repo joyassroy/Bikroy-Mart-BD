@@ -2,8 +2,12 @@
 import { useState, useEffect } from "react";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
-import { X, Eye, ClipboardList, Truck, CheckCircle, XCircle, Clock, DollarSign, ShoppingCart } from "lucide-react";
+import { X, Eye, ClipboardList, Truck, CheckCircle, Clock, DollarSign, ShoppingCart, Printer, User, MapPin, CreditCard, Package, StickyNote, ExternalLink } from "lucide-react";
 import Pagination from "@/components/ui/Pagination";
+import { printCustomRequestInvoice } from "@/lib/generateInvoice";
+import { useLanguage } from "@/i18n/LanguageContext";
+import OrderStatusStepper from "@/components/admin/OrderStatusStepper";
+import { PaymentStatusBadge } from "@/components/admin/OrderStatusBadge";
 
 const STATUS_CONFIG = {
   PENDING: { color: "bg-yellow-100 text-yellow-700", label: "Pending" },
@@ -32,7 +36,7 @@ const TABS = [
   { key: "RETURNED", label: "Returned" },
 ];
 
-export default function ManagerCustomRequestsPage() {
+export default function ManagerProductRequestsPage() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("ALL");
@@ -43,6 +47,7 @@ export default function ManagerCustomRequestsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
   const [quoteForm, setQuoteForm] = useState({ quotedPrice: "", deliveryCharge: "", managerNotes: "" });
+  const { t, language } = useLanguage();
 
   useEffect(() => { fetchRequests(); fetchRiders(); }, []);
 
@@ -125,9 +130,13 @@ export default function ManagerCustomRequestsPage() {
     }
   };
 
+  const handlePrintInvoice = (req) => {
+    printCustomRequestInvoice(req, language);
+  };
+
   return (
     <div>
-      <h1 className="text-base sm:text-lg md:text-xl font-semibold text-[#00215B] mb-3">Custom Requests</h1>
+      <h1 className="text-base sm:text-lg md:text-xl font-semibold text-[#00215B] mb-3">{t.productRequests || "Product Requests"}</h1>
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 mb-4">
@@ -192,14 +201,14 @@ export default function ManagerCustomRequestsPage() {
                 <th className="px-4 py-3 font-medium">Qty</th>
                 <th className="px-4 py-3 font-medium">Payment</th>
                 <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Action</th>
+                <th className="px-4 py-3 font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">Loading...</td></tr>
               ) : filteredRequests.length === 0 ? (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">No custom requests found</td></tr>
+                <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">{t.noProductRequests || "No product requests found"}</td></tr>
               ) : (
                 paginatedRequests.map((req) => {
                   const st = STATUS_CONFIG[req.status] || STATUS_CONFIG.PENDING;
@@ -226,29 +235,33 @@ export default function ManagerCustomRequestsPage() {
                         </select>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="flex gap-1.5">
-                          <button onClick={() => setSelectedRequest(req)} title="View"
-                            className="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition">
-                            <Eye size={14} />
+                        <div className="flex gap-1 items-center">
+                          <button onClick={() => setSelectedRequest(req)} title={t.viewDetails || "View Details"}
+                            className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition text-[11px] font-medium">
+                            <Eye size={13} /> <span className="hidden sm:inline">{t.viewDetails || "View"}</span>
                           </button>
                           {req.status === "PENDING" && (
-                            <button onClick={() => updateStatus(req.id, "MANAGER_REVIEW")} title="Start Review"
-                              className="p-1.5 rounded-lg bg-yellow-50 text-yellow-600 hover:bg-yellow-100 transition">
-                              <ClipboardList size={14} />
+                            <button onClick={() => updateStatus(req.id, "MANAGER_REVIEW")} title={t.startReview || "Start Review"}
+                              className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg bg-yellow-50 text-yellow-600 hover:bg-yellow-100 transition text-[11px] font-medium">
+                              <ClipboardList size={13} /> <span className="hidden sm:inline">{t.startReview || "Review"}</span>
                             </button>
                           )}
                           {(req.status === "PENDING" || req.status === "MANAGER_REVIEW") && (
-                            <button onClick={() => handleQuote(req)} title="Set Quote"
-                              className="p-1.5 rounded-lg bg-purple-50 text-purple-600 hover:bg-purple-100 transition">
-                              <ClipboardList size={14} />
+                            <button onClick={() => handleQuote(req)} title={t.setQuote || "Set Quote"}
+                              className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg bg-purple-50 text-purple-600 hover:bg-purple-100 transition text-[11px] font-medium">
+                              <DollarSign size={13} /> <span className="hidden sm:inline">{t.setQuote || "Quote"}</span>
                             </button>
                           )}
                           {req.status === "CUSTOMER_APPROVED" && !req.riderId && (
-                            <button onClick={() => handleAssignRider(req)} title="Assign Rider"
-                              className="p-1.5 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 transition">
-                              <Truck size={14} />
+                            <button onClick={() => handleAssignRider(req)} title={t.assignRiderAction || "Assign Rider"}
+                              className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 transition text-[11px] font-medium">
+                              <Truck size={13} /> <span className="hidden sm:inline">{t.assignRiderAction || "Assign"}</span>
                             </button>
                           )}
+                          <button onClick={() => handlePrintInvoice(req)} title={t.printInvoiceAction || "Print Invoice"}
+                            className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg bg-gray-50 text-gray-600 hover:bg-gray-100 transition text-[11px] font-medium">
+                            <Printer size={13} /> <span className="hidden sm:inline">{t.printInvoiceAction || "Print"}</span>
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -262,74 +275,167 @@ export default function ManagerCustomRequestsPage() {
 
       <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={filteredRequests.length} itemsPerPage={ITEMS_PER_PAGE} />
 
-      {/* Detail Modal */}
+      {/* Detail Modal - Order Details Style */}
       {selectedRequest && !showQuoteModal && !showRiderModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setSelectedRequest(null)}>
           <div className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between p-4 border-b">
-              <h3 className="font-bold text-[#00215B]">Request Details</h3>
-              <button onClick={() => setSelectedRequest(null)} className="p-1 hover:bg-gray-100 rounded"><X size={18} /></button>
+            {/* Header */}
+            <div className="sticky top-0 bg-white border-b px-5 py-3 flex items-center justify-between rounded-t-xl z-10">
+              <div>
+                <h3 className="font-semibold text-gray-800">{selectedRequest.requestNumber}</h3>
+                <p className="text-xs text-gray-400">{new Date(selectedRequest.createdAt).toLocaleString("en-BD", { timeZone: "Asia/Dhaka", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
+              </div>
+              <button onClick={() => setSelectedRequest(null)} className="text-gray-400 hover:text-gray-600 transition cursor-pointer">
+                <X size={18} />
+              </button>
             </div>
-            <div className="p-4 space-y-3">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Request #</span>
-                <span className="font-medium">{selectedRequest.requestNumber}</span>
+
+            <div className="p-5 space-y-4">
+              {/* Status Stepper */}
+              <OrderStatusStepper orderStatus={selectedRequest.status} />
+
+              {/* Payment Badge */}
+              <div className="flex items-center gap-2">
+                <PaymentStatusBadge status={selectedRequest.paymentStatus || "PENDING"} />
+                <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${STATUS_CONFIG[selectedRequest.status]?.color || "bg-gray-100 text-gray-700"}`}>
+                  {STATUS_CONFIG[selectedRequest.status]?.label || selectedRequest.status}
+                </span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Customer</span>
-                <span className="font-medium">{selectedRequest.user?.name}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Phone</span>
-                <span className="font-medium">{selectedRequest.user?.phone}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Product</span>
-                <span className="font-medium">{selectedRequest.productName}</span>
-              </div>
-              {selectedRequest.description && (
-                <div className="text-sm">
-                  <span className="text-gray-500">Description:</span>
-                  <p className="mt-1">{selectedRequest.description}</p>
+
+              {/* Customer Info */}
+              <div className="bg-gray-50 rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <User size={14} className="text-gray-400" />
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">{t.customer || "Customer"}</p>
                 </div>
-              )}
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Quantity</span>
-                <span className="font-medium">{selectedRequest.quantity} {selectedRequest.unit}</span>
+                <p className="text-sm font-medium">{selectedRequest.user?.name}</p>
+                <p className="text-sm text-gray-600">{selectedRequest.user?.phone}</p>
               </div>
-              <div className="text-sm">
-                <span className="text-gray-500">Delivery:</span>
-                <p className="mt-1">{selectedRequest.deliveryAddress}, {selectedRequest.deliveryUpazila}, {selectedRequest.deliveryDistrict}, {selectedRequest.deliveryDivision}</p>
+
+              {/* Delivery Address */}
+              <div className="bg-gray-50 rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <MapPin size={14} className="text-gray-400" />
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">{t.deliveryAddress || "Delivery Address"}</p>
+                </div>
+                <p className="text-sm">{selectedRequest.deliveryAddress}</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {[selectedRequest.deliveryUpazila, selectedRequest.deliveryDistrict, selectedRequest.deliveryDivision].filter(Boolean).join(", ")}
+                </p>
               </div>
+
+              {/* Product Details */}
+              <div className="bg-gray-50 rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Package size={14} className="text-gray-400" />
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">{t.items || "Product"}</p>
+                </div>
+                <p className="text-sm font-medium">{selectedRequest.productName}</p>
+                {selectedRequest.description && <p className="text-xs text-gray-500 mt-1">{selectedRequest.description}</p>}
+                <p className="text-xs text-gray-500 mt-1">Qty: {selectedRequest.quantity} {selectedRequest.unit}</p>
+              </div>
+
+              {/* Images */}
               {selectedRequest.images?.length > 0 && (
-                <div>
-                  <span className="text-gray-500 text-sm">Images:</span>
-                  <div className="flex gap-2 mt-1 flex-wrap">
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">{t.images || "Images"}</p>
+                  <div className="flex gap-2 flex-wrap">
                     {selectedRequest.images.map((img, i) => (
                       <img key={i} src={img} alt="" className="w-16 h-16 rounded-lg object-cover border" />
                     ))}
                   </div>
                 </div>
               )}
+
+              {/* Customer Notes */}
               {selectedRequest.customerNotes && (
-                <div className="text-sm">
-                  <span className="text-gray-500">Customer Notes:</span>
-                  <p className="mt-1 bg-gray-50 p-2 rounded">{selectedRequest.customerNotes}</p>
+                <div className="bg-blue-50 rounded-lg p-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <StickyNote size={14} className="text-blue-600" />
+                    <p className="text-xs font-medium text-blue-700 uppercase tracking-wider">{t.notes || "Customer Notes"}</p>
+                  </div>
+                  <p className="text-sm text-blue-800">{selectedRequest.customerNotes}</p>
                 </div>
               )}
+
+              {/* Price Breakdown */}
               {selectedRequest.quotedPrice && (
-                <div className="bg-purple-50 rounded-lg p-3">
-                  <p className="text-sm font-semibold text-purple-800">Quoted: ৳{selectedRequest.quotedPrice}/{selectedRequest.unit}</p>
-                  {selectedRequest.deliveryCharge > 0 && <p className="text-xs text-purple-600">Delivery: ৳{selectedRequest.deliveryCharge}</p>}
-                  <p className="text-sm font-bold text-purple-800 mt-1">Total: ৳{selectedRequest.totalAmount}</p>
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <CreditCard size={14} className="text-gray-400" />
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">{t.pricing || "Price Breakdown"}</p>
+                  </div>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">{t.unitPrice || "Unit Price"}</span>
+                      <span>৳{selectedRequest.quotedPrice}/{selectedRequest.unit}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">{t.subtotal || "Subtotal"}</span>
+                      <span>৳{((selectedRequest.quotedPrice || 0) * (selectedRequest.quantity || 1)).toLocaleString()}</span>
+                    </div>
+                    {selectedRequest.deliveryCharge > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">{t.deliveryFee || "Delivery Fee"}</span>
+                        <span>৳{selectedRequest.deliveryCharge.toLocaleString()}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between font-semibold border-t pt-1">
+                      <span>{t.total || "Total"}</span>
+                      <span className="text-[#EC008C]">৳{selectedRequest.totalAmount?.toLocaleString()}</span>
+                    </div>
+                  </div>
                 </div>
               )}
+
+              {/* Manager Notes */}
+              {selectedRequest.managerNotes && (
+                <div className="bg-amber-50 rounded-lg p-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <StickyNote size={14} className="text-amber-600" />
+                    <p className="text-xs font-medium text-amber-700 uppercase tracking-wider">{t.managerNotes || "Manager Notes"}</p>
+                  </div>
+                  <p className="text-sm text-amber-800">{selectedRequest.managerNotes}</p>
+                </div>
+              )}
+
+              {/* Rider Info */}
+              {selectedRequest.rider && (
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Truck size={14} className="text-gray-400" />
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">{t.rider || "Rider"}</p>
+                  </div>
+                  <p className="text-sm font-medium">{selectedRequest.rider.user?.name}</p>
+                </div>
+              )}
+
+              {/* Rejection Reason */}
+              {selectedRequest.rejectionReason && (
+                <div className="bg-red-50 rounded-lg p-3">
+                  <p className="text-xs font-medium text-red-700 mb-1">{t.rejectionReason || "Rejection Reason"}</p>
+                  <p className="text-sm text-red-800">{selectedRequest.rejectionReason}</p>
+                </div>
+              )}
+
+              {/* Assign Rider Button */}
               {selectedRequest.status === "CUSTOMER_APPROVED" && !selectedRequest.riderId && (
-                <button onClick={() => { setShowRiderModal(true); }}
-                  className="w-full bg-green-500 text-white py-2 rounded-lg text-sm font-semibold hover:bg-green-600 transition mt-2">
-                  Assign Rider
+                <button onClick={() => setShowRiderModal(true)}
+                  className="w-full bg-green-500 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-green-600 transition flex items-center justify-center gap-2">
+                  <Truck size={16} /> {t.assignRiderAction || "Assign Rider"}
                 </button>
               )}
+            </div>
+
+            {/* Footer with Print Invoice */}
+            <div className="sticky bottom-0 bg-white border-t px-5 py-3 flex gap-2 rounded-b-xl">
+              <button onClick={() => printCustomRequestInvoice(selectedRequest, language)} className="flex-1 flex items-center justify-center gap-2 bg-[#00215B] text-white py-2.5 rounded-lg text-sm font-medium hover:bg-[#001A4A] transition cursor-pointer">
+                <Printer size={14} /> {language === "bn" ? "ইনভয়েস প্রিন্ট" : t.printInvoice || "Print Invoice"}
+              </button>
+              <button onClick={() => printCustomRequestInvoice(selectedRequest, language === "en" ? "bn" : "en")} className="flex items-center justify-center gap-1 bg-white border border-[#E5E7EB] text-gray-700 py-2.5 px-3 rounded-lg text-sm font-medium hover:bg-gray-50 transition cursor-pointer" title={language === "en" ? "বাংলায় প্রিন্ট" : "Print in English"}>
+                {language === "en" ? "বাং" : "EN"}
+              </button>
+              <button onClick={() => setSelectedRequest(null)} className="flex-1 bg-gray-100 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition cursor-pointer">{t.close || "Close"}</button>
             </div>
           </div>
         </div>

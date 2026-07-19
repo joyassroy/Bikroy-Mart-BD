@@ -132,7 +132,7 @@ const ProductCard = memo(function ProductCard({ product, showActions, onDelete, 
         </div>
 
         <div className="p-2.5 sm:p-3 space-y-1.5">
-          <h3 className="text-xs sm:text-sm font-bold text-[#364152] line-clamp-2 min-h-[32px] sm:min-h-[36px] leading-tight group-hover:text-[#EC008C] transition-colors">
+          <h3 className="text-sm sm:text-base font-bold text-[#364152] line-clamp-2 min-h-[32px] sm:min-h-[36px] leading-tight group-hover:text-[#EC008C] transition-colors">
             {language === "bn" ? (product.nameBn || product.name) : product.name}
           </h3>
 

@@ -18,7 +18,7 @@ export default function PendingTodayPage() {
   const [search, setSearch] = useState("");
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const ITEMS_PER_PAGE = 10;
 
   useEffect(() => { fetchData(); }, []);
@@ -161,7 +161,7 @@ export default function PendingTodayPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <button onClick={() => setSelectedOrder(order)} className="text-blue-500 hover:text-blue-700 cursor-pointer"><Eye size={16} /></button>
-                        <button onClick={() => printInvoice(order)} className="text-gray-500 hover:text-gray-700 cursor-pointer"><Printer size={16} /></button>
+                        <button onClick={() => printInvoice(order, language)} className="text-gray-500 hover:text-gray-700 cursor-pointer"><Printer size={16} /></button>
                       </div>
                     </td>
                   </tr>

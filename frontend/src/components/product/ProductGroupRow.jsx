@@ -19,12 +19,12 @@ const ProductGroupRow = memo(function ProductGroupRow({ categorySlug, subcategor
   return (
     <div className="mb-5">
       <div className="flex items-center justify-between mb-2.5">
-        <h3 className="font-semibold text-sm sm:text-base text-[#00215B]">
+        <h3 className="font-bold text-base sm:text-lg text-[#00215B]">
           {language === "bn" ? (subcategory.nameBn || subcategory.name) : subcategory.name}
         </h3>
         <Link
           href={`/shop?category=${categorySlug}&subcategory=${subcategory.slug}`}
-          className="text-[11px] sm:text-xs font-semibold text-[#EC008C] hover:text-[#D60071] transition flex items-center gap-0.5"
+          className="text-xs sm:text-sm font-semibold text-[#EC008C] hover:text-[#D60071] transition flex items-center gap-0.5"
         >
           {t.seeAll} <ChevronRight size={14} />
         </Link>
