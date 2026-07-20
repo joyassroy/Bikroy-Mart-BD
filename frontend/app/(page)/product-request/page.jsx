@@ -8,7 +8,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { useAuthChecked } from "@/helper/AuthInit";
 import OrderStatusStepper from "@/components/admin/OrderStatusStepper";
 import { BANGLADESH_LOCATIONS, getUpazilas } from "@/lib/constants";
-import { ClipboardList, Clock, CheckCircle, Truck, Package, X, Ban, Printer, DollarSign, MapPin, FileText, Copy, Check, Eye, Pencil, Trash2 } from "lucide-react";
+import { ClipboardList, Clock, CheckCircle, Truck, Package, X, Ban, Printer, DollarSign, MapPin, FileText, Copy, Check, Eye, Pencil, Trash2, Plus, Send } from "lucide-react";
 import { printInvoice, printCustomRequestInvoice } from "@/lib/generateInvoice";
 import toast from "react-hot-toast";
 
@@ -86,6 +86,16 @@ export default function ProductRequestPage() {
   const [requestEditUpazilas, setRequestEditUpazilas] = useState([]);
   const [savingRequest, setSavingRequest] = useState(false);
 
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    productName: "", description: "", quantity: 1, unit: "piece",
+    deliveryDivision: "", deliveryDistrict: "", deliveryUpazila: "",
+    deliveryAddress: "", customerNotes: "",
+  });
+  const [createDistricts, setCreateDistricts] = useState([]);
+  const [createUpazilas, setCreateUpazilas] = useState([]);
+
   useEffect(() => {
     if (authChecked) fetchRequests();
   }, [authChecked]);
@@ -119,6 +129,52 @@ export default function ProductRequestPage() {
   useEffect(() => {
     setRequestEditUpazilas(getUpazilas(requestEditForm.deliveryDivision, requestEditForm.deliveryDistrict));
   }, [requestEditForm.deliveryDivision, requestEditForm.deliveryDistrict]);
+
+  useEffect(() => {
+    const div = BANGLADESH_LOCATIONS.find((d) => d.division === createForm.deliveryDivision);
+    setCreateDistricts(div ? div.districts.map((d) => d.name) : []);
+  }, [createForm.deliveryDivision]);
+
+  useEffect(() => {
+    setCreateUpazilas(getUpazilas(createForm.deliveryDivision, createForm.deliveryDistrict));
+  }, [createForm.deliveryDivision, createForm.deliveryDistrict]);
+
+  const handleCreateRequest = async () => {
+    if (!createForm.productName.trim()) {
+      toast.error(language === "bn" ? "পণ্যের নাম দিন" : "Product name is required");
+      return;
+    }
+    if (!createForm.deliveryDivision) {
+      toast.error(language === "bn" ? "বিভাগ নির্বাচন করুন" : "Delivery division is required");
+      return;
+    }
+    if (!createForm.deliveryDistrict) {
+      toast.error(language === "bn" ? "জেলা নির্বাচন করুন" : "Delivery district is required");
+      return;
+    }
+    setCreating(true);
+    try {
+      await api.post("/custom-requests", {
+        productName: createForm.productName.trim(),
+        description: createForm.description.trim(),
+        quantity: createForm.quantity,
+        unit: createForm.unit,
+        deliveryDivision: createForm.deliveryDivision,
+        deliveryDistrict: createForm.deliveryDistrict,
+        deliveryUpazila: createForm.deliveryUpazila,
+        deliveryAddress: createForm.deliveryAddress.trim() || `${createForm.deliveryUpazila || ""}, ${createForm.deliveryDistrict}, ${createForm.deliveryDivision}`,
+        customerNotes: createForm.customerNotes.trim(),
+      });
+      toast.success(language === "bn" ? "অনুরোধ তৈরি হয়েছে!" : "Request submitted!");
+      setShowCreateModal(false);
+      setCreateForm({ productName: "", description: "", quantity: 1, unit: "piece", deliveryDivision: "", deliveryDistrict: "", deliveryUpazila: "", deliveryAddress: "", customerNotes: "" });
+      fetchRequests();
+    } catch (err) {
+      toast.error(err.response?.data?.message || (language === "bn" ? "তৈরি ব্যর্থ" : "Failed to create"));
+    } finally {
+      setCreating(false);
+    }
+  };
 
   const startEditRequest = () => {
     if (!selected) return;
@@ -357,12 +413,21 @@ export default function ProductRequestPage() {
     <div className="min-h-screen bg-[#F0F2F5]">
       <Header />
       <main className="max-w-[900px] mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6">
-        <div className="flex items-center gap-2 mb-5">
-          <ClipboardList size={18} className="text-[#EC008C]" />
-          <h1 className="text-base sm:text-lg md:text-xl font-semibold text-[#00215B]">
-            {language === "bn" ? "পণ্যের অনুরোধ" : "Product Requests"}
-          </h1>
-          <span className="text-[11px] text-[#667085]">({requests.length})</span>
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2">
+            <ClipboardList size={18} className="text-[#EC008C]" />
+            <h1 className="text-base sm:text-lg md:text-xl font-semibold text-[#00215B]">
+              {language === "bn" ? "পণ্যের অনুরোধ" : "Product Requests"}
+            </h1>
+            <span className="text-[11px] text-[#667085]">({requests.length})</span>
+          </div>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="flex items-center gap-1.5 bg-[#EC008C] hover:bg-[#D60071] text-white px-3 sm:px-4 py-2 rounded-xl text-[11px] sm:text-xs font-semibold transition"
+          >
+            <Plus size={14} />
+            {language === "bn" ? "নতুন অনুরোধ" : "New Request"}
+          </button>
         </div>
 
         {loading ? (
@@ -906,6 +971,138 @@ export default function ProductRequestPage() {
               >
                 {cancellingLoading ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Ban size={16} />}
                 {cancellingLoading ? (language === "bn" ? "বাতিল হচ্ছে..." : "Cancelling...") : (language === "bn" ? "বাতিল করুন" : "Cancel")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== CREATE NEW REQUEST MODAL ===== */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4" onClick={() => setShowCreateModal(false)}>
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl max-w-lg w-full max-h-[92vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 bg-white border-b border-[#E5E7EB] px-5 py-3.5 flex items-center justify-between rounded-t-2xl z-10">
+              <h2 className="font-bold text-[#00215B] text-sm">{language === "bn" ? "নতুন পণ্য অনুরোধ" : "New Product Request"}</h2>
+              <button onClick={() => setShowCreateModal(false)} className="p-1 hover:bg-[#F4F7FB] rounded-lg transition">
+                <X size={18} className="text-[#667085]" />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-4">
+              <div>
+                <label className="text-xs font-semibold text-[#00215B] mb-1 block">{language === "bn" ? "পণ্যের নাম *" : "Product Name *"}</label>
+                <input
+                  type="text"
+                  value={createForm.productName}
+                  onChange={(e) => setCreateForm({ ...createForm, productName: e.target.value })}
+                  placeholder={language === "bn" ? "যেমন: অর্গানিক হলুদ ১ কেজি" : "e.g., Organic Turmeric 1kg"}
+                  className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#EC008C]/30 focus:border-[#EC008C] transition"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-[#00215B] mb-1 block">{language === "bn" ? "বিবরণ" : "Description"}</label>
+                <textarea
+                  value={createForm.description}
+                  onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
+                  placeholder={language === "bn" ? "পণ্য সম্পর্কে বিস্তারিত লিখুন..." : "Describe the product you need..."}
+                  rows={3}
+                  className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#EC008C]/30 focus:border-[#EC008C] transition resize-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-[#00215B] mb-1 block">{language === "bn" ? "পরিমাণ" : "Quantity"}</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={createForm.quantity}
+                    onChange={(e) => setCreateForm({ ...createForm, quantity: parseInt(e.target.value) || 1 })}
+                    className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#EC008C]/30 focus:border-[#EC008C] transition"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-[#00215B] mb-1 block">{language === "bn" ? "একক" : "Unit"}</label>
+                  <select
+                    value={createForm.unit}
+                    onChange={(e) => setCreateForm({ ...createForm, unit: e.target.value })}
+                    className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#EC008C]/30 focus:border-[#EC008C] transition"
+                  >
+                    <option value="piece">{language === "bn" ? "পিস" : "Piece"}</option>
+                    <option value="kg">{language === "bn" ? "কেজি" : "Kg"}</option>
+                    <option value="liter">{language === "bn" ? "লিটার" : "Liter"}</option>
+                    <option value="dozen">{language === "bn" ? "ডজন" : "Dozen"}</option>
+                    <option value="box">{language === "bn" ? "বক্স" : "Box"}</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="border-t border-[#F0F2F5] pt-4">
+                <p className="text-xs font-semibold text-[#00215B] mb-3 flex items-center gap-1">
+                  <MapPin size={12} className="text-[#EC008C]" />
+                  {language === "bn" ? "ডেলিভারি ঠিকানা" : "Delivery Address"}
+                </p>
+                <div className="space-y-3">
+                  <select
+                    value={createForm.deliveryDivision}
+                    onChange={(e) => setCreateForm({ ...createForm, deliveryDivision: e.target.value, deliveryDistrict: "", deliveryUpazila: "" })}
+                    className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#EC008C]/30 focus:border-[#EC008C] transition"
+                  >
+                    <option value="">{language === "bn" ? "বিভাগ নির্বাচন *" : "Select Division *"}</option>
+                    {BANGLADESH_LOCATIONS.map((d) => <option key={d.division} value={d.division}>{d.division}</option>)}
+                  </select>
+                  <select
+                    value={createForm.deliveryDistrict}
+                    onChange={(e) => setCreateForm({ ...createForm, deliveryDistrict: e.target.value, deliveryUpazila: "" })}
+                    className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#EC008C]/30 focus:border-[#EC008C] transition"
+                  >
+                    <option value="">{language === "bn" ? "জেলা নির্বাচন *" : "Select District *"}</option>
+                    {createDistricts.map((d) => <option key={d} value={d}>{d}</option>)}
+                  </select>
+                  <select
+                    value={createForm.deliveryUpazila}
+                    onChange={(e) => setCreateForm({ ...createForm, deliveryUpazila: e.target.value })}
+                    className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#EC008C]/30 focus:border-[#EC008C] transition"
+                  >
+                    <option value="">{language === "bn" ? "উপজেলা নির্বাচন" : "Select Upazila"}</option>
+                    {createUpazilas.map((u) => <option key={u} value={u}>{u}</option>)}
+                  </select>
+                  <textarea
+                    value={createForm.deliveryAddress}
+                    onChange={(e) => setCreateForm({ ...createForm, deliveryAddress: e.target.value })}
+                    placeholder={language === "bn" ? "পূর্ণ ঠিকানা (রাস্তা, বাসা নম্বর ইত্যাদি)" : "Full address (road, house no, etc.)"}
+                    rows={2}
+                    className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#EC008C]/30 focus:border-[#EC008C] transition resize-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-[#00215B] mb-1 block">{language === "bn" ? "অতিরিক্ত নোট" : "Additional Notes"}</label>
+                <textarea
+                  value={createForm.customerNotes}
+                  onChange={(e) => setCreateForm({ ...createForm, customerNotes: e.target.value })}
+                  placeholder={language === "bn" ? "কোনো বিশেষ অনুরোধ থাকলে লিখুন..." : "Any special instructions..."}
+                  rows={2}
+                  className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#EC008C]/30 focus:border-[#EC008C] transition resize-none"
+                />
+              </div>
+
+              <button
+                onClick={handleCreateRequest}
+                disabled={creating || !createForm.productName.trim() || !createForm.deliveryDivision || !createForm.deliveryDistrict}
+                className="w-full bg-[#EC008C] hover:bg-[#D60071] text-white py-3 rounded-xl text-sm font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {creating ? (
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <Send size={14} />
+                )}
+                {creating
+                  ? (language === "bn" ? "পাঠানো হচ্ছে..." : "Submitting...")
+                  : (language === "bn" ? "অনুরোধ পাঠান" : "Submit Request")
+                }
               </button>
             </div>
           </div>

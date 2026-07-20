@@ -227,7 +227,7 @@ export default function LiveRiderMap({ riderLat, riderLng, destinationLat, desti
       />
 
       {hasDestination && !hasRider && (
-        <div className="absolute top-2 left-2 z-[1000] bg-amber-50/95 backdrop-blur-sm rounded-lg px-3 py-2 border border-amber-200 shadow-sm">
+        <div className="absolute bottom-14 left-2 z-[1000] bg-amber-50/95 backdrop-blur-sm rounded-lg px-3 py-2 border border-amber-200 shadow-sm">
           <p className="text-[11px] font-semibold text-amber-700">⏳ Waiting for rider...</p>
         </div>
       )}

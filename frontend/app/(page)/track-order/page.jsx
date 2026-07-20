@@ -9,7 +9,7 @@ const LocationMapModal = dynamic(() => import("@/components/ui/LocationMapModal"
 import useSocket from "@/helper/useSocket";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
-import { Search, Package, Truck, CheckCircle, Clock, MapPin, Phone, User, Navigation, Ban, Loader2, FileText } from "lucide-react";
+import { Search, Package, Truck, CheckCircle, Clock, MapPin, Phone, User, Navigation, Ban, Loader2, FileText, ShoppingBag } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { printInvoice } from "@/lib/generateInvoice";
 
@@ -38,14 +38,27 @@ function TrackOrderContent() {
   ];
 
   const fetchOrder = async (number) => {
-    if (!number.trim()) return;
+    const trimmed = (number || "").trim();
+    if (!trimmed) return;
     setLoading(true);
     setError("");
     try {
-      const res = await api.get(`/tracking/${number}`);
+      const res = await api.get(`/tracking/${encodeURIComponent(trimmed)}`);
       setOrder(res.data.data);
-    } catch {
-      setError(t.orderNotFound);
+    } catch (err) {
+      const status = err.response?.status;
+      const msg = err.response?.data?.message;
+      if (status === 404) {
+        setError(t.orderNotFound);
+      } else if (status === 401 || status === 403) {
+        setError("You are not authorized to view this order.");
+      } else if (status >= 500) {
+        setError("Server error. Please try again later.");
+      } else if (err.code === "ECONNABORTED" || err.code === "ERR_NETWORK") {
+        setError("Network error. Please check your connection.");
+      } else {
+        setError(msg || t.orderNotFound);
+      }
       setOrder(null);
     } finally {
       setLoading(false);
@@ -108,7 +121,7 @@ function TrackOrderContent() {
               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#99A0B4]" />
               <input
                 type="text"
-                placeholder={`${t.orderId} (e.g., BM-XXXX-XXXX)`}
+                placeholder={`${t.orderId} (e.g., BM-XXXX-XXXX or CR-XXXX-XXXX)`}
                 value={orderNumber}
                 onChange={(e) => setOrderNumber(e.target.value)}
                 className="w-full pl-9 pr-3 py-2.5 sm:py-3 text-xs sm:text-sm bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EC008C]/30 focus:border-[#EC008C] transition"
@@ -343,7 +356,7 @@ function TrackOrderContent() {
             )}
 
             {/* Live Map */}
-            {order.deliveryLatitude && order.deliveryLongitude && (
+            {order.deliveryLatitude && order.deliveryLongitude && order.rider && (
               <div className="bg-white rounded-2xl overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-[#E5E7EB]">
                 {connected && (
                   <div className="px-4 sm:px-5 py-3 border-b border-[#F0F2F5] flex items-center gap-2">
@@ -361,6 +374,21 @@ function TrackOrderContent() {
                     destinationLat={order.deliveryLatitude}
                     destinationLng={order.deliveryLongitude}
                   />
+                </div>
+              </div>
+            )}
+
+            {/* Waiting for Rider */}
+            {order.deliveryLatitude && order.deliveryLongitude && !order.rider && (
+              <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-[#E5E7EB]">
+                <div className="flex flex-col items-center text-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center">
+                    <Truck size={22} className="text-amber-500 animate-pulse" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-[#181717]">{t.waitingForRider || "Waiting for rider..."}</p>
+                    <p className="text-xs text-[#667085] mt-1">A rider will be assigned to your delivery soon</p>
+                  </div>
                 </div>
               </div>
             )}
@@ -388,6 +416,60 @@ function TrackOrderContent() {
                 <div className="px-4 sm:px-5 py-3 bg-[#F9FAFB] flex justify-between items-center">
                   <span className="text-xs sm:text-sm font-semibold text-[#667085]">{t.total}</span>
                   <span className="text-sm sm:text-base font-bold text-[#00215B]">৳{order.total}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Custom Request Info */}
+            {order.type === "custom_request" && order.customRequest && (
+              <div className="bg-white rounded-2xl overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-[#E5E7EB]">
+                <div className="px-4 sm:px-5 py-3 border-b border-[#F0F2F5] flex items-center gap-2">
+                  <ShoppingBag size={14} className="text-[#EC008C]" />
+                  <h3 className="font-semibold text-[#181717] text-xs sm:text-sm">Custom Request Details</h3>
+                </div>
+                <div className="p-4 sm:p-5 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-[#EC008C]/10 flex items-center justify-center flex-shrink-0">
+                      <Package size={16} className="text-[#EC008C]" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs sm:text-sm font-semibold text-[#181717]">{order.customRequest.productName}</p>
+                      {order.customRequest.description && (
+                        <p className="text-[10px] sm:text-[11px] text-[#667085] mt-0.5">{order.customRequest.description}</p>
+                      )}
+                      <p className="text-[10px] sm:text-[11px] text-[#667085]">Qty: {order.customRequest.quantity} {order.customRequest.unit}</p>
+                    </div>
+                  </div>
+                  {order.customRequest.quotedPrice && (
+                    <div className="flex items-center justify-between px-3 py-2 bg-[#F9FAFB] rounded-xl text-xs sm:text-sm">
+                      <span className="text-[#667085]">Quoted Price</span>
+                      <span className="font-bold text-[#00215B]">৳{order.customRequest.quotedPrice}/unit</span>
+                    </div>
+                  )}
+                  {order.customRequest.deliveryCharge > 0 && (
+                    <div className="flex items-center justify-between px-3 py-2 bg-[#F9FAFB] rounded-xl text-xs sm:text-sm">
+                      <span className="text-[#667085]">Delivery Charge</span>
+                      <span className="font-bold text-[#00215B]">৳{order.customRequest.deliveryCharge}</span>
+                    </div>
+                  )}
+                  {order.customRequest.totalAmount && (
+                    <div className="flex items-center justify-between px-3 py-2 bg-[#00215B]/5 rounded-xl text-xs sm:text-sm">
+                      <span className="font-semibold text-[#00215B]">Total Amount</span>
+                      <span className="font-bold text-[#00215B]">৳{order.customRequest.totalAmount}</span>
+                    </div>
+                  )}
+                  {order.customRequest.status && (
+                    <div className="px-3 py-2 bg-[#F0F2F5] rounded-xl">
+                      <p className="text-[10px] text-[#99A0B4] font-medium">Request Status</p>
+                      <p className="text-xs sm:text-sm font-semibold text-[#181717] mt-0.5">{order.customRequest.status.replace(/_/g, " ")}</p>
+                    </div>
+                  )}
+                  {order.customRequest.managerNotes && (
+                    <div className="px-3 py-2 bg-[#EC008C]/5 rounded-xl">
+                      <p className="text-[10px] text-[#99A0B4] font-medium">Manager Notes</p>
+                      <p className="text-xs sm:text-sm text-[#181717] mt-0.5">{order.customRequest.managerNotes}</p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
