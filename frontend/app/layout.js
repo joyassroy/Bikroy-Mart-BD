@@ -3,7 +3,6 @@ import { LanguageProvider } from "@/i18n/LanguageContext";
 import { Nunito_Sans } from "next/font/google";
 import "./globals.css";
 import ToasterClient from "./ToasterClient";
-import DeliveryBanner from "@/components/layout/DeliveryBanner";
 
 const nunito = Nunito_Sans({
   subsets: ["latin"],
@@ -51,7 +50,6 @@ export default function RootLayout({ children }) {
         <Providers>
           <LanguageProvider>
             {children}
-            <DeliveryBanner />
           </LanguageProvider>
         </Providers>
         <ToasterClient />

@@ -12,6 +12,7 @@ import ProductTabs from "@/components/home/ProductTabs";
 import SponsorsMarquee from "@/components/home/SponsorsMarquee";
 import FloatingCartButton from "@/components/home/FloatingCartButton";
 import FloatingChatButton from "@/components/layout/FloatingChatButton";
+import DeliveryBanner from "@/components/layout/DeliveryBanner";
 import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function Home() {
@@ -21,6 +22,7 @@ export default function Home() {
       <Header />
       <FloatingCartButton />
       <FloatingChatButton />
+      <DeliveryBanner />
       <main>
         <HeroBanner />
         <OfferCarousel />

@@ -222,6 +222,16 @@ function HeaderContent() {
                 <img src="/icon.png" alt="Bikroy-Mart-BD" className="h-20 w-auto" />
               </Link>
 
+              {/* Location - mobile */}
+              <button
+                onClick={() => setLocationOpen(!locationOpen)}
+                className="md:hidden flex items-center gap-1 text-[#364152] text-[11px] border border-[#E5E7EB] rounded-md px-2 py-1.5 hover:bg-[#F3F4F6] transition flex-shrink-0"
+              >
+                <MapPin size={14} className="text-[#EC008C]" />
+                <span className="max-w-[70px] truncate">{location.district || t.selectLocation}</span>
+                <ChevronDown size={10} />
+              </button>
+
               {/* Location - tablet+ */}
               <button
                 onClick={() => setLocationOpen(!locationOpen)}

@@ -7,6 +7,7 @@ import { addToCart } from "@/redux/cartSlice";
 import { addProductRequest, removeProductRequest } from "@/redux/productRequestSlice";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import DeliveryBanner from "@/components/layout/DeliveryBanner";
 import ProductCard from "@/components/product/ProductCard";
 import api from "@/lib/axios";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -135,6 +136,7 @@ export default function ProductDetailPage() {
           <Loader2 className="animate-spin text-[#EC008C]" size={32} />
         </div>
         <Footer />
+        <DeliveryBanner />
       </div>
     );
   }
@@ -150,6 +152,7 @@ export default function ProductDetailPage() {
           </div>
         </div>
         <Footer />
+        <DeliveryBanner />
       </div>
     );
   }
@@ -449,6 +452,7 @@ export default function ProductDetailPage() {
         )}
       </main>
       <Footer />
+      <DeliveryBanner />
     </div>
   );
 }
