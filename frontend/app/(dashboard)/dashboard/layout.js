@@ -41,7 +41,7 @@ export default function DashboardLayout({ children }) {
     { label: t.customers, href: "/dashboard/customers", icon: Users },
     { label: t.riders, href: "/dashboard/riders", icon: Truck },
     { label: t.managers, href: "/dashboard/managers", icon: MapPin },
-    { label: t.customRequests, href: "/dashboard/custom-requests", icon: ClipboardList },
+    { label: t.productRequests, href: "/dashboard/product-requests", icon: ClipboardList },
     { label: t.banners, href: "/dashboard/banners", icon: Tag },
     { 
       label: t.content, icon: Users,

@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { ShoppingCart, Package, Users, DollarSign, TrendingUp, Truck, Loader2 } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import api from "@/lib/axios";
@@ -19,23 +20,33 @@ const STATUS_PIE_COLORS = ["#F59E0B", "#3B82F6", "#8B5CF6", "#6366F1", "#EC008C"
 
 export default function DashboardPage() {
   const { t } = useLanguage();
+  const router = useRouter();
   const [stats, setStats] = useState(null);
   const [recentOrders, setRecentOrders] = useState([]);
   const [salesTrend, setSalesTrend] = useState([]);
   const [ordersByStatus, setOrdersByStatus] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activePeriod, setActivePeriod] = useState("all");
 
-  useEffect(() => { fetchAll(); }, []);
+  useEffect(() => { fetchStats(); }, [activePeriod]);
+  useEffect(() => { fetchCharts(); }, []);
 
-  const fetchAll = async () => {
+  const fetchStats = async () => {
     try {
-      const [statsRes, ordersRes, salesRes, statusRes] = await Promise.all([
-        api.get("/analytics/stats"),
+      const { data } = await api.get(`/analytics/stats?period=${activePeriod}`);
+      setStats(data.data || {});
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchCharts = async () => {
+    try {
+      const [ordersRes, salesRes, statusRes] = await Promise.all([
         api.get("/analytics/recent-orders?limit=8"),
         api.get("/analytics/sales-trend?days=14"),
         api.get("/analytics/orders-by-status"),
       ]);
-      setStats(statsRes.data.data || {});
       setRecentOrders(ordersRes.data.data || []);
       setSalesTrend(salesRes.data.data || []);
       setOrdersByStatus(statusRes.data.data || []);
@@ -59,9 +70,25 @@ export default function DashboardPage() {
     { label: t.revenue, value: `৳${(stats?.totalRevenue || 0).toLocaleString()}`, icon: DollarSign, color: "text-[#D4A017] bg-[#FFF8E1]" },
   ];
 
-  const todayCards = [
-    { label: t.todayDelivered, value: stats?.todayDeliveredOrders?.toLocaleString() || "0", icon: Truck, color: "text-[#10B981] bg-[#ECFDF5]" },
-    { label: t.todaySales, value: `৳${(stats?.todaySales || 0).toLocaleString()}`, icon: DollarSign, color: "text-[#EC008C] bg-[#FCE8F3]" },
+  const periodCards = [
+    { label: t.totalOrders, value: stats?.periodOrders?.toLocaleString() || "0", icon: ShoppingCart, color: "text-[#EC008C] bg-[#FCE8F3]" },
+    { label: t.todayDelivered, value: stats?.periodDelivered?.toLocaleString() || "0", icon: Truck, color: "text-[#10B981] bg-[#ECFDF5]" },
+    { label: t.todaySales, value: `৳${(stats?.periodSales || 0).toLocaleString()}`, icon: DollarSign, color: "text-[#EC008C] bg-[#FCE8F3]" },
+    { label: t.totalSell || "Total Sell", value: `৳${(stats?.periodSell || 0).toLocaleString()}`, icon: TrendingUp, color: "text-[#7C3AED] bg-[#F3E8FF]" },
+  ];
+
+  const periodLabels = { today: "Today", week: "This Week", month: "This Month", all: "All Time" };
+
+  const orderStatusCounts = [
+    { label: "All", status: "", count: stats?.totalOrders || 0, color: "bg-gray-100 text-gray-700", activeColor: "bg-gray-700 text-white" },
+    { label: "Pending", status: "PENDING", count: stats?.pendingOrders || 0, color: "bg-[#FFF8E1] text-[#D4A017]", activeColor: "bg-[#D4A017] text-white" },
+    { label: "Confirmed", status: "CONFIRMED", count: stats?.confirmedOrders || 0, color: "bg-[#E8F4F8] text-[#00AFCC]", activeColor: "bg-[#00AFCC] text-white" },
+    { label: "Processing", status: "PROCESSING", count: stats?.processingOrders || 0, color: "bg-[#E8EDF5] text-[#2E4B8A]", activeColor: "bg-[#2E4B8A] text-white" },
+    { label: "Shipped", status: "SHIPPED", count: stats?.shippedOrders || 0, color: "bg-[#F3E8FF] text-[#7C3AED]", activeColor: "bg-[#7C3AED] text-white" },
+    { label: "Out for Delivery", status: "OUT_FOR_DELIVERY", count: stats?.outForDeliveryOrders || 0, color: "bg-[#FFF0F0] text-[#FF6B6B]", activeColor: "bg-[#FF6B6B] text-white" },
+    { label: "Delivered", status: "DELIVERED", count: stats?.deliveredOrders || 0, color: "bg-green-50 text-green-700", activeColor: "bg-green-700 text-white" },
+    { label: "Cancelled", status: "CANCELLED", count: stats?.cancelledOrders || 0, color: "bg-red-50 text-red-500", activeColor: "bg-red-500 text-white" },
+    { label: "Returned", status: "RETURNED", count: stats?.returnedOrders || 0, color: "bg-orange-50 text-orange-600", activeColor: "bg-orange-600 text-white" },
   ];
 
   return (
@@ -84,8 +111,22 @@ export default function DashboardPage() {
         ))}
       </div>
 
+      <div className="flex flex-wrap gap-1.5 mb-4">
+        {Object.entries(periodLabels).map(([key, label]) => (
+          <button
+            key={key}
+            onClick={() => setActivePeriod(key)}
+            className={`px-3 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold transition cursor-pointer ${
+              activePeriod === key ? "bg-[#EC008C] text-white" : "bg-white text-gray-600 hover:bg-gray-100 border border-[#E5E7EB]"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-4">
-        {todayCards.map((stat) => (
+        {periodCards.map((stat) => (
           <div key={stat.label} className="bg-white rounded-lg p-2.5 sm:p-3 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">
             <div className="flex items-center justify-between">
               <div>
@@ -97,6 +138,18 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
+        ))}
+      </div>
+
+      <div className="flex flex-wrap gap-2 mb-4">
+        {orderStatusCounts.map((s) => (
+          <button
+            key={s.label}
+            onClick={() => router.push(`/dashboard/orders${s.status ? `?status=${s.status}` : ""}`)}
+            className={`${s.color} hover:opacity-80 px-3 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold transition cursor-pointer`}
+          >
+            {s.label} {s.count}
+          </button>
         ))}
       </div>
 

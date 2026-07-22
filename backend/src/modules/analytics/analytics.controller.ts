@@ -6,6 +6,23 @@ export const getAdminStats = async (req: Request, res: Response) => {
   try {
     const bdNow = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Dhaka" }));
     const todayStart = new Date(bdNow.getFullYear(), bdNow.getMonth(), bdNow.getDate(), 0, 0, 0, 0);
+    const weekStart = new Date(bdNow);
+    weekStart.setDate(bdNow.getDate() - bdNow.getDay());
+    weekStart.setHours(0, 0, 0, 0);
+    const monthStart = new Date(bdNow.getFullYear(), bdNow.getMonth(), 1, 0, 0, 0, 0);
+
+    const period = (req.query.period as string) || "all";
+    let periodStart: Date | null = null;
+    if (period === "today") periodStart = todayStart;
+    else if (period === "week") periodStart = weekStart;
+    else if (period === "month") periodStart = monthStart;
+
+    const periodFilter = periodStart ? { createdAt: { gte: periodStart } } : {};
+    const periodPaidFilter = periodStart ? { paymentStatus: "PAID" as const, createdAt: { gte: periodStart } } : { paymentStatus: "PAID" as const };
+    const periodDeliveredFilter = periodStart
+      ? { orderStatus: "DELIVERED" as const, OR: [{ actualDelivery: { gte: periodStart } }, { AND: [{ actualDelivery: null }, { updatedAt: { gte: periodStart } }] }] }
+      : { orderStatus: "DELIVERED" as const };
+    const periodSellFilter = periodStart ? { paymentStatus: "PAID" as const, orderStatus: "DELIVERED" as const, createdAt: { gte: periodStart } } : { orderStatus: "DELIVERED" as const };
 
     const [
       totalUsers,
@@ -19,10 +36,16 @@ export const getAdminStats = async (req: Request, res: Response) => {
       totalBanners,
       totalCoupons,
       totalFlashDeals,
-      todayPendingOrders,
-      todayDeliveredOrders,
-      todaySales,
-      todayOrders,
+      periodOrders,
+      periodSales,
+      periodDelivered,
+      periodSell,
+      confirmedOrders,
+      processingOrders,
+      shippedOrders,
+      outForDeliveryOrders,
+      returnedOrders,
+      totalSell,
     ] = await Promise.all([
       prisma.user.count(),
       prisma.product.count(),
@@ -35,10 +58,16 @@ export const getAdminStats = async (req: Request, res: Response) => {
       prisma.banner.count(),
       prisma.coupon.count(),
       prisma.flashDeal.count({ where: { isActive: true } }),
-      prisma.order.count({ where: { orderStatus: "PENDING", createdAt: { gte: todayStart } } }),
-      prisma.order.count({ where: { orderStatus: "DELIVERED", OR: [{ actualDelivery: { gte: todayStart } }, { AND: [{ actualDelivery: null }, { updatedAt: { gte: todayStart } }] }] } }),
-      prisma.order.aggregate({ _sum: { total: true }, where: { paymentStatus: "PAID", updatedAt: { gte: todayStart } } }),
-      prisma.order.count({ where: { createdAt: { gte: todayStart } } }),
+      prisma.order.count({ where: periodFilter }),
+      prisma.order.aggregate({ _sum: { total: true }, where: periodPaidFilter }),
+      prisma.order.count({ where: periodDeliveredFilter }),
+      prisma.order.aggregate({ _sum: { total: true }, where: periodSellFilter }),
+      prisma.order.count({ where: { orderStatus: "CONFIRMED" } }),
+      prisma.order.count({ where: { orderStatus: "PROCESSING" } }),
+      prisma.order.count({ where: { orderStatus: "SHIPPED" } }),
+      prisma.order.count({ where: { orderStatus: "OUT_FOR_DELIVERY" } }),
+      prisma.order.count({ where: { orderStatus: "RETURNED" } }),
+      prisma.order.aggregate({ _sum: { total: true }, where: { orderStatus: "DELIVERED" } }),
     ]);
 
     const stats = {
@@ -46,17 +75,25 @@ export const getAdminStats = async (req: Request, res: Response) => {
       totalProducts,
       totalOrders,
       totalRevenue: totalRevenue._sum?.total || 0,
+      totalDelivered: deliveredOrders,
+      totalSell: totalSell._sum?.total || 0,
       pendingOrders,
+      confirmedOrders,
+      processingOrders,
+      shippedOrders,
+      outForDeliveryOrders,
       deliveredOrders,
       cancelledOrders,
+      returnedOrders,
       totalCategories,
       totalBanners,
       totalCoupons,
       totalFlashDeals,
-      todayPendingOrders,
-      todayDeliveredOrders,
-      todaySales: todaySales._sum?.total || 0,
-      todayOrders,
+      periodOrders,
+      periodSales: periodSales._sum?.total || 0,
+      periodDelivered,
+      periodSell: periodSell._sum?.total || 0,
+      period,
     };
 
     return sendSuccess(res, "Admin stats fetched", stats);

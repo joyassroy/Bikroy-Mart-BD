@@ -1,8 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
-import { X, Eye, ClipboardList, Truck, CheckCircle, XCircle, Clock } from "lucide-react";
+import { X, Eye, ClipboardList, Truck, CheckCircle, XCircle, Clock, ShoppingCart, Package, Users, DollarSign, TrendingUp, Loader2 } from "lucide-react";
 import Pagination from "@/components/ui/Pagination";
 import { useLanguage } from "@/i18n/LanguageContext";
 
@@ -23,16 +24,20 @@ const TABS = ["ALL", "PENDING", "MANAGER_REVIEW", "CUSTOMER_APPROVED", "PROCESSI
 
 export default function AdminCustomRequestsPage() {
   const { t } = useLanguage();
+  const router = useRouter();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("ALL");
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [stats, setStats] = useState(null);
+  const [activePeriod, setActivePeriod] = useState("all");
   const ITEMS_PER_PAGE = 10;
 
-  useEffect(() => { fetchRequests(); }, []);
+  useEffect(() => { fetchAll(); }, []);
+  useEffect(() => { fetchStats(); }, [activePeriod]);
 
-  const fetchRequests = async () => {
+  const fetchAll = async () => {
     try {
       setLoading(true);
       const { data } = await api.get("/custom-requests/admin/all");
@@ -41,6 +46,15 @@ export default function AdminCustomRequestsPage() {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchStats = async () => {
+    try {
+      const { data } = await api.get(`/analytics/stats?period=${activePeriod}`);
+      setStats(data.data || {});
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -54,15 +68,101 @@ export default function AdminCustomRequestsPage() {
     try {
       await api.put(`/custom-requests/${id}/status`, { status });
       toast.success("Status updated");
-      fetchRequests();
+      fetchAll();
     } catch (err) {
       toast.error("Failed to update status");
     }
   };
 
+  const statCards = [
+    { label: t.totalOrders, value: stats?.totalOrders?.toLocaleString() || "0", icon: ShoppingCart, color: "text-[#EC008C] bg-[#FCE8F3]" },
+    { label: t.totalProducts, value: stats?.totalProducts?.toLocaleString() || "0", icon: Package, color: "text-[#00AFCC] bg-[#E8F4F8]" },
+    { label: t.totalUsers, value: stats?.totalUsers?.toLocaleString() || "0", icon: Users, color: "text-[#00215B] bg-[#E8EDF5]" },
+    { label: t.revenue, value: `৳${(stats?.totalRevenue || 0).toLocaleString()}`, icon: DollarSign, color: "text-[#D4A017] bg-[#FFF8E1]" },
+  ];
+
+  const periodCards = [
+    { label: t.totalOrders, value: stats?.periodOrders?.toLocaleString() || "0", icon: ShoppingCart, color: "text-[#EC008C] bg-[#FCE8F3]" },
+    { label: t.todayDelivered, value: stats?.periodDelivered?.toLocaleString() || "0", icon: Truck, color: "text-[#10B981] bg-[#ECFDF5]" },
+    { label: t.todaySales, value: `৳${(stats?.periodSales || 0).toLocaleString()}`, icon: DollarSign, color: "text-[#EC008C] bg-[#FCE8F3]" },
+    { label: t.totalSell || "Total Sell", value: `৳${(stats?.periodSell || 0).toLocaleString()}`, icon: TrendingUp, color: "text-[#7C3AED] bg-[#F3E8FF]" },
+  ];
+
+  const periodLabels = { today: "Today", week: "This Week", month: "This Month", all: "All Time" };
+
+  const orderStatusCounts = [
+    { label: "All", status: "", count: stats?.totalOrders || 0, color: "bg-gray-100 text-gray-700" },
+    { label: "Pending", status: "PENDING", count: stats?.pendingOrders || 0, color: "bg-[#FFF8E1] text-[#D4A017]" },
+    { label: "Confirmed", status: "CONFIRMED", count: stats?.confirmedOrders || 0, color: "bg-[#E8F4F8] text-[#00AFCC]" },
+    { label: "Processing", status: "PROCESSING", count: stats?.processingOrders || 0, color: "bg-[#E8EDF5] text-[#2E4B8A]" },
+    { label: "Shipped", status: "SHIPPED", count: stats?.shippedOrders || 0, color: "bg-[#F3E8FF] text-[#7C3AED]" },
+    { label: "Out for Delivery", status: "OUT_FOR_DELIVERY", count: stats?.outForDeliveryOrders || 0, color: "bg-[#FFF0F0] text-[#FF6B6B]" },
+    { label: "Delivered", status: "DELIVERED", count: stats?.deliveredOrders || 0, color: "bg-green-50 text-green-700" },
+    { label: "Cancelled", status: "CANCELLED", count: stats?.cancelledOrders || 0, color: "bg-red-50 text-red-500" },
+    { label: "Returned", status: "RETURNED", count: stats?.returnedOrders || 0, color: "bg-orange-50 text-orange-600" },
+  ];
+
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">{t.allCustomRequests}</h1>
+      <h1 className="text-base sm:text-lg md:text-xl font-semibold text-[#00215B] mb-3">{t.allProductRequests}</h1>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-4">
+        {statCards.map((stat) => (
+          <div key={stat.label} className="bg-white rounded-lg p-2.5 sm:p-3 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] sm:text-[11px] text-[#667085]">{stat.label}</p>
+                <p className="text-base sm:text-lg md:text-xl font-bold text-[#000000] mt-0.5">{stat.value}</p>
+              </div>
+              <div className={`${stat.color} p-2 sm:p-2.5 rounded-lg flex-shrink-0`}>
+                <stat.icon size={18} className="sm:w-5 sm:h-5" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex flex-wrap gap-1.5 mb-4">
+        {Object.entries(periodLabels).map(([key, label]) => (
+          <button
+            key={key}
+            onClick={() => setActivePeriod(key)}
+            className={`px-3 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold transition cursor-pointer ${
+              activePeriod === key ? "bg-[#EC008C] text-white" : "bg-white text-gray-600 hover:bg-gray-100 border border-[#E5E7EB]"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-4">
+        {periodCards.map((stat) => (
+          <div key={stat.label} className="bg-white rounded-lg p-2.5 sm:p-3 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] sm:text-[11px] text-[#667085]">{stat.label}</p>
+                <p className="text-base sm:text-lg md:text-xl font-bold text-[#000000] mt-0.5">{stat.value}</p>
+              </div>
+              <div className={`${stat.color} p-2 sm:p-2.5 rounded-lg flex-shrink-0`}>
+                <stat.icon size={18} className="sm:w-5 sm:h-5" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex flex-wrap gap-2 mb-4">
+        {orderStatusCounts.map((s) => (
+          <button
+            key={s.label}
+            onClick={() => router.push(`/dashboard/orders${s.status ? `?status=${s.status}` : ""}`)}
+            className={`${s.color} hover:opacity-80 px-3 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold transition cursor-pointer`}
+          >
+            {s.label} {s.count}
+          </button>
+        ))}
+      </div>
 
       <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
         {TABS.map((tab) => (
@@ -80,7 +180,7 @@ export default function AdminCustomRequestsPage() {
               <tr className="text-left text-sm text-gray-500 border-b">
                 <th className="px-4 py-3 font-medium">Request #</th>
                 <th className="px-4 py-3 font-medium">Customer</th>
-                <th className="px-4 py-3 font-medium">Product</th>
+                <th className="px-4 py-3 font-medium">{t.productName}</th>
                 <th className="px-4 py-3 font-medium">Qty</th>
                 <th className="px-4 py-3 font-medium">Payment</th>
                 <th className="px-4 py-3 font-medium">Status</th>
@@ -91,7 +191,7 @@ export default function AdminCustomRequestsPage() {
               {loading ? (
                 <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">{t.loading}</td></tr>
               ) : filteredRequests.length === 0 ? (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">{t.noCustomRequests}</td></tr>
+                <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">{t.noProductRequests}</td></tr>
               ) : (
                 paginatedRequests.map((req) => {
                   const st = STATUS_CONFIG[req.status] || STATUS_CONFIG.PENDING;
@@ -116,7 +216,7 @@ export default function AdminCustomRequestsPage() {
                             <Eye size={14} />
                           </button>
                           {req.status === "DELIVERED" && req.paymentStatus !== "PAID" && (
-                            <button onClick={async () => { await api.put(`/custom-requests/${req.id}/payment-status`, { paymentStatus: "PAID" }); toast.success("Marked as paid"); fetchRequests(); }}
+                            <button onClick={async () => { await api.put(`/custom-requests/${req.id}/payment-status`, { paymentStatus: "PAID" }); toast.success("Marked as paid"); fetchAll(); }}
                               title="Mark Paid" className="p-1.5 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 transition">
                               <CheckCircle size={14} />
                             </button>
@@ -155,7 +255,35 @@ export default function AdminCustomRequestsPage() {
                   <div className="flex justify-between text-sm font-bold border-t pt-1"><span>Total</span><span className="text-[#EC008C]">৳{selectedRequest.totalAmount}</span></div>
                 </div>
               )}
-              <div className="text-sm"><span className="text-gray-500">Payment:</span> <span className={`px-2 py-0.5 rounded text-xs font-medium ${selectedRequest.paymentStatus === "PAID" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>{selectedRequest.paymentStatus || "UNPAID"}</span></div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-500">Payment:</span>
+                <div className="flex gap-1.5">
+                  {["UNPAID", "PAID", "REFUNDED"].map((status) => (
+                    <button
+                      key={status}
+                      onClick={async () => {
+                        try {
+                          await api.put(`/custom-requests/${selectedRequest.id}/payment-status`, { paymentStatus: status });
+                          toast.success(`Payment marked as ${status}`);
+                          setSelectedRequest({ ...selectedRequest, paymentStatus: status });
+                          fetchAll();
+                        } catch (err) {
+                          toast.error("Failed to update payment status");
+                        }
+                      }}
+                      className={`px-2 py-0.5 rounded text-xs font-medium transition ${
+                        (selectedRequest.paymentStatus || "UNPAID") === status
+                          ? status === "PAID" ? "bg-green-100 text-green-700 ring-1 ring-green-300"
+                          : status === "REFUNDED" ? "bg-orange-100 text-orange-700 ring-1 ring-orange-300"
+                          : "bg-yellow-100 text-yellow-700 ring-1 ring-yellow-300"
+                          : "bg-gray-50 text-gray-500 hover:bg-gray-100"
+                      }`}
+                    >
+                      {status}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div className="text-sm"><span className="text-gray-500">Delivery:</span><p className="mt-1">{selectedRequest.deliveryAddress}, {selectedRequest.deliveryUpazila}, {selectedRequest.deliveryDistrict}</p></div>
               {selectedRequest.images?.length > 0 && (
                 <div><span className="text-gray-500 text-sm">Images:</span><div className="flex gap-2 mt-1 flex-wrap">{selectedRequest.images.map((img, i) => <img key={i} src={img} alt="" className="w-16 h-16 rounded-lg object-cover border" />)}</div></div>
