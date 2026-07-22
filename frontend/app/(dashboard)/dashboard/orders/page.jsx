@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import api from "@/lib/axios";
 import { ALL_DISTRICTS } from "@/lib/constants";
 import { Search, Eye, Printer } from "lucide-react";
@@ -12,9 +13,11 @@ import { OrderStatusBadge, PaymentStatusBadge } from "@/components/admin/OrderSt
 import OrderDetailModal from "@/components/admin/OrderDetailModal";
 
 export default function OrdersPage() {
+  const searchParams = useSearchParams();
+  const initialStatus = searchParams.get("status") || "";
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState(initialStatus);
   const [districtFilter, setDistrictFilter] = useState("");
   const [search, setSearch] = useState("");
   const [selectedOrder, setSelectedOrder] = useState(null);
