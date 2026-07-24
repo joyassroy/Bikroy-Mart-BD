@@ -165,6 +165,7 @@ export const deleteManager = async (req: Request, res: Response) => {
       return sendError(res, "Cannot delete manager with existing orders in their district. Remove or reassign orders first.", 400);
     }
 
+    await prisma.managerProfile.delete({ where: { id: manager.id } });
     await prisma.user.delete({ where: { id: manager.userId } });
     return sendSuccess(res, "Manager deleted");
   } catch (error: any) {

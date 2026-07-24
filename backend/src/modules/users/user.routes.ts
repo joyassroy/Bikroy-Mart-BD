@@ -171,6 +171,13 @@ router.delete("/:id", authenticate, authorize("ADMIN"), async (req: AuthRequest,
       }
     }
 
+    if (user.role === "RIDER") {
+      await prisma.riderProfile.deleteMany({ where: { userId: user.id } });
+    }
+    if (user.role === "MANAGER") {
+      await prisma.managerProfile.deleteMany({ where: { userId: user.id } });
+    }
+
     await prisma.user.delete({ where: { id: String(req.params.id) } });
     return sendSuccess(res, "User deleted");
   } catch (error: any) {

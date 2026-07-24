@@ -327,6 +327,7 @@ export const deleteRider = async (req: Request, res: Response) => {
       return sendError(res, "Cannot delete rider with existing orders. Remove or reassign their orders first.", 400);
     }
 
+    await prisma.riderProfile.delete({ where: { id: rider.id } });
     await prisma.user.delete({ where: { id: rider.userId } });
     return sendSuccess(res, "Rider deleted");
   } catch (error: any) {
