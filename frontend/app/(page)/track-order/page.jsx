@@ -147,25 +147,30 @@ function TrackOrderContent() {
             {/* Order Header Card */}
             <div className="bg-white rounded-2xl overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-[#E5E7EB]">
               {/* Status Banner */}
-              <div className={`px-4 sm:px-6 py-4 sm:py-5 ${
-                order.orderStatus === "DELIVERED"
-                  ? "bg-gradient-to-r from-[#16A34A] to-[#22C55E]"
-                  : order.orderStatus === "CANCELLED"
-                  ? "bg-gradient-to-r from-[#DC2626] to-[#EF4444]"
-                  : "bg-gradient-to-r from-[#00215B] to-[#0044AA]"
-              }`}>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-white/70 text-[10px] sm:text-xs font-medium uppercase tracking-wider">Order Number</p>
-                    <p className="text-white text-lg sm:text-xl font-mono font-bold tracking-wider mt-0.5">{order.orderNumber}</p>
-                  </div>
-                  <div className="text-right">
-                    <span className="inline-block px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold bg-white/20 text-white backdrop-blur-sm">
-                      {statusSteps.find((s) => s.key === order.orderStatus)?.label || order.orderStatus}
-                    </span>
+              {(() => {
+                const displayStatus = order.customRequestStatus || order.orderStatus;
+                const bannerColor =
+                  displayStatus === "DELIVERED"
+                    ? "bg-gradient-to-r from-[#16A34A] to-[#22C55E]"
+                    : displayStatus === "CANCELLED"
+                    ? "bg-gradient-to-r from-[#DC2626] to-[#EF4444]"
+                    : "bg-gradient-to-r from-[#00215B] to-[#0044AA]";
+                return (
+                <div className={`px-4 sm:px-6 py-4 sm:py-5 ${bannerColor}`}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-white/70 text-[10px] sm:text-xs font-medium uppercase tracking-wider">Order Number</p>
+                      <p className="text-white text-lg sm:text-xl font-mono font-bold tracking-wider mt-0.5">{order.orderNumber}</p>
+                    </div>
+                    <div className="text-right">
+                      <span className="inline-block px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold bg-white/20 text-white backdrop-blur-sm">
+                        {displayStatus.replace(/_/g, " ")}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
+                );
+              })()}
 
               {/* Progress Stepper */}
               <div className="px-4 sm:px-6 py-5 sm:py-6">

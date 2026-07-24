@@ -615,6 +615,25 @@ export default function ProductRequestPage() {
                 <p className="text-xs text-[#364152] bg-[#F9FAFB] rounded-lg p-3">{selected.description}</p>
               )}
 
+              {/* Customer Info */}
+              {!editingRequest && (
+                <div className="bg-[#F9FAFB] rounded-lg p-3">
+                  <p className="text-[10px] font-semibold text-[#00215B] mb-1">{language === "bn" ? "গ্রাহক তথ্য" : "Customer Info"}</p>
+                  <p className="text-[11px] text-[#364152]">{selected.user?.name || "N/A"}</p>
+                  {selected.user?.phone && (
+                    <a href={`tel:${selected.user.phone}`} className="text-[11px] text-[#16A34A] hover:underline">{selected.user.phone}</a>
+                  )}
+                </div>
+              )}
+
+              {/* Customer Notes */}
+              {selected.customerNotes && !editingRequest && (
+                <div className="bg-blue-50 rounded-lg p-3">
+                  <p className="text-[10px] font-semibold text-blue-700 mb-1">{language === "bn" ? "গ্রাহকের নোট" : "Customer Notes"}</p>
+                  <p className="text-[11px] text-blue-800">{selected.customerNotes}</p>
+                </div>
+              )}
+
               {/* Edit Request Form */}
               {editingRequest && (
                 <div className="bg-yellow-50 rounded-lg p-3 space-y-2.5">

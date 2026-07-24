@@ -1,5 +1,9 @@
 const STATUS_LABELS = {
   PENDING: { en: "PENDING", bn: "অপেক্ষমান" },
+  MANAGER_REVIEW: { en: "UNDER REVIEW", bn: "পর্যালোচনাধীন" },
+  PRICING_SET: { en: "PRICE QUOTED", bn: "মূল্য নির্ধারিত" },
+  CUSTOMER_APPROVED: { en: "APPROVED", bn: "অনুমোদিত" },
+  CUSTOMER_REJECTED: { en: "REJECTED", bn: "প্রত্যাখ্যাত" },
   CONFIRMED: { en: "CONFIRMED", bn: "নিশ্চিত" },
   PROCESSING: { en: "PROCESSING", bn: "প্রক্রিয়াকরণ" },
   SHIPPED: { en: "SHIPPED", bn: "পাঠানো হয়েছে" },
@@ -90,6 +94,7 @@ const LABELS = {
     companyAddress: "বিক্রয়-মার্ট-বিডি, ঢাকা, বাংলাদেশ",
     contact: "যোগাযোগ: 16469",
     website: "bikroymart.com",
+    trackingLink: "অর্ডার ট্র্যাক করুন",
     page: "পৃষ্ঠ",
     of: "এর",
   },
@@ -128,6 +133,7 @@ const LABELS = {
     companyAddress: "Bikroy-Mart-BD, Dhaka, Bangladesh",
     contact: "Support: 16469",
     website: "bikroymart.com",
+    trackingLink: "Track Order",
     page: "Page",
     of: "of",
   },
@@ -322,14 +328,17 @@ export function printCustomRequestInvoice(request, lang = "en") {
         invoice: "ইনভয়েস", requestNo: "অনুরোধ নং", date: "তারিখ",
         shipTo: "পাঠানো হবে", name: "নাম:", phone: "ফোন:",
         address: "ঠিকানা:", upazila: "উপজেলা:", district: "জেলা:", division: "বিভাগ:",
+        status: "স্ট্যাটাস:", description: "বিবরণ:",
         product: "পণ্য", qty: "পরিমাণ", unit: "একক", unitPrice: "একক মূল্য", totalHeader: "মোট",
         subtotal: "উপমোট", delivery: "ডেলিভারি ফি", grandTotal: "মোট",
         paid: "পরিশোধিত", unpaid: "অপরিশোধিত",
         notes: "গ্রাহকের নোট:", managerNotes: "ম্যানেজার নোট:",
+        rejectionReason: "প্রত্যাখ্যানের কারণ:",
         thankYou: "বিক্রয়-মার্ট-বিডি দিয়ে কেনাকাটার জন্য ধন্যবাদ!",
         footerNote: "এটি একটি কম্পিউটার-জনিত চালান। স্বাক্ষরের প্রয়োজন নেই।",
         currency: "৳", companyAddress: "বিক্রয়-মার্ট-বিডি, ঢাকা, বাংলাদেশ",
         contact: "যোগাযোগ: 16469", website: "bikroymart.com",
+        trackingLink: "অর্ডার ট্র্যাক করুন",
         font: "'Noto Sans Bengali','Hind Siliguri','Kalpurush',sans-serif",
       }
     : {
@@ -337,16 +346,22 @@ export function printCustomRequestInvoice(request, lang = "en") {
         invoice: "INVOICE", requestNo: "Request No.", date: "Date",
         shipTo: "SHIP TO", name: "Name:", phone: "Phone:",
         address: "Address:", upazila: "Upazila:", district: "District:", division: "Division:",
+        status: "Status:", description: "Description:",
         product: "Product", qty: "Qty", unit: "Unit", unitPrice: "Unit Price", totalHeader: "Total",
         subtotal: "Subtotal", delivery: "Delivery Fee", grandTotal: "TOTAL",
         paid: "PAID", unpaid: "UNPAID",
         notes: "Customer Notes:", managerNotes: "Manager Notes:",
+        rejectionReason: "Rejection Reason:",
         thankYou: "Thank you for shopping with Bikroy-Mart-BD!",
         footerNote: "This is a computer-generated invoice. No signature required.",
         currency: "Tk", companyAddress: "Bikroy-Mart-BD, Dhaka, Bangladesh",
         contact: "Support: 16469", website: "bikroymart.com",
+        trackingLink: "Track Order",
         font: "Inter,system-ui,-apple-system,sans-serif",
       };
+
+  const statusLabel = STATUS_LABELS[request.status] || STATUS_LABELS.PENDING;
+  const requestStatus = lang === "bn" ? statusLabel.bn : statusLabel.en;
 
   const formattedDate = request.createdAt
     ? new Date(request.createdAt).toLocaleDateString(lang === "bn" ? "bn-BD" : "en-BD", { day: "numeric", month: "short", year: "numeric" })
@@ -396,7 +411,7 @@ export function printCustomRequestInvoice(request, lang = "en") {
     </div>
     <div style="margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.15);display:flex;justify-content:space-between;align-items:center">
       <div style="color:#7090c0;font-size:9px;font-family:${L.font}">${L.companyAddress} | ${L.contact} | ${L.website}</div>
-      <a href="${trackingUrl}" style="color:#ec008c;font-size:9px;text-decoration:underline;font-family:${L.font}">Track Order →</a>
+      <a href="${trackingUrl}" style="color:#ec008c;font-size:9px;text-decoration:underline;font-family:${L.font}">${L.trackingLink} →</a>
     </div>
   </div>
 
@@ -410,6 +425,7 @@ export function printCustomRequestInvoice(request, lang = "en") {
         <table style="width:100%;border-collapse:collapse">
           <tr><td style="padding:4px 0;color:#6b7280;font-size:11px;width:100px;font-family:${L.font}">${L.requestNo}</td><td style="padding:4px 0;color:#111827;font-size:11px;font-weight:600">${request.requestNumber || "N/A"}</td></tr>
           <tr><td style="padding:4px 0;color:#6b7280;font-size:11px;font-family:${L.font}">${L.date}</td><td style="padding:4px 0;color:#111827;font-size:11px;font-weight:600">${formattedDate}</td></tr>
+          <tr><td style="padding:4px 0;color:#6b7280;font-size:11px;font-family:${L.font}">${L.status}</td><td style="padding:4px 0;color:#111827;font-size:11px;font-weight:600">${requestStatus}</td></tr>
           <tr><td style="padding:4px 0;color:#6b7280;font-size:11px;font-family:${L.font}">${L.payment}</td><td style="padding:4px 0;color:#111827;font-size:11px;font-weight:600"><span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;color:#fff;background:${payColor};">${payLabel}</span></td></tr>
         </table>
       </div>
@@ -437,7 +453,7 @@ export function printCustomRequestInvoice(request, lang = "en") {
       </thead>
       <tbody>
         <tr style="background:#f9fafb">
-          <td style="padding:10px;border-bottom:1px solid #e5e7eb;color:#111827;font-size:11px;font-weight:500;font-family:${L.font}">${request.productName || "N/A"}</td>
+          <td style="padding:10px;border-bottom:1px solid #e5e7eb;color:#111827;font-size:11px;font-weight:500;font-family:${L.font}">${request.productName || "N/A"}${request.description ? `<br/><span style="font-weight:400;color:#6b7280;font-size:10px">${request.description}</span>` : ""}</td>
           <td style="padding:10px;border-bottom:1px solid #e5e7eb;color:#374151;font-size:11px;text-align:center;font-family:${L.font}">${request.quantity || 1}</td>
           <td style="padding:10px;border-bottom:1px solid #e5e7eb;color:#374151;font-size:11px;text-align:center;font-family:${L.font}">${request.unit || "piece"}</td>
           <td style="padding:10px;border-bottom:1px solid #e5e7eb;color:#374151;font-size:11px;text-align:right;font-family:${L.font}">${L.currency} ${(request.quotedPrice || 0).toLocaleString()}</td>
@@ -449,8 +465,9 @@ export function printCustomRequestInvoice(request, lang = "en") {
     <!-- Totals -->
     <div style="display:flex;gap:14px;margin-bottom:16px">
       <div style="flex:1">
-        ${request.customerNotes ? `<div style="background:#f4f7fb;border-radius:10px;padding:14px 16px;border:1px solid #e8ecf3"><div style="color:#00215B;font-size:10px;font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.8px;font-family:${L.font}">${L.notes}</div><p style="font-size:11px;color:#374151;font-family:${L.font}">${request.customerNotes}</p></div>` : ""}
-        ${request.managerNotes ? `<div style="background:#fffbeb;border-radius:10px;padding:14px 16px;border:1px solid #fde68a;margin-top:${request.customerNotes ? "10px" : "0"}"><div style="color:#92400e;font-size:10px;font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.8px;font-family:${L.font}">${L.managerNotes}</div><p style="font-size:11px;color:#78350f;font-family:${L.font}">${request.managerNotes}</p></div>` : ""}
+        ${request.rejectionReason && request.status === "CUSTOMER_REJECTED" ? `<div style="background:#fef2f2;border-radius:10px;padding:14px 16px;border:1px solid #fecaca;margin-bottom:${request.customerNotes || request.managerNotes ? "10px" : "0"}"><div style="color:#991b1b;font-size:10px;font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.8px;font-family:${L.font}">${L.rejectionReason}</div><p style="font-size:11px;color:#991b1b;font-family:${L.font}">${request.rejectionReason}</p></div>` : ""}
+        ${request.customerNotes ? `<div style="background:#f4f7fb;border-radius:10px;padding:14px 16px;border:1px solid #e8ecf3;margin-top:${request.rejectionReason && request.status === "CUSTOMER_REJECTED" ? "10px" : "0"}"><div style="color:#00215B;font-size:10px;font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.8px;font-family:${L.font}">${L.notes}</div><p style="font-size:11px;color:#374151;font-family:${L.font}">${request.customerNotes}</p></div>` : ""}
+        ${request.managerNotes ? `<div style="background:#fffbeb;border-radius:10px;padding:14px 16px;border:1px solid #fde68a;margin-top:10px"><div style="color:#92400e;font-size:10px;font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.8px;font-family:${L.font}">${L.managerNotes}</div><p style="font-size:11px;color:#78350f;font-family:${L.font}">${request.managerNotes}</p></div>` : ""}
       </div>
       <div style="background:#f4f7fb;border-radius:10px;padding:14px 16px;min-width:250px;border:1px solid #e8ecf3">
         <table style="width:100%;border-collapse:collapse">
