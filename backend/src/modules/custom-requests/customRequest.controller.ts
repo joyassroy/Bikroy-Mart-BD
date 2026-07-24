@@ -514,6 +514,16 @@ export const updatePaymentStatus = async (req: AuthRequest, res: Response) => {
       data: { paymentStatus },
     });
 
+    const order = await prisma.order.findFirst({
+      where: { customRequestId: String(req.params.id) },
+    });
+    if (order) {
+      await prisma.order.update({
+        where: { id: order.id },
+        data: { paymentStatus: paymentStatus as any },
+      });
+    }
+
     return sendSuccess(res, "Payment status updated", updated);
   } catch (error: any) {
     return sendError(res, error.message, 400);

@@ -114,6 +114,10 @@ export const getOrderTracking = async (req: Request, res: Response) => {
         deliveryLongitude: customRequest.deliveryLongitude,
         items: customRequest.order?.items || [],
         total: customRequest.totalAmount || 0,
+        paymentMethod: customRequest.order?.paymentMethod || "COD",
+        paymentStatus: customRequest.paymentStatus || "UNPAID",
+        name: customRequest.user?.name || "",
+        phone: customRequest.user?.phone || "",
         rider: customRequest.rider || null,
         manager,
         customRequest: {

@@ -9,9 +9,9 @@ const LocationMapModal = dynamic(() => import("@/components/ui/LocationMapModal"
 import useSocket from "@/helper/useSocket";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
-import { Search, Package, Truck, CheckCircle, Clock, MapPin, Phone, User, Navigation, Ban, Loader2, FileText, ShoppingBag } from "lucide-react";
+import { Search, Package, Truck, CheckCircle, Clock, MapPin, Phone, User, Navigation, Ban, Loader2, FileText, ShoppingBag, DollarSign } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { printInvoice } from "@/lib/generateInvoice";
+import { printInvoice, printCustomRequestInvoice } from "@/lib/generateInvoice";
 
 function TrackOrderContent() {
   const searchParams = useSearchParams();
@@ -236,8 +236,21 @@ function TrackOrderContent() {
                 )}
                 <span className="flex items-center gap-1">
                   <Package size={12} className="text-[#99A0B4]" />
-                  {order.items?.length || 0} items
+                  {order.type === "custom_request" && order.customRequest
+                    ? `${order.customRequest.quantity} ${order.customRequest.unit}`
+                    : `${order.items?.length || 0} items`}
                 </span>
+                {order.paymentMethod && (
+                  <span className="flex items-center gap-1">
+                    <DollarSign size={12} className="text-[#99A0B4]" />
+                    {order.paymentMethod === "COD" ? "Cash on Delivery" : order.paymentMethod}
+                  </span>
+                )}
+                {order.paymentStatus && (
+                  <span className={`flex items-center gap-1 font-semibold ${order.paymentStatus === "PAID" ? "text-green-600" : "text-amber-600"}`}>
+                    {order.paymentStatus === "PAID" ? "Paid" : "Unpaid"}
+                  </span>
+                )}
               </div>
 
               {CANCELLABLE_STATUSES.includes(order.orderStatus) && (
@@ -252,20 +265,20 @@ function TrackOrderContent() {
               )}
               <div className="px-4 sm:px-6 py-3 border-t border-[#F0F2F5] flex items-center gap-3">
                 <button
-                  onClick={() => printInvoice(order, language)}
+                  onClick={() => order.type === "custom_request" ? printCustomRequestInvoice(order.customRequest ? { ...order.customRequest, user: { name: order.name, phone: order.phone } } : order, language) : printInvoice(order, language)}
                   className="flex items-center gap-1.5 text-xs sm:text-sm text-[#0067A0] hover:text-[#0044AA] font-semibold transition"
                 >
                   <FileText size={14} /> {language === "bn" ? "ইনভয়েস প্রিন্ট" : "Print Invoice"}
                 </button>
                 <div className="flex items-center gap-1 ml-auto">
                   <button
-                    onClick={() => printInvoice(order, "en")}
+                    onClick={() => order.type === "custom_request" ? printCustomRequestInvoice(order.customRequest ? { ...order.customRequest, user: { name: order.name, phone: order.phone } } : order, "en") : printInvoice(order, "en")}
                     className={`px-2 py-1 text-[10px] font-semibold rounded border transition ${language === "en" ? "bg-[#00215B] text-white border-[#00215B]" : "bg-white text-[#667085] border-[#E5E7EB] hover:border-[#00215B]"}`}
                   >
                     EN
                   </button>
                   <button
-                    onClick={() => printInvoice(order, "bn")}
+                    onClick={() => order.type === "custom_request" ? printCustomRequestInvoice(order.customRequest ? { ...order.customRequest, user: { name: order.name, phone: order.phone } } : order, "bn") : printInvoice(order, "bn")}
                     className={`px-2 py-1 text-[10px] font-semibold rounded border transition ${language === "bn" ? "bg-[#00215B] text-white border-[#00215B]" : "bg-white text-[#667085] border-[#E5E7EB] hover:border-[#00215B]"}`}
                   >
                     বাং
@@ -394,7 +407,7 @@ function TrackOrderContent() {
             )}
 
             {/* Order Items */}
-            {order.items && order.items.length > 0 && (
+            {order.items && order.items.length > 0 ? (
               <div className="bg-white rounded-2xl overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-[#E5E7EB]">
                 <div className="px-4 sm:px-5 py-3 border-b border-[#F0F2F5]">
                   <h3 className="font-semibold text-[#181717] text-xs sm:text-sm">{t.items}</h3>
@@ -418,56 +431,76 @@ function TrackOrderContent() {
                   <span className="text-sm sm:text-base font-bold text-[#00215B]">৳{order.total}</span>
                 </div>
               </div>
-            )}
+            ) : order.type === "custom_request" && order.customRequest ? (
+              <div className="bg-white rounded-2xl overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-[#E5E7EB]">
+                <div className="px-4 sm:px-5 py-3 border-b border-[#F0F2F5] flex items-center gap-2">
+                  <ShoppingBag size={14} className="text-[#EC008C]" />
+                  <h3 className="font-semibold text-[#181717] text-xs sm:text-sm">{language === "bn" ? "পণ্যের বিবরণ" : "Product Details"}</h3>
+                </div>
+                <div className="px-4 sm:px-5 py-3 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-[#EC008C]/10 flex items-center justify-center flex-shrink-0">
+                    <Package size={16} className="text-[#EC008C]" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-medium text-[#181717]">{order.customRequest.productName}</p>
+                    {order.customRequest.description && (
+                      <p className="text-[10px] sm:text-[11px] text-[#667085] mt-0.5 truncate">{order.customRequest.description}</p>
+                    )}
+                    <p className="text-[10px] sm:text-[11px] text-[#667085]">Qty: {order.customRequest.quantity} {order.customRequest.unit}</p>
+                  </div>
+                  {order.customRequest.quotedPrice && (
+                    <p className="text-xs sm:text-sm font-bold text-[#181717] whitespace-nowrap">৳{(order.customRequest.quotedPrice * order.customRequest.quantity).toLocaleString()}</p>
+                  )}
+                </div>
+                <div className="px-4 sm:px-5 py-3 bg-[#F9FAFB] flex justify-between items-center">
+                  <span className="text-xs sm:text-sm font-semibold text-[#667085]">{t.total}</span>
+                  <span className="text-sm sm:text-base font-bold text-[#00215B]">৳{order.total}</span>
+                </div>
+              </div>
+            ) : null}
 
             {/* Custom Request Info */}
             {order.type === "custom_request" && order.customRequest && (
               <div className="bg-white rounded-2xl overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-[#E5E7EB]">
                 <div className="px-4 sm:px-5 py-3 border-b border-[#F0F2F5] flex items-center gap-2">
                   <ShoppingBag size={14} className="text-[#EC008C]" />
-                  <h3 className="font-semibold text-[#181717] text-xs sm:text-sm">Custom Request Details</h3>
+                  <h3 className="font-semibold text-[#181717] text-xs sm:text-sm">{language === "bn" ? "মূল্য ও অন্যান্য বিবরণ" : "Pricing & Details"}</h3>
                 </div>
                 <div className="p-4 sm:p-5 space-y-3">
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-[#EC008C]/10 flex items-center justify-center flex-shrink-0">
-                      <Package size={16} className="text-[#EC008C]" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs sm:text-sm font-semibold text-[#181717]">{order.customRequest.productName}</p>
-                      {order.customRequest.description && (
-                        <p className="text-[10px] sm:text-[11px] text-[#667085] mt-0.5">{order.customRequest.description}</p>
-                      )}
-                      <p className="text-[10px] sm:text-[11px] text-[#667085]">Qty: {order.customRequest.quantity} {order.customRequest.unit}</p>
-                    </div>
-                  </div>
                   {order.customRequest.quotedPrice && (
                     <div className="flex items-center justify-between px-3 py-2 bg-[#F9FAFB] rounded-xl text-xs sm:text-sm">
-                      <span className="text-[#667085]">Quoted Price</span>
-                      <span className="font-bold text-[#00215B]">৳{order.customRequest.quotedPrice}/unit</span>
+                      <span className="text-[#667085]">{language === "bn" ? "একক মূল্য" : "Unit Price"}</span>
+                      <span className="font-bold text-[#00215B]">৳{order.customRequest.quotedPrice.toLocaleString()}/unit</span>
                     </div>
                   )}
                   {order.customRequest.deliveryCharge > 0 && (
                     <div className="flex items-center justify-between px-3 py-2 bg-[#F9FAFB] rounded-xl text-xs sm:text-sm">
-                      <span className="text-[#667085]">Delivery Charge</span>
-                      <span className="font-bold text-[#00215B]">৳{order.customRequest.deliveryCharge}</span>
+                      <span className="text-[#667085]">{language === "bn" ? "ডেলিভারি ফি" : "Delivery Charge"}</span>
+                      <span className="font-bold text-[#00215B]">৳{order.customRequest.deliveryCharge.toLocaleString()}</span>
                     </div>
                   )}
                   {order.customRequest.totalAmount && (
                     <div className="flex items-center justify-between px-3 py-2 bg-[#00215B]/5 rounded-xl text-xs sm:text-sm">
-                      <span className="font-semibold text-[#00215B]">Total Amount</span>
-                      <span className="font-bold text-[#00215B]">৳{order.customRequest.totalAmount}</span>
+                      <span className="font-semibold text-[#00215B]">{language === "bn" ? "মোট পরিমাণ" : "Total Amount"}</span>
+                      <span className="font-bold text-[#00215B]">৳{order.customRequest.totalAmount.toLocaleString()}</span>
                     </div>
                   )}
                   {order.customRequest.status && (
                     <div className="px-3 py-2 bg-[#F0F2F5] rounded-xl">
-                      <p className="text-[10px] text-[#99A0B4] font-medium">Request Status</p>
+                      <p className="text-[10px] text-[#99A0B4] font-medium">{language === "bn" ? "অনুরোধের স্ট্যাটাস" : "Request Status"}</p>
                       <p className="text-xs sm:text-sm font-semibold text-[#181717] mt-0.5">{order.customRequest.status.replace(/_/g, " ")}</p>
                     </div>
                   )}
                   {order.customRequest.managerNotes && (
                     <div className="px-3 py-2 bg-[#EC008C]/5 rounded-xl">
-                      <p className="text-[10px] text-[#99A0B4] font-medium">Manager Notes</p>
+                      <p className="text-[10px] text-[#99A0B4] font-medium">{language === "bn" ? "ম্যানেজার নোট" : "Manager Notes"}</p>
                       <p className="text-xs sm:text-sm text-[#181717] mt-0.5">{order.customRequest.managerNotes}</p>
+                    </div>
+                  )}
+                  {order.customRequest.customerNotes && (
+                    <div className="px-3 py-2 bg-[#00215B]/5 rounded-xl">
+                      <p className="text-[10px] text-[#99A0B4] font-medium">{language === "bn" ? "গ্রাহকের নোট" : "Customer Notes"}</p>
+                      <p className="text-xs sm:text-sm text-[#181717] mt-0.5">{order.customRequest.customerNotes}</p>
                     </div>
                   )}
                 </div>

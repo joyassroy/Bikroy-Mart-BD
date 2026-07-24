@@ -1,11 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
-import { X, Eye, ClipboardList, Truck, CheckCircle, XCircle, Clock, ShoppingCart, Package, Users, DollarSign, TrendingUp, Loader2 } from "lucide-react";
+import { X, Eye, ClipboardList, Truck, CheckCircle, Clock, DollarSign, ShoppingCart, Printer, User, MapPin, CreditCard, Package, StickyNote, Ban } from "lucide-react";
 import Pagination from "@/components/ui/Pagination";
+import { printCustomRequestInvoice } from "@/lib/generateInvoice";
 import { useLanguage } from "@/i18n/LanguageContext";
+import OrderStatusStepper from "@/components/admin/OrderStatusStepper";
 
 const STATUS_CONFIG = {
   PENDING: { color: "bg-yellow-100 text-yellow-700", label: "Pending" },
@@ -13,29 +14,39 @@ const STATUS_CONFIG = {
   PRICING_SET: { color: "bg-purple-100 text-purple-700", label: "Price Quoted" },
   CUSTOMER_APPROVED: { color: "bg-green-100 text-green-700", label: "Approved" },
   CUSTOMER_REJECTED: { color: "bg-red-100 text-red-700", label: "Rejected" },
+  CONFIRMED: { color: "bg-blue-100 text-blue-700", label: "Confirmed" },
   PROCESSING: { color: "bg-indigo-100 text-indigo-700", label: "Processing" },
-  SHIPPED: { color: "bg-orange-100 text-orange-700", label: "Shipped" },
+  SHIPPED: { color: "bg-purple-100 text-purple-700", label: "Shipped" },
   OUT_FOR_DELIVERY: { color: "bg-orange-100 text-orange-700", label: "Out for Delivery" },
   DELIVERED: { color: "bg-green-100 text-green-700", label: "Delivered" },
   CANCELLED: { color: "bg-red-100 text-red-700", label: "Cancelled" },
 };
 
-const TABS = ["ALL", "PENDING", "MANAGER_REVIEW", "CUSTOMER_APPROVED", "PROCESSING", "DELIVERED"];
+const TABS = [
+  { key: "ALL", label: "All" },
+  { key: "PENDING", label: "Pending" },
+  { key: "MANAGER_REVIEW", label: "Under Review" },
+  { key: "PRICING_SET", label: "Price Quoted" },
+  { key: "CUSTOMER_APPROVED", label: "Approved" },
+  { key: "PROCESSING", label: "Processing" },
+  { key: "SHIPPED", label: "Shipped" },
+  { key: "OUT_FOR_DELIVERY", label: "Out for Delivery" },
+  { key: "DELIVERED", label: "Delivered" },
+  { key: "CANCELLED", label: "Cancelled" },
+];
 
 export default function AdminCustomRequestsPage() {
-  const { t } = useLanguage();
-  const router = useRouter();
+  const { t, language } = useLanguage();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("ALL");
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [stats, setStats] = useState(null);
-  const [activePeriod, setActivePeriod] = useState("all");
+  const [riders, setRiders] = useState([]);
+  const [showRiderModal, setShowRiderModal] = useState(false);
   const ITEMS_PER_PAGE = 10;
 
-  useEffect(() => { fetchAll(); }, []);
-  useEffect(() => { fetchStats(); }, [activePeriod]);
+  useEffect(() => { fetchAll(); fetchRiders(); }, []);
 
   const fetchAll = async () => {
     try {
@@ -49,10 +60,10 @@ export default function AdminCustomRequestsPage() {
     }
   };
 
-  const fetchStats = async () => {
+  const fetchRiders = async () => {
     try {
-      const { data } = await api.get(`/analytics/stats?period=${activePeriod}`);
-      setStats(data.data || {});
+      const { data } = await api.get("/riders");
+      setRiders(data.data || []);
     } catch (err) {
       console.error(err);
     }
@@ -74,105 +85,70 @@ export default function AdminCustomRequestsPage() {
     }
   };
 
-  const statCards = [
-    { label: t.totalOrders, value: stats?.totalOrders?.toLocaleString() || "0", icon: ShoppingCart, color: "text-[#EC008C] bg-[#FCE8F3]" },
-    { label: t.totalProducts, value: stats?.totalProducts?.toLocaleString() || "0", icon: Package, color: "text-[#00AFCC] bg-[#E8F4F8]" },
-    { label: t.totalUsers, value: stats?.totalUsers?.toLocaleString() || "0", icon: Users, color: "text-[#00215B] bg-[#E8EDF5]" },
-    { label: t.revenue, value: `৳${(stats?.totalRevenue || 0).toLocaleString()}`, icon: DollarSign, color: "text-[#D4A017] bg-[#FFF8E1]" },
-  ];
+  const assignRider = async (riderId) => {
+    try {
+      await api.put(`/custom-requests/${selectedRequest.id}/assign-rider`, { riderId });
+      toast.success("Rider assigned!");
+      setShowRiderModal(false);
+      setSelectedRequest(null);
+      fetchAll();
+    } catch (err) {
+      toast.error("Failed to assign rider");
+    }
+  };
 
-  const periodCards = [
-    { label: t.totalOrders, value: stats?.periodOrders?.toLocaleString() || "0", icon: ShoppingCart, color: "text-[#EC008C] bg-[#FCE8F3]" },
-    { label: t.todayDelivered, value: stats?.periodDelivered?.toLocaleString() || "0", icon: Truck, color: "text-[#10B981] bg-[#ECFDF5]" },
-    { label: t.todaySales, value: `৳${(stats?.periodSales || 0).toLocaleString()}`, icon: DollarSign, color: "text-[#EC008C] bg-[#FCE8F3]" },
-    { label: t.totalSell || "Total Sell", value: `৳${(stats?.periodSell || 0).toLocaleString()}`, icon: TrendingUp, color: "text-[#7C3AED] bg-[#F3E8FF]" },
-  ];
-
-  const periodLabels = { today: "Today", week: "This Week", month: "This Month", all: "All Time" };
-
-  const orderStatusCounts = [
-    { label: "All", status: "", count: stats?.totalOrders || 0, color: "bg-gray-100 text-gray-700" },
-    { label: "Pending", status: "PENDING", count: stats?.pendingOrders || 0, color: "bg-[#FFF8E1] text-[#D4A017]" },
-    { label: "Confirmed", status: "CONFIRMED", count: stats?.confirmedOrders || 0, color: "bg-[#E8F4F8] text-[#00AFCC]" },
-    { label: "Processing", status: "PROCESSING", count: stats?.processingOrders || 0, color: "bg-[#E8EDF5] text-[#2E4B8A]" },
-    { label: "Shipped", status: "SHIPPED", count: stats?.shippedOrders || 0, color: "bg-[#F3E8FF] text-[#7C3AED]" },
-    { label: "Out for Delivery", status: "OUT_FOR_DELIVERY", count: stats?.outForDeliveryOrders || 0, color: "bg-[#FFF0F0] text-[#FF6B6B]" },
-    { label: "Delivered", status: "DELIVERED", count: stats?.deliveredOrders || 0, color: "bg-green-50 text-green-700" },
-    { label: "Cancelled", status: "CANCELLED", count: stats?.cancelledOrders || 0, color: "bg-red-50 text-red-500" },
-    { label: "Returned", status: "RETURNED", count: stats?.returnedOrders || 0, color: "bg-orange-50 text-orange-600" },
-  ];
+  const handleMarkPaid = async (id) => {
+    try {
+      await api.put(`/custom-requests/${id}/payment-status`, { paymentStatus: "PAID" });
+      toast.success("Marked as paid");
+      fetchAll();
+    } catch (err) {
+      toast.error("Failed to update payment");
+    }
+  };
 
   return (
     <div>
-      <h1 className="text-base sm:text-lg md:text-xl font-semibold text-[#00215B] mb-3">{t.allProductRequests}</h1>
+      <h1 className="text-base sm:text-lg md:text-xl font-semibold text-[#00215B] mb-3">{t.allProductRequests || "All Product Requests"}</h1>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-4">
-        {statCards.map((stat) => (
-          <div key={stat.label} className="bg-white rounded-lg p-2.5 sm:p-3 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">
+      {/* Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 mb-4">
+        {[
+          { label: "Total Requests", value: requests.length, icon: ClipboardList, color: "text-[#00AFCC] bg-[#E8F4F8]" },
+          { label: "Pending", value: requests.filter((r) => r.status === "PENDING").length, icon: Clock, color: "text-[#D4A017] bg-[#FFF8E1]" },
+          { label: "Price Quoted", value: requests.filter((r) => r.status === "PRICING_SET").length, icon: DollarSign, color: "text-[#7C3AED] bg-[#F3E8FF]" },
+          { label: "Approved", value: requests.filter((r) => r.status === "CUSTOMER_APPROVED").length, icon: CheckCircle, color: "text-green-500 bg-green-50" },
+          { label: "Delivered", value: requests.filter((r) => r.status === "DELIVERED").length, icon: Truck, color: "text-[#10B981] bg-[#ECFDF5]" },
+          { label: "Cancelled", value: requests.filter((r) => r.status === "CANCELLED").length, icon: Ban, color: "text-red-500 bg-red-50" },
+        ].map((s) => (
+          <div key={s.label} className="bg-white rounded-lg p-2.5 sm:p-3 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[10px] sm:text-[11px] text-[#667085]">{stat.label}</p>
-                <p className="text-base sm:text-lg md:text-xl font-bold text-[#000000] mt-0.5">{stat.value}</p>
+                <p className="text-[10px] sm:text-[11px] text-[#667085]">{s.label}</p>
+                <p className="text-base sm:text-lg font-bold text-[#000000] mt-0.5">{s.value}</p>
               </div>
-              <div className={`${stat.color} p-2 sm:p-2.5 rounded-lg flex-shrink-0`}>
-                <stat.icon size={18} className="sm:w-5 sm:h-5" />
+              <div className={`${s.color} p-2 rounded-lg flex-shrink-0`}>
+                <s.icon size={18} />
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="flex flex-wrap gap-1.5 mb-4">
-        {Object.entries(periodLabels).map(([key, label]) => (
-          <button
-            key={key}
-            onClick={() => setActivePeriod(key)}
-            className={`px-3 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold transition cursor-pointer ${
-              activePeriod === key ? "bg-[#EC008C] text-white" : "bg-white text-gray-600 hover:bg-gray-100 border border-[#E5E7EB]"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-4">
-        {periodCards.map((stat) => (
-          <div key={stat.label} className="bg-white rounded-lg p-2.5 sm:p-3 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[10px] sm:text-[11px] text-[#667085]">{stat.label}</p>
-                <p className="text-base sm:text-lg md:text-xl font-bold text-[#000000] mt-0.5">{stat.value}</p>
-              </div>
-              <div className={`${stat.color} p-2 sm:p-2.5 rounded-lg flex-shrink-0`}>
-                <stat.icon size={18} className="sm:w-5 sm:h-5" />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="flex flex-wrap gap-2 mb-4">
-        {orderStatusCounts.map((s) => (
-          <button
-            key={s.label}
-            onClick={() => router.push(`/dashboard/orders${s.status ? `?status=${s.status}` : ""}`)}
-            className={`${s.color} hover:opacity-80 px-3 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold transition cursor-pointer`}
-          >
-            {s.label} {s.count}
-          </button>
-        ))}
-      </div>
-
+      {/* Tabs */}
       <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
         {TABS.map((tab) => (
-          <button key={tab} onClick={() => setActiveTab(tab)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition ${activeTab === tab ? "bg-[#EC008C] text-white" : "bg-white text-gray-600 hover:bg-gray-100"}`}>
-            {tab === "ALL" ? "All" : STATUS_CONFIG[tab]?.label || tab}
+          <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+            className={`px-3 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold whitespace-nowrap transition ${activeTab === tab.key ? "bg-[#EC008C] text-white" : "bg-white text-gray-600 hover:bg-gray-100 border border-[#E5E7EB]"}`}>
+            {tab.label}
+            <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[9px] ${activeTab === tab.key ? "bg-white/20" : "bg-[#F4F7FB]"}`}>
+              {requests.filter((r) => r.status === tab.key).length}
+            </span>
           </button>
         ))}
       </div>
 
+      {/* Table */}
       <div className="bg-white rounded-xl shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -180,18 +156,18 @@ export default function AdminCustomRequestsPage() {
               <tr className="text-left text-sm text-gray-500 border-b">
                 <th className="px-4 py-3 font-medium">Request #</th>
                 <th className="px-4 py-3 font-medium">Customer</th>
-                <th className="px-4 py-3 font-medium">{t.productName}</th>
+                <th className="px-4 py-3 font-medium">Product</th>
                 <th className="px-4 py-3 font-medium">Qty</th>
                 <th className="px-4 py-3 font-medium">Payment</th>
                 <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Action</th>
+                <th className="px-4 py-3 font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">{t.loading}</td></tr>
+                <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">{t.loading || "Loading..."}</td></tr>
               ) : filteredRequests.length === 0 ? (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">{t.noProductRequests}</td></tr>
+                <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">{t.noProductRequests || "No product requests found"}</td></tr>
               ) : (
                 paginatedRequests.map((req) => {
                   const st = STATUS_CONFIG[req.status] || STATUS_CONFIG.PENDING;
@@ -207,20 +183,38 @@ export default function AdminCustomRequestsPage() {
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`px-2 py-1 rounded-lg text-xs font-medium ${st.color}`}>{st.label}</span>
+                        <select
+                          value={req.status}
+                          onChange={(e) => updateStatus(req.id, e.target.value)}
+                          className={`px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-semibold border-0 cursor-pointer focus:outline-none ${st.color}`}
+                        >
+                          {Object.keys(STATUS_CONFIG).map((s) => (
+                            <option key={s} value={s}>{STATUS_CONFIG[s].label}</option>
+                          ))}
+                        </select>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="flex gap-1.5">
-                          <button onClick={() => setSelectedRequest(req)} title="View"
-                            className="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition">
-                            <Eye size={14} />
+                        <div className="flex gap-1 items-center">
+                          <button onClick={() => setSelectedRequest(req)} title="View Details"
+                            className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition text-[11px] font-medium">
+                            <Eye size={13} /> <span className="hidden sm:inline">View</span>
                           </button>
-                          {req.status === "DELIVERED" && req.paymentStatus !== "PAID" && (
-                            <button onClick={async () => { await api.put(`/custom-requests/${req.id}/payment-status`, { paymentStatus: "PAID" }); toast.success("Marked as paid"); fetchAll(); }}
-                              title="Mark Paid" className="p-1.5 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 transition">
-                              <CheckCircle size={14} />
+                          {req.status === "CUSTOMER_APPROVED" && !req.riderId && (
+                            <button onClick={() => { setSelectedRequest(req); setShowRiderModal(true); }} title="Assign Rider"
+                              className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 transition text-[11px] font-medium">
+                              <Truck size={13} /> <span className="hidden sm:inline">Assign</span>
                             </button>
                           )}
+                          {req.status === "DELIVERED" && req.paymentStatus !== "PAID" && (
+                            <button onClick={() => handleMarkPaid(req.id)} title="Mark Paid"
+                              className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 transition text-[11px] font-medium">
+                              <CheckCircle size={13} /> <span className="hidden sm:inline">Paid</span>
+                            </button>
+                          )}
+                          <button onClick={() => printCustomRequestInvoice(req, language)} title="Print Invoice"
+                            className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg bg-gray-50 text-gray-600 hover:bg-gray-100 transition text-[11px] font-medium">
+                            <Printer size={13} /> <span className="hidden sm:inline">Print</span>
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -234,29 +228,153 @@ export default function AdminCustomRequestsPage() {
 
       <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={filteredRequests.length} itemsPerPage={ITEMS_PER_PAGE} />
 
-      {selectedRequest && (
+      {/* Detail Modal */}
+      {selectedRequest && !showRiderModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setSelectedRequest(null)}>
           <div className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between p-4 border-b">
-              <h3 className="font-bold text-[#00215B]">{t.viewRequest}</h3>
-              <button onClick={() => setSelectedRequest(null)} className="p-1 hover:bg-gray-100 rounded"><X size={18} /></button>
+            <div className="sticky top-0 bg-white border-b px-5 py-3 flex items-center justify-between rounded-t-xl z-10">
+              <div>
+                <h3 className="font-semibold text-gray-800">{selectedRequest.requestNumber}</h3>
+                <p className="text-xs text-gray-400">{new Date(selectedRequest.createdAt).toLocaleString("en-BD", { timeZone: "Asia/Dhaka", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
+              </div>
+              <button onClick={() => setSelectedRequest(null)} className="p-1 hover:bg-gray-100 rounded cursor-pointer"><X size={18} /></button>
             </div>
-            <div className="p-4 space-y-3">
-              <div className="flex justify-between text-sm"><span className="text-gray-500">Request #</span><span className="font-medium">{selectedRequest.requestNumber}</span></div>
-              <div className="flex justify-between text-sm"><span className="text-gray-500">Customer</span><span className="font-medium">{selectedRequest.user?.name}</span></div>
-              <div className="flex justify-between text-sm"><span className="text-gray-500">Phone</span><span className="font-medium">{selectedRequest.user?.phone}</span></div>
-              <div className="flex justify-between text-sm"><span className="text-gray-500">Product</span><span className="font-medium">{selectedRequest.productName}</span></div>
-              {selectedRequest.description && <div className="text-sm"><span className="text-gray-500">Description:</span><p className="mt-1">{selectedRequest.description}</p></div>}
-              <div className="flex justify-between text-sm"><span className="text-gray-500">Quantity</span><span className="font-medium">{selectedRequest.quantity} {selectedRequest.unit}</span></div>
-              {selectedRequest.quotedPrice != null && (
-                <div className="bg-purple-50 rounded-lg p-3 space-y-1">
-                  <div className="flex justify-between text-sm"><span className="text-gray-500">Quoted Price</span><span className="font-medium">৳{selectedRequest.quotedPrice}/{selectedRequest.unit}</span></div>
-                  {selectedRequest.deliveryCharge > 0 && <div className="flex justify-between text-sm"><span className="text-gray-500">Delivery</span><span>৳{selectedRequest.deliveryCharge}</span></div>}
-                  <div className="flex justify-between text-sm font-bold border-t pt-1"><span>Total</span><span className="text-[#EC008C]">৳{selectedRequest.totalAmount}</span></div>
+
+            <div className="p-5 space-y-4">
+              {/* Status Stepper */}
+              <OrderStatusStepper orderStatus={selectedRequest.status} />
+
+              {/* Status & Payment Badges */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${STATUS_CONFIG[selectedRequest.status]?.color || "bg-gray-100 text-gray-700"}`}>
+                  {STATUS_CONFIG[selectedRequest.status]?.label || selectedRequest.status}
+                </span>
+                <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${selectedRequest.paymentStatus === "PAID" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>
+                  {selectedRequest.paymentStatus || "UNPAID"}
+                </span>
+              </div>
+
+              {/* Customer Info */}
+              <div className="bg-gray-50 rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <User size={14} className="text-gray-400" />
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">{t.customer || "Customer"}</p>
+                </div>
+                <p className="text-sm font-medium">{selectedRequest.user?.name || "N/A"}</p>
+                {selectedRequest.user?.phone && (
+                  <a href={`tel:${selectedRequest.user.phone}`} className="text-sm text-[#16A34A] hover:underline">{selectedRequest.user.phone}</a>
+                )}
+              </div>
+
+              {/* Delivery Address */}
+              <div className="bg-gray-50 rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <MapPin size={14} className="text-gray-400" />
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">{t.deliveryAddress || "Delivery Address"}</p>
+                </div>
+                <p className="text-sm">{selectedRequest.deliveryAddress || "N/A"}</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {[selectedRequest.deliveryUpazila, selectedRequest.deliveryDistrict, selectedRequest.deliveryDivision].filter(Boolean).join(", ")}
+                </p>
+              </div>
+
+              {/* Product Details */}
+              <div className="bg-gray-50 rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Package size={14} className="text-gray-400" />
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">{t.items || "Product"}</p>
+                </div>
+                <p className="text-sm font-medium">{selectedRequest.productName}</p>
+                {selectedRequest.description && <p className="text-xs text-gray-500 mt-1">{selectedRequest.description}</p>}
+                <p className="text-xs text-gray-500 mt-1">Qty: {selectedRequest.quantity} {selectedRequest.unit}</p>
+              </div>
+
+              {/* Images */}
+              {selectedRequest.images?.length > 0 && (
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">{t.images || "Images"}</p>
+                  <div className="flex gap-2 flex-wrap">
+                    {selectedRequest.images.map((img, i) => (
+                      <img key={i} src={img} alt="" className="w-16 h-16 rounded-lg object-cover border" />
+                    ))}
+                  </div>
                 </div>
               )}
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">Payment:</span>
+
+              {/* Customer Notes */}
+              {selectedRequest.customerNotes && (
+                <div className="bg-blue-50 rounded-lg p-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <StickyNote size={14} className="text-blue-600" />
+                    <p className="text-xs font-medium text-blue-700 uppercase tracking-wider">{t.notes || "Customer Notes"}</p>
+                  </div>
+                  <p className="text-sm text-blue-800">{selectedRequest.customerNotes}</p>
+                </div>
+              )}
+
+              {/* Price Breakdown */}
+              {selectedRequest.quotedPrice != null && (
+                <div className="bg-purple-50 rounded-lg p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <CreditCard size={14} className="text-purple-600" />
+                    <p className="text-xs font-medium text-purple-700 uppercase tracking-wider">{t.pricing || "Price Breakdown"}</p>
+                  </div>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">{t.unitPrice || "Unit Price"}</span>
+                      <span>৳{selectedRequest.quotedPrice}/{selectedRequest.unit}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">{t.subtotal || "Subtotal"}</span>
+                      <span>৳{((selectedRequest.quotedPrice || 0) * (selectedRequest.quantity || 1)).toLocaleString()}</span>
+                    </div>
+                    {selectedRequest.deliveryCharge > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">{t.deliveryFee || "Delivery Fee"}</span>
+                        <span>৳{selectedRequest.deliveryCharge.toLocaleString()}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between font-semibold border-t pt-1">
+                      <span>{t.total || "Total"}</span>
+                      <span className="text-[#EC008C]">৳{selectedRequest.totalAmount?.toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Manager Notes */}
+              {selectedRequest.managerNotes && (
+                <div className="bg-amber-50 rounded-lg p-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <StickyNote size={14} className="text-amber-600" />
+                    <p className="text-xs font-medium text-amber-700 uppercase tracking-wider">{t.managerNotes || "Manager Notes"}</p>
+                  </div>
+                  <p className="text-sm text-amber-800">{selectedRequest.managerNotes}</p>
+                </div>
+              )}
+
+              {/* Rider Info */}
+              {selectedRequest.rider && (
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Truck size={14} className="text-gray-400" />
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">{t.rider || "Rider"}</p>
+                  </div>
+                  <p className="text-sm font-medium">{selectedRequest.rider.user?.name}</p>
+                </div>
+              )}
+
+              {/* Rejection Reason */}
+              {selectedRequest.rejectionReason && (
+                <div className="bg-red-50 rounded-lg p-3">
+                  <p className="text-xs font-medium text-red-700 mb-1">{t.rejectionReason || "Rejection Reason"}</p>
+                  <p className="text-sm text-red-800">{selectedRequest.rejectionReason}</p>
+                </div>
+              )}
+
+              {/* Payment Status Buttons */}
+              <div className="flex items-center justify-between text-sm bg-gray-50 rounded-lg p-3">
+                <span className="text-gray-500 font-medium">{t.paymentStatus || "Payment Status"}:</span>
                 <div className="flex gap-1.5">
                   {["UNPAID", "PAID", "REFUNDED"].map((status) => (
                     <button
@@ -271,12 +389,12 @@ export default function AdminCustomRequestsPage() {
                           toast.error("Failed to update payment status");
                         }
                       }}
-                      className={`px-2 py-0.5 rounded text-xs font-medium transition ${
+                      className={`px-2 py-0.5 rounded text-xs font-medium transition cursor-pointer ${
                         (selectedRequest.paymentStatus || "UNPAID") === status
                           ? status === "PAID" ? "bg-green-100 text-green-700 ring-1 ring-green-300"
                           : status === "REFUNDED" ? "bg-orange-100 text-orange-700 ring-1 ring-orange-300"
                           : "bg-yellow-100 text-yellow-700 ring-1 ring-yellow-300"
-                          : "bg-gray-50 text-gray-500 hover:bg-gray-100"
+                          : "bg-white text-gray-500 hover:bg-gray-100 border border-gray-200"
                       }`}
                     >
                       {status}
@@ -284,9 +402,56 @@ export default function AdminCustomRequestsPage() {
                   ))}
                 </div>
               </div>
-              <div className="text-sm"><span className="text-gray-500">Delivery:</span><p className="mt-1">{selectedRequest.deliveryAddress}, {selectedRequest.deliveryUpazila}, {selectedRequest.deliveryDistrict}</p></div>
-              {selectedRequest.images?.length > 0 && (
-                <div><span className="text-gray-500 text-sm">Images:</span><div className="flex gap-2 mt-1 flex-wrap">{selectedRequest.images.map((img, i) => <img key={i} src={img} alt="" className="w-16 h-16 rounded-lg object-cover border" />)}</div></div>
+
+              {/* Assign Rider Button */}
+              {selectedRequest.status === "CUSTOMER_APPROVED" && !selectedRequest.riderId && (
+                <button onClick={() => setShowRiderModal(true)}
+                  className="w-full bg-green-500 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-green-600 transition flex items-center justify-center gap-2 cursor-pointer">
+                  <Truck size={16} /> {t.assignRiderAction || "Assign Rider"}
+                </button>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="sticky bottom-0 bg-white border-t px-5 py-3 flex gap-2 rounded-b-xl">
+              <button onClick={() => printCustomRequestInvoice(selectedRequest, language)} className="flex-1 flex items-center justify-center gap-2 bg-[#00215B] text-white py-2.5 rounded-lg text-sm font-medium hover:bg-[#001A4A] transition cursor-pointer">
+                <Printer size={14} /> {language === "bn" ? "ইনভয়েস প্রিন্ট" : "Print Invoice"}
+              </button>
+              <button onClick={() => printCustomRequestInvoice(selectedRequest, language === "en" ? "bn" : "en")} className="flex items-center justify-center gap-1 bg-white border border-[#E5E7EB] text-gray-700 py-2.5 px-3 rounded-lg text-sm font-medium hover:bg-gray-50 transition cursor-pointer">
+                {language === "en" ? "বাং" : "EN"}
+              </button>
+              <button onClick={() => setSelectedRequest(null)} className="flex-1 bg-gray-100 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition cursor-pointer">{t.close || "Close"}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Rider Modal */}
+      {showRiderModal && selectedRequest && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowRiderModal(false)}>
+          <div className="bg-white rounded-xl max-w-md w-full max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="font-bold text-[#00215B]">{t.assignRider || "Assign Rider"}</h3>
+              <button onClick={() => setShowRiderModal(false)} className="p-1 hover:bg-gray-100 rounded cursor-pointer"><X size={18} /></button>
+            </div>
+            <div className="p-4">
+              {riders.length === 0 ? (
+                <p className="text-center text-gray-400 py-6 text-sm">No riders available</p>
+              ) : (
+                <div className="space-y-2">
+                  {riders.map((rider) => (
+                    <div key={rider.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition">
+                      <div>
+                        <p className="text-sm font-medium">{rider.user?.name}</p>
+                        <p className="text-xs text-gray-500">{rider.vehicleType || "Bike"} | {rider.totalDeliveries} deliveries</p>
+                      </div>
+                      <button onClick={() => assignRider(rider.id)}
+                        className="bg-green-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-green-600 transition cursor-pointer">
+                        Assign
+                      </button>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           </div>

@@ -78,7 +78,7 @@ export default function ProductRequestPage() {
   const [savingOrder, setSavingOrder] = useState(false);
   const [editingRequest, setEditingRequest] = useState(false);
   const [requestEditForm, setRequestEditForm] = useState({
-    productName: "", description: "", quantity: 1, unit: "piece",
+    productName: "", description: "", quantity: "1", unit: "piece",
     deliveryAddress: "", deliveryDivision: "", deliveryDistrict: "", deliveryUpazila: "",
     deliveryLatitude: null, deliveryLongitude: null, customerNotes: "",
   });
@@ -89,7 +89,7 @@ export default function ProductRequestPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [creating, setCreating] = useState(false);
   const [createForm, setCreateForm] = useState({
-    productName: "", description: "", quantity: 1, unit: "piece",
+    productName: "", description: "", quantity: "1", unit: "piece",
     deliveryDivision: "", deliveryDistrict: "", deliveryUpazila: "",
     deliveryAddress: "", customerNotes: "",
   });
@@ -157,7 +157,7 @@ export default function ProductRequestPage() {
       await api.post("/custom-requests", {
         productName: createForm.productName.trim(),
         description: createForm.description.trim(),
-        quantity: createForm.quantity,
+        quantity: parseInt(createForm.quantity) || 1,
         unit: createForm.unit,
         deliveryDivision: createForm.deliveryDivision,
         deliveryDistrict: createForm.deliveryDistrict,
@@ -167,7 +167,7 @@ export default function ProductRequestPage() {
       });
       toast.success(language === "bn" ? "অনুরোধ তৈরি হয়েছে!" : "Request submitted!");
       setShowCreateModal(false);
-      setCreateForm({ productName: "", description: "", quantity: 1, unit: "piece", deliveryDivision: "", deliveryDistrict: "", deliveryUpazila: "", deliveryAddress: "", customerNotes: "" });
+      setCreateForm({ productName: "", description: "", quantity: "1", unit: "piece", deliveryDivision: "", deliveryDistrict: "", deliveryUpazila: "", deliveryAddress: "", customerNotes: "" });
       fetchRequests();
     } catch (err) {
       toast.error(err.response?.data?.message || (language === "bn" ? "তৈরি ব্যর্থ" : "Failed to create"));
@@ -181,7 +181,7 @@ export default function ProductRequestPage() {
     setRequestEditForm({
       productName: selected.productName || "",
       description: selected.description || "",
-      quantity: selected.quantity || 1,
+      quantity: String(selected.quantity || 1),
       unit: selected.unit || "piece",
       deliveryAddress: selected.deliveryAddress || "",
       deliveryDivision: selected.deliveryDivision || "",
@@ -201,7 +201,7 @@ export default function ProductRequestPage() {
       const res = await api.put(`/custom-requests/${selected.id}/edit`, {
         productName: requestEditForm.productName,
         description: requestEditForm.description,
-        quantity: requestEditForm.quantity,
+        quantity: parseInt(requestEditForm.quantity) || 1,
         unit: requestEditForm.unit,
         deliveryAddress: requestEditForm.deliveryAddress,
         deliveryDivision: requestEditForm.deliveryDivision,
@@ -634,7 +634,11 @@ export default function ProductRequestPage() {
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="text-[10px] text-gray-600 mb-0.5 block">{language === "bn" ? "পরিমাণ" : "Quantity"}</label>
-                      <input type="number" min="1" value={requestEditForm.quantity} onChange={(e) => setRequestEditForm({ ...requestEditForm, quantity: parseInt(e.target.value) || 1 })}
+                      <input type="number" min="1" value={requestEditForm.quantity} onChange={(e) => setRequestEditForm({ ...requestEditForm, quantity: e.target.value })}
+                        onBlur={(e) => {
+                          const v = parseInt(e.target.value);
+                          setRequestEditForm({ ...requestEditForm, quantity: isNaN(v) || v < 1 ? "1" : String(v) });
+                        }}
                         className="w-full px-2.5 py-1.5 border border-gray-300 rounded-lg text-[11px] focus:outline-none focus:border-[#0067A0]" />
                     </div>
                     <div>
@@ -1018,7 +1022,11 @@ export default function ProductRequestPage() {
                     type="number"
                     min="1"
                     value={createForm.quantity}
-                    onChange={(e) => setCreateForm({ ...createForm, quantity: parseInt(e.target.value) || 1 })}
+                    onChange={(e) => setCreateForm({ ...createForm, quantity: e.target.value })}
+                    onBlur={(e) => {
+                      const v = parseInt(e.target.value);
+                      setCreateForm({ ...createForm, quantity: isNaN(v) || v < 1 ? "1" : String(v) });
+                    }}
                     className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#EC008C]/30 focus:border-[#EC008C] transition"
                   />
                 </div>

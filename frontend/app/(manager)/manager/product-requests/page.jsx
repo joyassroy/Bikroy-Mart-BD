@@ -27,13 +27,15 @@ const STATUS_CONFIG = {
 const TABS = [
   { key: "ALL", label: "All" },
   { key: "PENDING", label: "Pending" },
-  { key: "CONFIRMED", label: "Confirmed" },
+  { key: "MANAGER_REVIEW", label: "Under Review" },
+  { key: "PRICING_SET", label: "Price Quoted" },
+  { key: "CUSTOMER_APPROVED", label: "Approved" },
+  { key: "CUSTOMER_REJECTED", label: "Rejected" },
   { key: "PROCESSING", label: "Processing" },
   { key: "SHIPPED", label: "Shipped" },
   { key: "OUT_FOR_DELIVERY", label: "Out for Delivery" },
   { key: "DELIVERED", label: "Delivered" },
   { key: "CANCELLED", label: "Cancelled" },
-  { key: "RETURNED", label: "Returned" },
 ];
 
 export default function ManagerProductRequestsPage() {

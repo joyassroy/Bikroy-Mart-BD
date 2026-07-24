@@ -14,11 +14,11 @@ router.get("/manager/pending", authenticate, authorize("MANAGER"), customRequest
 router.get("/manager/all", authenticate, authorize("MANAGER"), customRequestController.getManagerAllRequests);
 router.get("/:id", authenticate, customRequestController.getCustomRequestById);
 router.put("/:id/edit", authenticate, customRequestController.updateCustomRequest);
-router.put("/:id/quote", authenticate, authorize("MANAGER"), customRequestController.setQuote);
+router.put("/:id/quote", authenticate, authorize("MANAGER", "ADMIN"), customRequestController.setQuote);
 router.put("/:id/approve", authenticate, customRequestController.approveQuote);
 router.put("/:id/reject", authenticate, customRequestController.rejectQuote);
 router.put("/:id/status", authenticate, authorize("MANAGER", "ADMIN"), customRequestController.updateStatus);
-router.put("/:id/assign-rider", authenticate, authorize("MANAGER"), customRequestController.assignRider);
+router.put("/:id/assign-rider", authenticate, authorize("MANAGER", "ADMIN"), customRequestController.assignRider);
 router.put("/:id/pay", authenticate, customRequestController.markAsPaid);
 router.put("/:id/cancel", authenticate, customRequestController.cancelCustomRequest);
 router.put("/:id/payment-status", authenticate, authorize("MANAGER", "ADMIN"), customRequestController.updatePaymentStatus);
