@@ -317,53 +317,170 @@ export function printInvoice(order, lang = "en") {
 
 export function printCustomRequestInvoice(request, lang = "en") {
   const L = lang === "bn"
-    ? { shopName: "Bikroy-Mart-BD", invoice: "ইনভয়েস", requestNo: "অনুরোধ নং", date: "তারিখ", customer: "গ্রাহক", phone: "ফোন", product: "পণ্য", qty: "পরিমাণ", unit: "একক", unitPrice: "একক মূল্য", subtotal: "উপমোট", deliveryFee: "ডেলিভারি ফি", total: "মোট", payment: "পেমেন্ট", paid: "পরিশোধিত", unpaid: "অপরিশোধিত", address: "ঠিকানা", notes: "নোট", thankYou: "আমাদের সাথে কেনাকাটার জন্য ধন্যবাদ!", powered: "পাওয়ার্ড বাই Bikroy-Mart-BD" }
-    : { shopName: "Bikroy-Mart-BD", invoice: "INVOICE", requestNo: "Request No.", date: "Date", customer: "Customer", phone: "Phone", product: "Product", qty: "Qty", unit: "Unit", unitPrice: "Unit Price", subtotal: "Subtotal", deliveryFee: "Delivery Fee", total: "Total", payment: "Payment", paid: "PAID", unpaid: "UNPAID", address: "Address", notes: "Notes", thankYou: "Thank you for shopping with us!", powered: "Powered by Bikroy-Mart-BD" };
+    ? {
+        shopName: "Bikroy-Mart-BD", tagline: "ডেলিভারির ধরনে বিশ্বস্ত অনলাইন গ্রসারি স্টোর",
+        invoice: "ইনভয়েস", requestNo: "অনুরোধ নং", date: "তারিখ",
+        shipTo: "পাঠানো হবে", name: "নাম:", phone: "ফোন:",
+        address: "ঠিকানা:", upazila: "উপজেলা:", district: "জেলা:", division: "বিভাগ:",
+        product: "পণ্য", qty: "পরিমাণ", unit: "একক", unitPrice: "একক মূল্য", totalHeader: "মোট",
+        subtotal: "উপমোট", delivery: "ডেলিভারি ফি", grandTotal: "মোট",
+        paid: "পরিশোধিত", unpaid: "অপরিশোধিত",
+        notes: "গ্রাহকের নোট:", managerNotes: "ম্যানেজার নোট:",
+        thankYou: "বিক্রয়-মার্ট-বিডি দিয়ে কেনাকাটার জন্য ধন্যবাদ!",
+        footerNote: "এটি একটি কম্পিউটার-জনিত চালান। স্বাক্ষরের প্রয়োজন নেই।",
+        currency: "৳", companyAddress: "বিক্রয়-মার্ট-বিডি, ঢাকা, বাংলাদেশ",
+        contact: "যোগাযোগ: 16469", website: "bikroymart.com",
+        font: "'Noto Sans Bengali','Hind Siliguri','Kalpurush',sans-serif",
+      }
+    : {
+        shopName: "Bikroy-Mart-BD", tagline: "Your Trusted Online Grocery Store",
+        invoice: "INVOICE", requestNo: "Request No.", date: "Date",
+        shipTo: "SHIP TO", name: "Name:", phone: "Phone:",
+        address: "Address:", upazila: "Upazila:", district: "District:", division: "Division:",
+        product: "Product", qty: "Qty", unit: "Unit", unitPrice: "Unit Price", totalHeader: "Total",
+        subtotal: "Subtotal", delivery: "Delivery Fee", grandTotal: "TOTAL",
+        paid: "PAID", unpaid: "UNPAID",
+        notes: "Customer Notes:", managerNotes: "Manager Notes:",
+        thankYou: "Thank you for shopping with Bikroy-Mart-BD!",
+        footerNote: "This is a computer-generated invoice. No signature required.",
+        currency: "Tk", companyAddress: "Bikroy-Mart-BD, Dhaka, Bangladesh",
+        contact: "Support: 16469", website: "bikroymart.com",
+        font: "Inter,system-ui,-apple-system,sans-serif",
+      };
 
-  const items = `<tr style="background:#f4f7fb;">
-    <td style="padding:8px 10px;font-weight:600;font-size:11px;color:#4a6590;">${L.product}</td>
-    <td style="padding:8px 10px;font-weight:600;font-size:11px;color:#4a6590;">${L.qty}</td>
-    <td style="padding:8px 10px;font-weight:600;font-size:11px;color:#4a6590;">${L.unit}</td>
-    <td style="padding:8px 10px;font-weight:600;font-size:11px;color:#4a6590;text-align:right;">${L.unitPrice}</td>
-  </tr>
-  <tr>
-    <td style="padding:8px 10px;font-size:11px;">${request.productName || "N/A"}</td>
-    <td style="padding:8px 10px;font-size:11px;">${request.quantity || 1}</td>
-    <td style="padding:8px 10px;font-size:11px;">${request.unit || "piece"}</td>
-    <td style="padding:8px 10px;font-size:11px;text-align:right;">৳${(request.quotedPrice || 0).toLocaleString()}</td>
-  </tr>`;
+  const formattedDate = request.createdAt
+    ? new Date(request.createdAt).toLocaleDateString(lang === "bn" ? "bn-BD" : "en-BD", { day: "numeric", month: "short", year: "numeric" })
+    : "N/A";
+
+  const addressParts = [request.deliveryAddress, request.deliveryUpazila, request.deliveryDistrict, request.deliveryDivision].filter(Boolean);
+  const fullAddress = addressParts.join(", ") || "N/A";
 
   const payLabel = request.paymentStatus === "PAID" ? L.paid : L.unpaid;
   const payColor = request.paymentStatus === "PAID" ? "#10b981" : "#eab308";
 
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${L.invoice} - ${request.requestNumber}</title>
-<style>@media print{body{margin:0;}}</style></head><body style="margin:0;padding:20px;font-family:'Segoe UI',Tahoma,sans-serif;background:#fff;">
-<div style="max-width:520px;margin:0 auto;border:1px solid #e5e7eb;border-radius:8px;padding:20px;">
-<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
-<div><h1 style="margin:0;font-size:20px;color:#00215B;">${L.shopName}</h1><p style="margin:2px 0 0;font-size:10px;color:#999;">Bikroy-Mart-BD</p></div>
-<div style="text-align:right;"><h2 style="margin:0;font-size:16px;color:#EC008C;">${L.invoice}</h2></div></div>
+  const subtotal = (request.quotedPrice || 0) * (request.quantity || 1);
+  const deliveryCharge = request.deliveryCharge || 0;
+  const total = request.totalAmount || subtotal + deliveryCharge;
 
-<div style="display:flex;justify-content:space-between;margin-bottom:16px;font-size:11px;">
-<div><p style="margin:2px 0;color:#666;">${L.requestNo}: <strong>${request.requestNumber || "N/A"}</strong></p><p style="margin:2px 0;color:#666;">${L.date}: ${new Date(request.createdAt).toLocaleDateString("en-BD")}</p></div>
-<div style="text-align:right;"><p style="margin:2px 0;color:#666;"><span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;color:#fff;background:${payColor};">${payLabel}</span></p></div></div>
+  const trackingUrl = `https://bikroymart.com/track/${request.requestNumber}`;
 
-<div style="margin-bottom:16px;padding:10px;background:#f9fafb;border-radius:6px;font-size:11px;">
-<p style="margin:2px 0;"><strong>${L.customer}:</strong> ${request.user?.name || "N/A"}</p>
-<p style="margin:2px 0;"><strong>${L.phone}:</strong> ${request.user?.phone || "N/A"}</p>
-<p style="margin:2px 0;"><strong>${L.address}:</strong> ${request.deliveryAddress || ""}, ${request.deliveryUpazila || ""}, ${request.deliveryDistrict || ""}</p></div>
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>${L.invoice} - ${request.requestNumber}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: ${L.font}; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  @media print { body { margin: 0; } @page { margin: 8mm; size: A4; } }
+</style>
+</head>
+<body>
+<div style="width:100%;max-width:794px;margin:0 auto;background:#fff;padding:0;font-family:${L.font}">
 
-<table style="width:100%;border-collapse:collapse;margin-bottom:16px;">${items}</table>
+  <!-- Header -->
+  <div style="background:linear-gradient(135deg,#00215B 0%,#001845 100%);padding:18px 28px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div style="display:flex;align-items:center;gap:10px">
+        <img src="/favicon.ico" style="width:32px;height:32px;border-radius:8px;background:#fff;padding:3px;box-shadow:0 1px 4px rgba(0,0,0,0.15)" alt="logo" />
+        <div>
+          <div style="color:#fff;font-size:18px;font-weight:800;letter-spacing:0.3px;line-height:1.1">Bikroy-Mart-BD</div>
+          <div style="color:#94b3e0;font-size:9px;margin-top:2px;letter-spacing:0.2px">${L.tagline}</div>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div style="background:#ec008c;color:#fff;padding:6px 20px;border-radius:8px;font-size:13px;font-weight:700;letter-spacing:1.5px">${L.invoice}</div>
+        <div style="color:#94b3e0;font-size:10px;margin-top:5px">#${request.requestNumber || "N/A"}</div>
+      </div>
+    </div>
+    <div style="margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.15);display:flex;justify-content:space-between;align-items:center">
+      <div style="color:#7090c0;font-size:9px;font-family:${L.font}">${L.companyAddress} | ${L.contact} | ${L.website}</div>
+      <a href="${trackingUrl}" style="color:#ec008c;font-size:9px;text-decoration:underline;font-family:${L.font}">Track Order →</a>
+    </div>
+  </div>
 
-<div style="border-top:2px solid #e5e7eb;padding-top:10px;">
-<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px;"><span>${L.subtotal}</span><span>৳${((request.quotedPrice || 0) * (request.quantity || 1)).toLocaleString()}</span></div>
-${request.deliveryCharge > 0 ? `<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px;"><span>${L.deliveryFee}</span><span>৳${(request.deliveryCharge || 0).toLocaleString()}</span></div>` : ""}
-<div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700;color:#00215B;border-top:2px solid #e5e7eb;padding-top:8px;margin-top:8px;"><span>${L.total}</span><span style="color:#EC008C;">৳${(request.totalAmount || 0).toLocaleString()}</span></div></div>
+  <!-- Body -->
+  <div style="padding:18px 28px">
+    <!-- Info Cards -->
+    <div style="display:flex;gap:14px;margin-bottom:16px">
+      <!-- Order Details -->
+      <div style="flex:1;background:#f4f7fb;border-radius:10px;padding:14px 16px;border:1px solid #e8ecf3">
+        <div style="color:#00215B;font-size:10px;font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px;font-family:${L.font}">${L.requestNo.replace(":", "")}</div>
+        <table style="width:100%;border-collapse:collapse">
+          <tr><td style="padding:4px 0;color:#6b7280;font-size:11px;width:100px;font-family:${L.font}">${L.requestNo}</td><td style="padding:4px 0;color:#111827;font-size:11px;font-weight:600">${request.requestNumber || "N/A"}</td></tr>
+          <tr><td style="padding:4px 0;color:#6b7280;font-size:11px;font-family:${L.font}">${L.date}</td><td style="padding:4px 0;color:#111827;font-size:11px;font-weight:600">${formattedDate}</td></tr>
+          <tr><td style="padding:4px 0;color:#6b7280;font-size:11px;font-family:${L.font}">${L.payment}</td><td style="padding:4px 0;color:#111827;font-size:11px;font-weight:600"><span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;color:#fff;background:${payColor};">${payLabel}</span></td></tr>
+        </table>
+      </div>
+      <!-- Ship To -->
+      <div style="flex:1;background:#f4f7fb;border-radius:10px;padding:14px 16px;border:1px solid #e8ecf3">
+        <div style="color:#00215B;font-size:10px;font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px;font-family:${L.font}">${L.shipTo}</div>
+        <table style="width:100%;border-collapse:collapse">
+          <tr><td style="padding:4px 0;color:#6b7280;font-size:11px;width:75px;font-family:${L.font}">${L.name}</td><td style="padding:4px 0;color:#111827;font-size:11px;font-weight:600">${request.user?.name || "N/A"}</td></tr>
+          <tr><td style="padding:4px 0;color:#6b7280;font-size:11px;font-family:${L.font}">${L.phone}</td><td style="padding:4px 0;color:#111827;font-size:11px">${request.user?.phone || "N/A"}</td></tr>
+          <tr><td style="padding:4px 0;color:#6b7280;font-size:11px;font-family:${L.font}">${L.address}</td><td style="padding:4px 0;color:#111827;font-size:11px">${fullAddress}</td></tr>
+        </table>
+      </div>
+    </div>
 
-${request.customerNotes ? `<div style="margin-top:12px;font-size:10px;color:#666;"><strong>${L.notes}:</strong> ${request.customerNotes}</div>` : ""}
+    <!-- Items Table -->
+    <table style="width:100%;border-collapse:collapse;margin-bottom:16px;border-radius:10px;overflow:hidden;border:1px solid #e8ecf3">
+      <thead>
+        <tr style="background:linear-gradient(135deg,#00215B,#003087)">
+          <th style="padding:10px;text-align:left;color:#fff;font-size:10px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;font-family:${L.font}">${L.product}</th>
+          <th style="padding:10px;text-align:center;color:#fff;font-size:10px;font-weight:700;width:50px;letter-spacing:0.8px;text-transform:uppercase;font-family:${L.font}">${L.qty}</th>
+          <th style="padding:10px;text-align:center;color:#fff;font-size:10px;font-weight:700;width:60px;letter-spacing:0.8px;text-transform:uppercase;font-family:${L.font}">${L.unit}</th>
+          <th style="padding:10px;text-align:right;color:#fff;font-size:10px;font-weight:700;width:90px;letter-spacing:0.8px;text-transform:uppercase;font-family:${L.font}">${L.unitPrice}</th>
+          <th style="padding:10px;text-align:right;color:#fff;font-size:10px;font-weight:700;width:90px;letter-spacing:0.8px;text-transform:uppercase;font-family:${L.font}">${L.totalHeader}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="background:#f9fafb">
+          <td style="padding:10px;border-bottom:1px solid #e5e7eb;color:#111827;font-size:11px;font-weight:500;font-family:${L.font}">${request.productName || "N/A"}</td>
+          <td style="padding:10px;border-bottom:1px solid #e5e7eb;color:#374151;font-size:11px;text-align:center;font-family:${L.font}">${request.quantity || 1}</td>
+          <td style="padding:10px;border-bottom:1px solid #e5e7eb;color:#374151;font-size:11px;text-align:center;font-family:${L.font}">${request.unit || "piece"}</td>
+          <td style="padding:10px;border-bottom:1px solid #e5e7eb;color:#374151;font-size:11px;text-align:right;font-family:${L.font}">${L.currency} ${(request.quotedPrice || 0).toLocaleString()}</td>
+          <td style="padding:10px;border-bottom:1px solid #e5e7eb;color:#111827;font-size:11px;text-align:right;font-weight:700;font-family:${L.font}">${L.currency} ${subtotal.toLocaleString()}</td>
+        </tr>
+      </tbody>
+    </table>
 
-<div style="text-align:center;margin-top:20px;padding-top:12px;border-top:1px solid #e5e7eb;">
-<p style="font-size:11px;color:#EC008C;font-weight:600;">${L.thankYou}</p>
-<p style="font-size:9px;color:#999;margin-top:4px;">${L.powered}</p></div></div></body></html>`;
+    <!-- Totals -->
+    <div style="display:flex;gap:14px;margin-bottom:16px">
+      <div style="flex:1">
+        ${request.customerNotes ? `<div style="background:#f4f7fb;border-radius:10px;padding:14px 16px;border:1px solid #e8ecf3"><div style="color:#00215B;font-size:10px;font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.8px;font-family:${L.font}">${L.notes}</div><p style="font-size:11px;color:#374151;font-family:${L.font}">${request.customerNotes}</p></div>` : ""}
+        ${request.managerNotes ? `<div style="background:#fffbeb;border-radius:10px;padding:14px 16px;border:1px solid #fde68a;margin-top:${request.customerNotes ? "10px" : "0"}"><div style="color:#92400e;font-size:10px;font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.8px;font-family:${L.font}">${L.managerNotes}</div><p style="font-size:11px;color:#78350f;font-family:${L.font}">${request.managerNotes}</p></div>` : ""}
+      </div>
+      <div style="background:#f4f7fb;border-radius:10px;padding:14px 16px;min-width:250px;border:1px solid #e8ecf3">
+        <table style="width:100%;border-collapse:collapse">
+          <tr>
+            <td style="padding:4px 0;color:#6b7280;font-size:11px;font-family:${L.font}">${L.subtotal}</td>
+            <td style="padding:4px 0;text-align:right;color:#374151;font-size:11px;font-family:${L.font}">${L.currency} ${subtotal.toLocaleString()}</td>
+          </tr>
+          <tr>
+            <td style="padding:4px 0;color:#6b7280;font-size:11px;font-family:${L.font}">${L.delivery}</td>
+            <td style="padding:4px 0;text-align:right;color:#374151;font-size:11px;font-family:${L.font}">${deliveryCharge === 0 ? '<span style="background:#16a34a;color:#fff;padding:1px 8px;border-radius:8px;font-size:10px;font-weight:600">FREE</span>' : `${L.currency} ${deliveryCharge.toLocaleString()}`}</td>
+          </tr>
+        </table>
+        <div style="border-top:2px solid #00215B;margin-top:6px;padding-top:6px;display:flex;justify-content:space-between;align-items:center">
+          <span style="color:#00215B;font-size:12px;font-weight:700;font-family:${L.font}">${L.grandTotal}</span>
+          <span style="color:#ec008c;font-size:16px;font-weight:800;font-family:${L.font}">${L.currency} ${total.toLocaleString()}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div style="background:linear-gradient(135deg,#00215B 0%,#001845 100%);padding:12px 28px;text-align:center">
+    <div style="color:#fff;font-size:11px;font-weight:600;font-family:${L.font}">${L.thankYou}</div>
+    <div style="color:#7090c0;font-size:9px;margin-top:3px">${L.website} | ${L.contact}</div>
+    <div style="color:#4a6590;font-size:8.5px;margin-top:2px;font-family:${L.font}">${L.footerNote}</div>
+  </div>
+
+</div>
+</body>
+</html>`;
 
   const win = window.open("", "_blank");
   if (!win) return;
