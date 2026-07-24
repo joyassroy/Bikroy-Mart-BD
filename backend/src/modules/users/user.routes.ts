@@ -151,6 +151,26 @@ router.delete("/:id", authenticate, authorize("ADMIN"), async (req: AuthRequest,
       }
     }
 
+    if (user.role === "RIDER") {
+      const riderProfile = await prisma.riderProfile.findUnique({ where: { userId: user.id } });
+      if (riderProfile) {
+        const orderCount = await prisma.order.count({ where: { riderId: riderProfile.id } });
+        if (orderCount > 0) {
+          return sendError(res, "Cannot delete rider with existing orders. Remove or reassign their orders first.", 400);
+        }
+      }
+    }
+
+    if (user.role === "MANAGER") {
+      const managerProfile = await prisma.managerProfile.findUnique({ where: { userId: user.id } });
+      if (managerProfile) {
+        const orderCount = await prisma.order.count({ where: { deliveryDistrict: managerProfile.assignedDistrict } });
+        if (orderCount > 0) {
+          return sendError(res, "Cannot delete manager with existing orders in their district. Remove or reassign orders first.", 400);
+        }
+      }
+    }
+
     await prisma.user.delete({ where: { id: String(req.params.id) } });
     return sendSuccess(res, "User deleted");
   } catch (error: any) {

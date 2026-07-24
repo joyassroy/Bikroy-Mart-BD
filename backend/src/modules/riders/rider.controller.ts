@@ -320,6 +320,13 @@ export const deleteRider = async (req: Request, res: Response) => {
     });
     if (!rider) return sendError(res, "Rider not found", 404);
 
+    const orderCount = await prisma.order.count({
+      where: { riderId: rider.id },
+    });
+    if (orderCount > 0) {
+      return sendError(res, "Cannot delete rider with existing orders. Remove or reassign their orders first.", 400);
+    }
+
     await prisma.user.delete({ where: { id: rider.userId } });
     return sendSuccess(res, "Rider deleted");
   } catch (error: any) {

@@ -82,10 +82,17 @@ export const ipnHandler = async (req: Request, res: Response) => {
         where: { transactionId: validation.tran_id },
       });
       if (order) {
-        await prisma.order.update({
-          where: { id: order.id },
-          data: { paymentStatus: "PAID", orderStatus: "CONFIRMED" },
-        });
+        if (order.orderStatus === "DELIVERED") {
+          await prisma.order.update({
+            where: { id: order.id },
+            data: { paymentStatus: "PAID" },
+          });
+        } else {
+          await prisma.order.update({
+            where: { id: order.id },
+            data: { paymentStatus: "PAID", orderStatus: "CONFIRMED" },
+          });
+        }
       }
       return sendSuccess(res, "IPN validated", validation);
     } else {

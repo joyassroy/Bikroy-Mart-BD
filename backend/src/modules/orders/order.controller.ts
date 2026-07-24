@@ -133,6 +133,16 @@ export const getAllOrders = async (req: Request, res: Response) => {
 export const updateOrderStatus = async (req: AuthRequest, res: Response) => {
   try {
     const { status, paymentStatus } = req.body;
+
+    const existingOrder = await prisma.order.findUnique({
+      where: { id: String(req.params.id) },
+      select: { orderStatus: true },
+    });
+    if (!existingOrder) return sendError(res, "Order not found", 404);
+    if (existingOrder.orderStatus === "DELIVERED" && status !== "DELIVERED") {
+      return sendError(res, "Cannot change status of a delivered order", 400);
+    }
+
     const data: any = { orderStatus: status };
     if (paymentStatus) data.paymentStatus = paymentStatus;
     if (status === "DELIVERED") data.actualDelivery = new Date();
@@ -262,9 +272,13 @@ export const assignRider = async (req: AuthRequest, res: Response) => {
     const { riderId } = req.body;
     const order = await prisma.order.findUnique({
       where: { id: String(req.params.id) },
-      select: { id: true, deliveryDistrict: true, riderId: true },
+      select: { id: true, deliveryDistrict: true, riderId: true, orderStatus: true },
     });
     if (!order) return sendError(res, "Order not found", 404);
+
+    if (order.orderStatus === "DELIVERED") {
+      return sendError(res, "Cannot reassign a delivered order", 400);
+    }
 
     const rider = await prisma.riderProfile.findUnique({
       where: { id: riderId },
