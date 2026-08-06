@@ -4,8 +4,8 @@ import { FaWhatsapp, FaFacebookMessenger } from "react-icons/fa";
 import { MessageCircle, X } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 
-const WHATSAPP_NUMBER = "8801XXXXXXXXX";
-const MESSENGER_LINK = "https://m.me/yourpage";
+const WHATSAPP_NUMBER = "8801713678644";
+const MESSENGER_LINK = "https://www.facebook.com/bmaartbd";
 
 export default function FloatingChatButton() {
   const [isOpen, setIsOpen] = useState(false);
