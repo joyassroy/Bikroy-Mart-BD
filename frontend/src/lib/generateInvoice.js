@@ -93,7 +93,7 @@ const LABELS = {
     estimatedDelivery: "আনুমানিক ডেলিভারি:",
     companyAddress: "বিক্রয়-মার্ট-বিডি, ঢাকা, বাংলাদেশ",
     contact: "যোগাযোগ: 16469",
-    website: "bikroymart.com",
+    website: "bmaart.com",
     trackingLink: "অর্ডার ট্র্যাক করুন",
     page: "পৃষ্ঠ",
     of: "এর",
@@ -132,7 +132,7 @@ const LABELS = {
     estimatedDelivery: "Est. Delivery:",
     companyAddress: "Bikroy-Mart-BD, Dhaka, Bangladesh",
     contact: "Support: 16469",
-    website: "bikroymart.com",
+    website: "bmaart.com",
     trackingLink: "Track Order",
     page: "Page",
     of: "of",
@@ -159,7 +159,7 @@ function printInvoiceHTML(order, lang) {
   const d = extractOrderData(order, lang);
   const currency = L.currency;
 
-  const trackingUrl = `https://bikroymart.com/track/${d.orderNumber}`;
+  const trackingUrl = `https://bmaart.com/track/${d.orderNumber}`;
   const formattedEstDelivery = d.estimatedDelivery
     ? new Date(d.estimatedDelivery).toLocaleDateString(lang === "bn" ? "bn-BD" : "en-BD", { day: "numeric", month: "short", year: "numeric" })
     : null;
@@ -214,7 +214,7 @@ function printInvoiceHTML(order, lang) {
   <div style="background:linear-gradient(135deg,#00215B 0%,#001845 100%);padding:18px 28px">
     <div style="display:flex;justify-content:space-between;align-items:center">
       <div style="display:flex;align-items:center;gap:10px">
-        <img src="/favicon.ico" style="width:32px;height:32px;border-radius:8px;background:#fff;padding:3px;box-shadow:0 1px 4px rgba(0,0,0,0.15)" alt="logo" />
+        <img src="/icon.png" style="width:32px;height:32px;border-radius:8px;background:#fff;padding:3px;box-shadow:0 1px 4px rgba(0,0,0,0.15)" alt="logo" />
         <div>
           <div style="color:#fff;font-size:18px;font-weight:800;letter-spacing:0.3px;line-height:1.1">Bikroy-Mart-BD</div>
           <div style="color:#94b3e0;font-size:9px;margin-top:2px;letter-spacing:0.2px">${L.tagline}</div>
@@ -337,7 +337,7 @@ export function printCustomRequestInvoice(request, lang = "en") {
         thankYou: "বিক্রয়-মার্ট-বিডি দিয়ে কেনাকাটার জন্য ধন্যবাদ!",
         footerNote: "এটি একটি কম্পিউটার-জনিত চালান। স্বাক্ষরের প্রয়োজন নেই।",
         currency: "৳", companyAddress: "বিক্রয়-মার্ট-বিডি, ঢাকা, বাংলাদেশ",
-        contact: "যোগাযোগ: 16469", website: "bikroymart.com",
+        contact: "যোগাযোগ: 16469", website: "bmaart.com",
         trackingLink: "অর্ডার ট্র্যাক করুন",
         font: "'Noto Sans Bengali','Hind Siliguri','Kalpurush',sans-serif",
       }
@@ -355,7 +355,7 @@ export function printCustomRequestInvoice(request, lang = "en") {
         thankYou: "Thank you for shopping with Bikroy-Mart-BD!",
         footerNote: "This is a computer-generated invoice. No signature required.",
         currency: "Tk", companyAddress: "Bikroy-Mart-BD, Dhaka, Bangladesh",
-        contact: "Support: 16469", website: "bikroymart.com",
+        contact: "Support: 16469", website: "bmaart.com",
         trackingLink: "Track Order",
         font: "Inter,system-ui,-apple-system,sans-serif",
       };
@@ -377,7 +377,7 @@ export function printCustomRequestInvoice(request, lang = "en") {
   const deliveryCharge = request.deliveryCharge || 0;
   const total = request.totalAmount || subtotal + deliveryCharge;
 
-  const trackingUrl = `https://bikroymart.com/track/${request.requestNumber}`;
+  const trackingUrl = `https://bmaart.com/track/${request.requestNumber}`;
 
   const html = `<!DOCTYPE html>
 <html>
@@ -398,7 +398,7 @@ export function printCustomRequestInvoice(request, lang = "en") {
   <div style="background:linear-gradient(135deg,#00215B 0%,#001845 100%);padding:18px 28px">
     <div style="display:flex;justify-content:space-between;align-items:center">
       <div style="display:flex;align-items:center;gap:10px">
-        <img src="/favicon.ico" style="width:32px;height:32px;border-radius:8px;background:#fff;padding:3px;box-shadow:0 1px 4px rgba(0,0,0,0.15)" alt="logo" />
+        <img src="/icon.png" style="width:32px;height:32px;border-radius:8px;background:#fff;padding:3px;box-shadow:0 1px 4px rgba(0,0,0,0.15)" alt="logo" />
         <div>
           <div style="color:#fff;font-size:18px;font-weight:800;letter-spacing:0.3px;line-height:1.1">Bikroy-Mart-BD</div>
           <div style="color:#94b3e0;font-size:9px;margin-top:2px;letter-spacing:0.2px">${L.tagline}</div>

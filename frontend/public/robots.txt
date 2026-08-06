@@ -1,0 +1,21 @@
+# robots.txt for Bikroy-Mart-BD
+# https://bmaart.com
+
+User-agent: *
+Allow: /
+
+# Disallow admin/manager/rider panels
+Disallow: /dashboard/
+Disallow: /manager/
+Disallow: /rider/
+
+# Disallow API routes
+Disallow: /api/
+
+# Disallow auth pages from indexing
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+
+# Sitemap location
+Sitemap: https://bmaart.com/sitemap.xml

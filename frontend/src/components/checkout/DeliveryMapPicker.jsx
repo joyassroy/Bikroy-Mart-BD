@@ -33,7 +33,7 @@ async function reverseGeocode(lat, lng) {
   try {
     const res = await fetch(
       `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=en&addressdetails=1`,
-      { headers: { "Accept-Language": "en", "User-Agent": "BikroyMartBD/1.0 (https://bikroymart.com)" } }
+      { headers: { "Accept-Language": "en", "User-Agent": "BikroyMartBD/1.0 (https://bmaart.com)" } }
     );
     if (!res.ok) return null;
     const data = await res.json();
@@ -129,7 +129,7 @@ export default function DeliveryMapPicker({ coords, onCoordsChange, onLocationDe
       try {
         const res = await fetch(
           `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query + " Bangladesh")}&format=json&limit=5&addressdetails=1`,
-          { headers: { "Accept-Language": "en", "User-Agent": "BikroyMartBD/1.0 (https://bikroymart.com)" } }
+      { headers: { "Accept-Language": "en", "User-Agent": "BikroyMartBD/1.0 (https://bmaart.com)" } }
         );
         const data = await res.json();
         setSearchResults(data.map((r) => ({

@@ -19,10 +19,10 @@ export default function Footer() {
               {t.aboutUsDesc}
             </p>
             <div className="flex gap-2">
-              <a href="#" className="w-7 h-7 sm:w-8 sm:h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#EC008C] transition text-[10px] sm:text-xs font-semibold" aria-label="Facebook">f</a>
+              <a href="https://www.facebook.com/bmaartbd" target="_blank" rel="noopener noreferrer" className="w-7 h-7 sm:w-8 sm:h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#EC008C] transition text-[10px] sm:text-xs font-semibold" aria-label="Facebook">f</a>
               <a href="#" className="w-7 h-7 sm:w-8 sm:h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#EC008C] transition text-[10px] sm:text-xs font-semibold" aria-label="LinkedIn">in</a>
               <a href="#" className="w-7 h-7 sm:w-8 sm:h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#EC008C] transition text-[10px] sm:text-xs font-semibold" aria-label="YouTube">yt</a>
-              <a href="https://wa.me/8801XXXXXXXXX" target="_blank" rel="noopener noreferrer" className="w-7 h-7 sm:w-8 sm:h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#EC008C] transition" aria-label="WhatsApp">
+              <a href="https://wa.me/8801713678644" target="_blank" rel="noopener noreferrer" className="w-7 h-7 sm:w-8 sm:h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#EC008C] transition" aria-label="WhatsApp">
                 <FaWhatsapp className="text-sm sm:text-base" />
               </a>
             </div>
@@ -54,17 +54,27 @@ export default function Footer() {
           <div className="lg:max-w-[260px]">
             <h4 className="text-white font-semibold mb-2 sm:mb-3 text-xs">{t.contactInfo}</h4>
             <ul className="space-y-1.5 sm:space-y-2 text-[11px] sm:text-xs">
-              <li className="flex items-center gap-1.5">📞 16469 (8am-10pm)</li>
-              <li className="flex items-center gap-1.5">📧 info@bikroymart.com</li>
-              <li className="flex items-center gap-1.5">📍 Dhaka, Bangladesh</li>
+              <li className="flex items-center gap-1.5">📞 01713678644 (10am-9pm)</li>
+              <li className="flex items-center gap-1.5">📧 bikroymartbd24@gmail.com</li>
+              <li className="flex items-center gap-1.5">📍 Saidpur, Nilphamari, Bangladesh</li>
               <li>
                 <a
-                  href="https://wa.me/8801XXXXXXXXX"
+                  href="https://wa.me/8801713678644"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1.5 hover:text-[#EC008C] transition"
                 >
-                  <FaWhatsapp className="text-sm" /> WhatsApp: +880 1XX-XXXXXXX
+                  <FaWhatsapp className="text-sm" /> WhatsApp: 01713678644
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://www.facebook.com/bmaartbd"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 hover:text-[#EC008C] transition"
+                >
+                  Facebook: bmaartbd
                 </a>
               </li>
             </ul>

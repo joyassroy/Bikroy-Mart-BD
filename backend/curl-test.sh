@@ -9,7 +9,7 @@
 # --- LOGIN AS ADMIN ---
 TOKEN=$(curl -s -X POST http://localhost:5004/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@bikroymart.com","password":"admin123"}' | jq -r '.data.accessToken')
+  -d '{"email":"admin@bmaart.com","password":"admin123"}' | jq -r '.data.accessToken')
 
 echo "Token: $TOKEN"
 
@@ -31,7 +31,7 @@ curl -s -X PUT http://localhost:5004/api/settings \
   -d '{
     "storeName": "Bikroy-Mart-BD",
     "storePhone": "16469",
-    "storeEmail": "info@bikroymart.com",
+    "storeEmail": "info@bmaart.com",
     "freeDeliveryMinimum": "1500",
     "defaultDeliveryCharge": "60"
   }' | jq .

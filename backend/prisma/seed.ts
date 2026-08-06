@@ -573,11 +573,11 @@ async function main() {
   // ── Admin User ─────────────────────────────────────────────────────────────
   const adminPassword = await hashPassword("admin123");
   const admin = await prisma.user.upsert({
-    where: { email: "admin@bikroymart.com" },
+    where: { email: "admin@bmaart.com" },
     update: {},
     create: {
       name: "Bikroy Mart Admin",
-      email: "admin@bikroymart.com",
+      email: "admin@bmaart.com",
       password: adminPassword,
       role: "ADMIN",
     },
@@ -798,7 +798,7 @@ async function main() {
   // ── Site Settings ─────────────────────────────────────────────────────────
   const settings = [
     { key: "storeName", value: "Bikroy-Mart-BD" },
-    { key: "storeEmail", value: "info@bikroymart.com" },
+    { key: "storeEmail", value: "info@bmaart.com" },
     { key: "storePhone", value: "16469" },
     { key: "storeAddress", value: "Gulshan-1, Dhaka, Bangladesh" },
     { key: "currency", value: "BDT" },
@@ -825,7 +825,7 @@ async function main() {
   console.log("✅ 4 Banners");
   console.log("✅ 3 Coupons");
   console.log("✅ 3 Flash Deals");
-  console.log("✅ Admin: admin@bikroymart.com / admin123");
+  console.log("✅ Admin: admin@bmaart.com / admin123");
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 }
 

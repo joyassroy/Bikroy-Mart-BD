@@ -179,7 +179,7 @@ async function main() {
   console.log("\n🎉 All test users created!");
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
   console.log("All passwords: test123");
-  console.log("Admin:     admin@bikroymart.com / admin123");
+  console.log("Admin:     admin@bmaart.com / admin123");
   console.log("Customer:  customer@test.com / test123");
   console.log("Manager:   manager@test.com / test123 (Dhaka)");
   console.log("Rider:     rider@test.com / test123 (Dhaka)");

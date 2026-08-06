@@ -5,7 +5,7 @@ import { sendSuccess, sendError } from "../../utils/apiResponse";
 const DEFAULT_SETTINGS: Record<string, string> = {
   storeName: "Bikroy-Mart-BD",
   storePhone: "16469",
-  storeEmail: "info@bikroymart.com",
+  storeEmail: "info@bmaart.com",
   storeAddress: "Dhaka, Bangladesh",
   sslcommerzStoreId: "",
   sslcommerzStorePassword: "",

@@ -43,7 +43,7 @@ npm run dev
 ```
 
 ## Default Users (after seeding)
-- **Admin**: admin@bikroymart.com / admin123
+- **Admin**: admin@bmaart.com / admin123
 
 ## Features
 
