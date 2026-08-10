@@ -255,9 +255,27 @@ export default function BannersPage() {
 
               {/* Link */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t.linkUrl} <span className="text-gray-400 font-normal">(optional)</span></label>
-                <input type="text" value={form.link} onChange={(e) => setForm({ ...form, link: e.target.value })}
-                  className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" placeholder="/shop or https://..." />
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {form.position === "center" ? t.linkWith || "Link With" : t.linkUrl} <span className="text-gray-400 font-normal">(optional)</span>
+                </label>
+                {form.position === "center" ? (
+                  <select 
+                    value={form.link} 
+                    onChange={(e) => setForm({ ...form, link: e.target.value })}
+                    className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none bg-white"
+                  >
+                    <option value="">{t.selectPage || "Select a page to link with"}</option>
+                    <option value="/shop?offer=COMBO">{t.offerComboBanner || "Combo Offer"}</option>
+                    <option value="/shop?offer=EXECUTIVE">{t.offerExecutiveBanner || "Executive Offer"}</option>
+                    <option value="/shop?offer=STOCK_CLEARANCE">{t.offerStockClearanceBanner || "Stock Clearance"}</option>
+                    <option value="/shop?offer=BOGO">{t.offerBogoBanner || "BOGO Offer"}</option>
+                    <option value="/shop?offer=CUSTOM">{t.offerCustomBanner || "Custom Offer"}</option>
+                    <option value="/shop">{t.shop || "Shop Page"}</option>
+                  </select>
+                ) : (
+                  <input type="text" value={form.link} onChange={(e) => setForm({ ...form, link: e.target.value })}
+                    className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none" placeholder="/shop or https://..." />
+                )}
               </div>
 
               {/* Background Color Swatches */}
