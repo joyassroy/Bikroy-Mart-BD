@@ -325,19 +325,19 @@ export const getAllProducts = async (req: Request, res: Response) => {
     const productIds = products.map((p) => p.id);
     const salesRows = productIds.length > 0
       ? await prisma.orderItem.groupBy({
-          by: ["productId"],
-          where: { productId: { in: productIds }, order: { paymentStatus: "PAID" } },
-          _sum: { quantity: true },
-        })
+        by: ["productId"],
+        where: { productId: { in: productIds }, order: { paymentStatus: "PAID" } },
+        _sum: { quantity: true },
+      })
       : [];
     const salesMap = new Map(salesRows.map((r) => [r.productId, Number(r._sum.quantity || 0)]));
 
     const now = new Date();
     const activeDeals = productIds.length > 0
       ? await prisma.flashDeal.findMany({
-          where: { productId: { in: productIds }, isActive: true, startsAt: { lte: now }, endsAt: { gte: now } },
-          select: { productId: true, endsAt: true, dealPrice: true },
-        })
+        where: { productId: { in: productIds }, isActive: true, startsAt: { lte: now }, endsAt: { gte: now } },
+        select: { productId: true, endsAt: true, dealPrice: true },
+      })
       : [];
     const dealEndsAtMap = new Map(activeDeals.map((d) => [d.productId, d.endsAt]));
     const dealPriceMap = new Map(activeDeals.map((d) => [d.productId, d.dealPrice]));
@@ -468,10 +468,10 @@ export const getFeaturedProducts = async (req: Request, res: Response) => {
     const productIds = products.map((p) => p.id);
     const salesRows = productIds.length > 0
       ? await prisma.orderItem.groupBy({
-          by: ["productId"],
-          where: { productId: { in: productIds }, order: { paymentStatus: "PAID" } },
-          _sum: { quantity: true },
-        })
+        by: ["productId"],
+        where: { productId: { in: productIds }, order: { paymentStatus: "PAID" } },
+        _sum: { quantity: true },
+      })
       : [];
     const salesMap = new Map(salesRows.map((r) => [r.productId, Number(r._sum.quantity || 0)]));
 
@@ -626,7 +626,10 @@ export const updateProduct = async (req: AuthRequest, res: Response) => {
 
 export const deleteProduct = async (req: Request, res: Response) => {
   try {
-    await prisma.product.delete({ where: { id: String(req.params.id) } });
+    await prisma.product.update({ 
+      where: { id: String(req.params.id) },
+      data: { isActive: false }
+    });
     return sendSuccess(res, "Product deleted");
   } catch (error: any) {
     return sendError(res, error.message, 400);
