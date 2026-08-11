@@ -37,6 +37,9 @@ Thumbs.db
 # uploads
 backend/public/uploads/
 
+# Database backup
+backup.sql
+
 # Testing
 coverage/
 test-rider-movement.sh

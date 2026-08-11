@@ -6,7 +6,12 @@ export const getBanners = async (req: Request, res: Response) => {
   try {
     const { position, categoryId, all } = req.query;
     const where: any = {};
-    if (position) where.position = position;
+    if (position) {
+      where.position = position;
+      if (!categoryId) {
+        where.categoryId = null;
+      }
+    }
     if (categoryId) where.categoryId = categoryId;
     if (!all) where.isActive = true;
 

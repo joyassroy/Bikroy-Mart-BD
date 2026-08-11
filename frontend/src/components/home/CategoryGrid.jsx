@@ -71,7 +71,7 @@ export default function CategoryGrid() {
         <div className="h-5 w-32 bg-[#E5E7EB] rounded animate-pulse mb-2 md:mb-3"></div>
         <div className="flex gap-3 overflow-hidden px-1 sm:px-0">
           {[...Array(7)].map((_, i) => (
-            <div key={i} className="bg-[#E5E7EB] rounded-full w-20 h-20 sm:w-24 sm:h-24 animate-pulse flex-shrink-0"></div>
+            <div key={i} className="bg-[#E5E7EB] rounded-full w-28 h-28 sm:w-32 sm:h-32 animate-pulse flex-shrink-0"></div>
           ))}
         </div>
       </section>
@@ -119,20 +119,20 @@ export default function CategoryGrid() {
             <Link
               key={cat.slug}
               href={`/shop?category=${cat.slug}`}
-              className="flex flex-col items-center justify-center bg-white border border-[#E5E7EB] rounded-2xl p-3 sm:p-4 hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] hover:border-[#EC008C]/30 hover:scale-[1.03] transition-all duration-200 flex-shrink-0 w-[100px] sm:w-[120px] md:w-[130px] snap-start group"
+              className="flex flex-col items-center justify-center bg-white border border-[#E5E7EB] rounded-2xl p-5 sm:p-6 hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] hover:border-[#EC008C]/30 hover:scale-[1.03] transition-all duration-200 flex-shrink-0 w-[140px] sm:w-[160px] md:w-[180px] snap-start group"
             >
-              <div className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-xl bg-[#F4F7FB] group-hover:bg-[#FCE8F3] flex items-center justify-center transition-colors duration-200 mb-2 sm:mb-2.5">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-xl bg-[#F4F7FB] group-hover:bg-[#FCE8F3] flex items-center justify-center transition-colors duration-200 mb-2 sm:mb-2.5">
                 {cat.image ? (
-                  <img src={cat.image} alt={catName(cat)} className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 object-contain group-hover:scale-110 transition-transform duration-200" />
+                  <img src={cat.image} alt={catName(cat)} className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-contain group-hover:scale-110 transition-transform duration-200" />
                 ) : (
-                  <span className="text-2xl sm:text-3xl md:text-4xl group-hover:scale-110 transition-transform duration-200">{cat.icon}</span>
+                  <span className="text-5xl sm:text-6xl md:text-7xl group-hover:scale-110 transition-transform duration-200">{cat.icon}</span>
                 )}
               </div>
-              <span className="text-xs sm:text-sm font-bold text-[#364152] text-center leading-tight line-clamp-2">
+              <span className="text-sm sm:text-base font-bold text-[#364152] text-center leading-tight line-clamp-2">
                 {catName(cat)}
               </span>
               {cat.count > 0 && (
-                <span className="text-[9px] sm:text-[10px] text-[#667085] mt-0.5">{cat.count} {t.itemsCount}</span>
+                <span className="text-[10px] sm:text-xs text-[#667085] mt-0.5">{cat.count} {t.itemsCount}</span>
               )}
             </Link>
           ))}
