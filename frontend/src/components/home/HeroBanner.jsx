@@ -29,7 +29,7 @@ export default function HeroBanner() {
         setBanners(data);
       } else {
         setBanners([
-          { id: "1", title: language === "bn" ? "Bikroy-Mart-BD-তে স্বাগতম" : "Welcome to Bikroy-Mart-BD", subtitle: language === "bn" ? "৬০ মিনিটে তাজা মাল ডেলিভারি" : "Fresh groceries delivered in 60 minutes", bgColor: "from-[#00215B] to-[#001A4A]" },
+          { id: "1", title: language === "bn" ? "Bikroymart BD-তে স্বাগতম" : "Welcome to Bikroymart BD", subtitle: language === "bn" ? "৬০ মিনিটে তাজা মাল ডেলিভারি" : "Fresh groceries delivered in 60 minutes", bgColor: "from-[#00215B] to-[#001A4A]" },
           { id: "2", title: language === "bn" ? "দৈনিক তাজা শাকসবজি" : "Daily Fresh Vegetables", subtitle: language === "bn" ? "খামার থেকে সরাসরি আপনার রান্নাঘরে" : "Farm to table, straight to your kitchen", bgColor: "from-[#EC008C] to-[#D60071]" },
           { id: "3", title: language === "bn" ? "মেগা সেভিংস সপ্তাহ" : "Mega Savings Week", subtitle: language === "bn" ? "দৈনিক প্রয়োজনীয় জিনিসে ৫০% পর্যন্ত ছাড়" : "Up to 50% off on daily essentials", bgColor: "from-[#00AFCC] to-[#009AB5]" },
         ]);
@@ -37,7 +37,7 @@ export default function HeroBanner() {
     } catch (err) {
       console.error(err);
       setBanners([
-        { id: "1", title: language === "bn" ? "Bikroy-Mart-BD-তে স্বাগতম" : "Welcome to Bikroy-Mart-BD", subtitle: language === "bn" ? "৬০ মিনিটে তাজা মাল ডেলিভারি" : "Fresh groceries delivered in 60 minutes", bgColor: "from-[#00215B] to-[#001A4A]" },
+        { id: "1", title: language === "bn" ? "Bikroymart BD-তে স্বাগতম" : "Welcome to Bikroymart BD", subtitle: language === "bn" ? "৬০ মিনিটে তাজা মাল ডেলিভারি" : "Fresh groceries delivered in 60 minutes", bgColor: "from-[#00215B] to-[#001A4A]" },
       ]);
     } finally {
       setLoading(false);

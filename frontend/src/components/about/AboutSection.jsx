@@ -10,7 +10,7 @@ const teamMembers = [
     position: "Chairman",
     positionBn: "চেয়ারম্যান",
     image: "/team/chairman.jpg",
-    bio: "Visionary leader with 20+ years of experience in retail and technology. Founded Bikroy-Mart-BD with a mission to revolutionize grocery shopping in Bangladesh.",
+    bio: "Visionary leader with 20+ years of experience in retail and technology. Founded Bikroymart BD with a mission to revolutionize grocery shopping in Bangladesh.",
     bioBn: "খুচরা ও প্রযুক্তিতে ২০+ বছরের অভিজ্ঞতা সম্পন্ন দূরদর্শী নেতা। বাংলাদেশে মুদি কেনাকাটা বিপ্লবী করার লক্ষ্যে বিক্রয়-মার্ট-বিডি প্রতিষ্ঠা করেছেন।",
   },
   {
@@ -95,12 +95,12 @@ export default function AboutSection() {
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-10 py-12 md:py-20 relative z-10">
           <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-3xl md:text-5xl font-bold mb-4 md:mb-6">
-              {language === "bn" ? "আমাদের সম্পর্কে" : "About Bikroy-Mart-BD"}
+              {language === "bn" ? "আমাদের সম্পর্কে" : "About Bikroymart BD"}
             </h1>
             <p className="text-sm md:text-lg text-white/80 leading-relaxed">
               {language === "bn"
                 ? "বিক্রয়-মার্ট-বিডি বাংলাদেশের শীর্ষস্থানীয় অনলাইন মুদি কেনাকাটা প্ল্যাটফর্ম। আমরা তাজা পণ্য, দ্রুত ডেলিভারি এবং সেরা মূল্য প্রদান করি।"
-                : "Bikroy-Mart-BD is Bangladesh's premier online grocery shopping platform. We deliver fresh products, fast delivery, and the best prices to your doorstep."}
+                : "Bikroymart BD is Bangladesh's premier online grocery shopping platform. We deliver fresh products, fast delivery, and the best prices to your doorstep."}
             </p>
           </div>
         </div>
@@ -196,7 +196,7 @@ export default function AboutSection() {
             <p className="text-sm md:text-base text-[#667085] max-w-2xl mx-auto">
               {language === "bn"
                 ? "যারা বিক্রয়-মার্ট-বিডিকে এগিয়ে নিয়ে যাচ্ছেন"
-                : "The people driving Bikroy-Mart-BD forward"}
+                : "The people driving Bikroymart BD forward"}
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
@@ -258,7 +258,7 @@ export default function AboutSection() {
                 <p className="text-sm md:text-base text-white/80 leading-relaxed mb-6">
                   {language === "bn"
                     ? "webSynthStudio একটি শীর্ষস্থানীয় ডিজিটাল এজেন্সি যারা ওয়েব ডেভেলপমেন্ট, মোবাইল অ্যাপ এবং এআই অটোমেশনে বিশেষজ্ঞ। তারা বিক্রয়-মার্ট-বিডির পুরো প্ল্যাটফর্ম ডিজাইন এবং ডেভেলপ করেছে।"
-                    : "webSynthStudio is a leading digital agency specializing in web development, mobile apps, and AI automation. They designed and developed the entire Bikroy-Mart-BD platform."}
+                    : "webSynthStudio is a leading digital agency specializing in web development, mobile apps, and AI automation. They designed and developed the entire Bikroymart BD platform."}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
                   <a

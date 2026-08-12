@@ -137,7 +137,7 @@ const en = {
 
   // Auth
   welcomeBack: "Welcome Back",
-  signInToContinue: "Sign in to continue to Bikroy-Mart-BD",
+  signInToContinue: "Sign in to continue to Bikroymart BD",
   emailAddress: "Email Address",
   password: "Password",
   forgotPassword: "Forgot Password?",
@@ -146,7 +146,7 @@ const en = {
   dontHaveAccount: "Don't have an account?",
   alreadyHaveAccount: "Already have an account?",
   createAccount: "Create Account",
-  joinMessage: "Join Bikroy-Mart-BD for the best shopping experience",
+  joinMessage: "Join Bikroymart BD for the best shopping experience",
   fullName: "Full Name",
   phoneNumber: "Phone Number",
   confirmPassword: "Confirm Password",

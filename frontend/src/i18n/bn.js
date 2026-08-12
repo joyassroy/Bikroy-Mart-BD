@@ -107,7 +107,7 @@ const bn = {
 
   // Auth
   welcomeBack: "স্বাগতম",
-  signInToContinue: "Bikroy-Mart-BD-তে চালিয়ে যেতে লগইন করুন",
+  signInToContinue: "Bikroymart BD-তে চালিয়ে যেতে লগইন করুন",
   emailAddress: "ইমেইল ঠিকানা",
   password: "পাসওয়ার্ড",
   forgotPassword: "পাসওয়ার্ড ভুলে গেছেন?",
@@ -116,7 +116,7 @@ const bn = {
   dontHaveAccount: "অ্যাকাউন্ট নেই?",
   alreadyHaveAccount: "ইতিমধ্যে অ্যাকাউন্ট আছে?",
   createAccount: "অ্যাকাউন্ট তৈরি করুন",
-  joinMessage: "সেরা শপিং অভিজ্ঞতার জন্য Bikroy-Mart-BD-তে যোগ দিন",
+  joinMessage: "সেরা শপিং অভিজ্ঞতার জন্য Bikroymart BD-তে যোগ দিন",
   fullName: "পুরো নাম",
   phoneNumber: "ফোন নম্বর",
   confirmPassword: "পাসওয়ার্ড নিশ্চিত করুন",

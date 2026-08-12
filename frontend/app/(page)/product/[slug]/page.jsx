@@ -188,7 +188,7 @@ export default function ProductDetailPage() {
                 )}
                 {product.images?.[activeImage] ? (
                   product.images[activeImage].startsWith("http") || product.images[activeImage].startsWith("/") ? (
-                    <img src={product.images[activeImage]} alt={product.name} className="w-full h-full object-contain p-4" />
+                    <img src={product.images[activeImage]} alt={product.name} className="w-full h-full object-contain rounded-xl p-4" />
                   ) : (
                     <span className="text-7xl sm:text-8xl">{product.images[activeImage]}</span>
                   )
@@ -207,7 +207,7 @@ export default function ProductDetailPage() {
                       }`}
                     >
                       {img.startsWith("http") || img.startsWith("/") ? (
-                        <img src={img} alt="" className="w-full h-full object-contain p-1" />
+                        <img src={img} alt="" className="w-full h-full object-contain rounded-lg p-1" />
                       ) : (
                         <span className="text-xl">{img}</span>
                       )}

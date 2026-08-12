@@ -3,7 +3,7 @@ import prisma from "../../config/db";
 import { sendSuccess, sendError } from "../../utils/apiResponse";
 
 const DEFAULT_SETTINGS: Record<string, string> = {
-  storeName: "Bikroy-Mart-BD",
+  storeName: "Bikroymart BD",
   storePhone: "16469",
   storeEmail: "info@bmaart.com",
   storeAddress: "Dhaka, Bangladesh",

@@ -146,7 +146,7 @@ export const forgotPassword = async (email: string) => {
 
   await sendEmail({
     to: email,
-    subject: "Bikroy-Mart-BD Password Reset OTP",
+    subject: "Bikroymart BD Password Reset OTP",
     html: generateOtpEmail(otp, user.name),
   });
 };

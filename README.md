@@ -1,4 +1,4 @@
-# Bikroy-Mart-BD
+# Bikroymart BD
 
 Next-Gen E-Commerce & Live Tracking Platform for Bangladesh
 

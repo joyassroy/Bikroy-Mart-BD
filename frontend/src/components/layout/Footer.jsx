@@ -13,7 +13,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="w-full lg:max-w-[280px]">
             <h3 className="text-base sm:text-lg font-bold text-white mb-2 sm:mb-3">
-              Bikroy<span className="text-[#EC008C]">-Mart</span>-BD
+              Bikroymart<span className="text-[#EC008C] ml-0.5">BD</span>
             </h3>
             <p className="text-xs sm:text-sm text-white/70 mb-3 leading-4 sm:leading-5">
               {t.aboutUsDesc}
@@ -84,7 +84,7 @@ export default function Footer() {
 
       <div className="border-t border-white/10">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-2.5 sm:py-3 flex flex-col sm:items-center lg:flex-row gap-1 text-center sm:text-center text-xs sm:text-sm text-white/60">
-          <span>© 2026 Bikroy-Mart-BD.</span>
+          <span>© 2026 Bikroymart BD.</span>
           <span>{t.allRightsReserved}</span>
         </div>
       </div>

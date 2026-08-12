@@ -1,4 +1,4 @@
-# robots.txt for Bikroy-Mart-BD
+# robots.txt for Bikroymart BD
 # https://bmaart.com
 
 User-agent: *

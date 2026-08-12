@@ -19,7 +19,7 @@ interface EmailOptions {
 
 export const sendEmail = async (options: EmailOptions): Promise<void> => {
   await transporter.sendMail({
-    from: `"Bikroy-Mart-BD" <${config.smtp.user}>`,
+    from: `"Bikroymart BD" <${config.smtp.user}>`,
     to: options.to,
     subject: options.subject,
     html: options.html,
@@ -28,7 +28,7 @@ export const sendEmail = async (options: EmailOptions): Promise<void> => {
 
 export const generateOtpEmail = (otp: string, name: string) => `
   <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-    <h2 style="color: #1E40AF;">Bikroy-Mart-BD Verification</h2>
+    <h2 style="color: #1E40AF;">Bikroymart BD Verification</h2>
     <p>Hi ${name},</p>
     <p>Your OTP for verification is:</p>
     <div style="background: #EFF6FF; padding: 15px; text-align: center; border-radius: 8px; margin: 20px 0;">
@@ -37,6 +37,6 @@ export const generateOtpEmail = (otp: string, name: string) => `
     <p style="color: #64748B;">This OTP will expire in 10 minutes.</p>
     <p style="color: #64748B;">If you didn't request this, please ignore this email.</p>
     <hr style="border: none; border-top: 1px solid #E2E8F0; margin: 20px 0;">
-    <p style="color: #94A3B8; font-size: 12px;">© 2026 Bikroy-Mart-BD. All rights reserved.</p>
+    <p style="color: #94A3B8; font-size: 12px;">© 2026 Bikroymart BD. All rights reserved.</p>
   </div>
 `;

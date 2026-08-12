@@ -538,6 +538,9 @@ async function clearDatabase() {
   console.log("🗑️  Clearing all existing data...");
   // Delete in reverse dependency order
   await prisma.flashDeal.deleteMany();
+  await prisma.promoOfferItem.deleteMany();
+  await prisma.promoOffer.deleteMany();
+  await prisma.riderReview.deleteMany();
   await prisma.review.deleteMany();
   await prisma.productRequest.deleteMany();
   await prisma.orderItem.deleteMany();
@@ -797,7 +800,7 @@ async function main() {
 
   // ── Site Settings ─────────────────────────────────────────────────────────
   const settings = [
-    { key: "storeName", value: "Bikroy-Mart-BD" },
+    { key: "storeName", value: "Bikroymart BD" },
     { key: "storeEmail", value: "info@bmaart.com" },
     { key: "storePhone", value: "16469" },
     { key: "storeAddress", value: "Gulshan-1, Dhaka, Bangladesh" },

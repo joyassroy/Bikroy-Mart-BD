@@ -29,7 +29,7 @@ curl -s -X PUT http://localhost:5004/api/settings \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "storeName": "Bikroy-Mart-BD",
+    "storeName": "Bikroymart BD",
     "storePhone": "16469",
     "storeEmail": "info@bmaart.com",
     "freeDeliveryMinimum": "1500",

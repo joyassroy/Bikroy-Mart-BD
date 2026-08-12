@@ -8,7 +8,7 @@ const startServer = async () => {
     console.log("PostgreSQL connected via Prisma");
 
     httpServer.listen(config.port, () => {
-      console.log(`Bikroy-Mart-BD API running on port ${config.port}`);
+      console.log(`Bikroymart BD API running on port ${config.port}`);
       console.log(`Environment: ${config.nodeEnv}`);
     });
   } catch (error) {

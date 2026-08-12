@@ -13,17 +13,17 @@ const nunito = Nunito_Sans({
 
 export const metadata = {
   title: {
-    default: "Bikroy-Mart-BD - Best Online Grocery Shopping in Bangladesh",
-    template: "%s | Bikroy-Mart-BD",
+    default: "Bikroymart BD - Best Online Grocery Shopping in Bangladesh",
+    template: "%s | Bikroymart BD",
   },
-  description: "Bikroy-Mart-BD - Your trusted online grocery store. Fresh products, 60-minute delivery, and the best prices in Bangladesh.",
+  description: "Bikroymart BD - Your trusted online grocery store. Fresh products, 60-minute delivery, and the best prices in Bangladesh.",
   keywords: ["grocery", "online shopping", "bangladesh", "Bikroy-Mart", "fresh products", "delivery"],
   manifest: "/manifest.json",
   openGraph: {
-    title: "Bikroy-Mart-BD - Best Online Grocery Shopping in Bangladesh",
+    title: "Bikroymart BD - Best Online Grocery Shopping in Bangladesh",
     description: "Fresh groceries delivered to your doorstep in 60 minutes.",
     url: "https://bmaart.com",
-    siteName: "Bikroy-Mart-BD",
+    siteName: "Bikroymart BD",
     type: "website",
   },
 };

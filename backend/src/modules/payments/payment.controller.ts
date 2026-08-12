@@ -34,7 +34,7 @@ export const initPayment = async (req: AuthRequest, res: Response) => {
       cancel_url: `${config.clientUrl}/payment/cancel?transactionId=${transactionId}`,
       ipn_url: `${config.clientUrl}/api/payments/ipn`,
       shipping_method: "Courier",
-      product_name: "Bikroy-Mart-BD Order",
+      product_name: "Bikroymart BD Order",
       product_category: "General",
       product_profile: "general",
       cus_name: order.user.name,

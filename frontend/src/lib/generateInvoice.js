@@ -122,7 +122,7 @@ const LABELS = {
     discount: "Discount",
     grandTotal: "TOTAL",
     cancelReason: "Cancel Reason:",
-    thankYou: "Thank you for shopping with Bikroy-Mart-BD!",
+    thankYou: "Thank you for shopping with Bikroymart BD!",
     footerNote: "This is a computer-generated invoice. No signature required.",
     currency: "Tk",
     font: "Inter,system-ui,-apple-system,sans-serif",
@@ -130,7 +130,7 @@ const LABELS = {
     paymentStatus: "Payment Status:",
     transactionId: "Transaction ID:",
     estimatedDelivery: "Est. Delivery:",
-    companyAddress: "Bikroy-Mart-BD, Dhaka, Bangladesh",
+    companyAddress: "Bikroymart BD, Dhaka, Bangladesh",
     contact: "Support: 16469",
     website: "bmaart.com",
     trackingLink: "Track Order",
@@ -216,7 +216,7 @@ function printInvoiceHTML(order, lang) {
       <div style="display:flex;align-items:center;gap:10px">
         <img src="/icon.png" style="width:32px;height:32px;border-radius:8px;background:#fff;padding:3px;box-shadow:0 1px 4px rgba(0,0,0,0.15)" alt="logo" />
         <div>
-          <div style="color:#fff;font-size:18px;font-weight:800;letter-spacing:0.3px;line-height:1.1">Bikroy-Mart-BD</div>
+          <div style="color:#fff;font-size:18px;font-weight:800;letter-spacing:0.3px;line-height:1.1">Bikroymart BD</div>
           <div style="color:#94b3e0;font-size:9px;margin-top:2px;letter-spacing:0.2px">${L.tagline}</div>
         </div>
       </div>
@@ -324,7 +324,7 @@ export function printInvoice(order, lang = "en") {
 export function printCustomRequestInvoice(request, lang = "en") {
   const L = lang === "bn"
     ? {
-        shopName: "Bikroy-Mart-BD", tagline: "ডেলিভারির ধরনে বিশ্বস্ত অনলাইন গ্রসারি স্টোর",
+        shopName: "Bikroymart BD", tagline: "ডেলিভারির ধরনে বিশ্বস্ত অনলাইন গ্রসারি স্টোর",
         invoice: "ইনভয়েস", requestNo: "অনুরোধ নং", date: "তারিখ",
         shipTo: "পাঠানো হবে", name: "নাম:", phone: "ফোন:",
         address: "ঠিকানা:", upazila: "উপজেলা:", district: "জেলা:", division: "বিভাগ:",
@@ -342,7 +342,7 @@ export function printCustomRequestInvoice(request, lang = "en") {
         font: "'Noto Sans Bengali','Hind Siliguri','Kalpurush',sans-serif",
       }
     : {
-        shopName: "Bikroy-Mart-BD", tagline: "Your Trusted Online Grocery Store",
+        shopName: "Bikroymart BD", tagline: "Your Trusted Online Grocery Store",
         invoice: "INVOICE", requestNo: "Request No.", date: "Date",
         shipTo: "SHIP TO", name: "Name:", phone: "Phone:",
         address: "Address:", upazila: "Upazila:", district: "District:", division: "Division:",
@@ -352,9 +352,9 @@ export function printCustomRequestInvoice(request, lang = "en") {
         paid: "PAID", unpaid: "UNPAID",
         notes: "Customer Notes:", managerNotes: "Manager Notes:",
         rejectionReason: "Rejection Reason:",
-        thankYou: "Thank you for shopping with Bikroy-Mart-BD!",
+        thankYou: "Thank you for shopping with Bikroymart BD!",
         footerNote: "This is a computer-generated invoice. No signature required.",
-        currency: "Tk", companyAddress: "Bikroy-Mart-BD, Dhaka, Bangladesh",
+        currency: "Tk", companyAddress: "Bikroymart BD, Dhaka, Bangladesh",
         contact: "Support: 16469", website: "bmaart.com",
         trackingLink: "Track Order",
         font: "Inter,system-ui,-apple-system,sans-serif",
@@ -400,7 +400,7 @@ export function printCustomRequestInvoice(request, lang = "en") {
       <div style="display:flex;align-items:center;gap:10px">
         <img src="/icon.png" style="width:32px;height:32px;border-radius:8px;background:#fff;padding:3px;box-shadow:0 1px 4px rgba(0,0,0,0.15)" alt="logo" />
         <div>
-          <div style="color:#fff;font-size:18px;font-weight:800;letter-spacing:0.3px;line-height:1.1">Bikroy-Mart-BD</div>
+          <div style="color:#fff;font-size:18px;font-weight:800;letter-spacing:0.3px;line-height:1.1">Bikroymart BD</div>
           <div style="color:#94b3e0;font-size:9px;margin-top:2px;letter-spacing:0.2px">${L.tagline}</div>
         </div>
       </div>
