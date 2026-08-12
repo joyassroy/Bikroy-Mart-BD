@@ -26,8 +26,8 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
   useEffect(() => {
     const isMulti = type === "COMBO" || type === "BOGO" || type === "CUSTOM";
     const fetches = [];
-    if (!isMulti) fetches.push(api.get(`/flash-deals?type=${type}`).catch(() => ({ data: { data: [] } })));
-    if (isMulti) fetches.push(api.get(`/offers?type=${type}`).catch(() => ({ data: { data: [] } })));
+    if (!isMulti) fetches.push(api.get(`/flash-deals?type=${type}`).catch((err) => { console.error(`OfferSection(${type}) fetch error:`, err); return { data: { data: [] } }; }));
+    if (isMulti) fetches.push(api.get(`/offers?type=${type}`).catch((err) => { console.error(`OfferSection(${type}) fetch error:`, err); return { data: { data: [] } }; }));
 
     Promise.all(fetches).then((results) => {
       if (isMulti) {

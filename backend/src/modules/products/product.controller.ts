@@ -258,6 +258,16 @@ export const getAllProducts = async (req: Request, res: Response) => {
       if (minPrice) where.price.gte = parseFloat(minPrice as string);
       if (maxPrice) where.price.lte = parseFloat(maxPrice as string);
     }
+    if (!offer) {
+      const activePromoItems = await prisma.promoOfferItem.findMany({
+        where: { promoOffer: { isActive: true } },
+        select: { productId: true },
+      });
+      const comboProductIds = [...new Set(activePromoItems.map((i) => i.productId))];
+      if (comboProductIds.length > 0) {
+        where.id = { notIn: comboProductIds };
+      }
+    }
     if (offer) {
       const now = new Date();
       const offerStr = String(offer);
@@ -439,6 +449,15 @@ export const getFeaturedProducts = async (req: Request, res: Response) => {
   try {
     const { district } = req.query;
     const where: any = { isActive: true, isFeatured: true };
+
+    const activePromoItems = await prisma.promoOfferItem.findMany({
+      where: { promoOffer: { isActive: true } },
+      select: { productId: true },
+    });
+    const comboProductIds = [...new Set(activePromoItems.map((i) => i.productId))];
+    if (comboProductIds.length > 0) {
+      where.id = { notIn: comboProductIds };
+    }
 
     if (district) {
       const managers = await prisma.managerProfile.findMany({

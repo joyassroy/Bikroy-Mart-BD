@@ -5,9 +5,8 @@ import { toValidDate } from "../../utils/dateHelper";
 
 export const getActivePromoOffers = async (req: Request, res: Response) => {
   try {
-    const now = new Date();
     const { type } = req.query;
-    const where: any = { isActive: true, startsAt: { lte: now }, endsAt: { gte: now } };
+    const where: any = { isActive: true };
     if (type) where.type = String(type);
     const offers = await prisma.promoOffer.findMany({
       where,
