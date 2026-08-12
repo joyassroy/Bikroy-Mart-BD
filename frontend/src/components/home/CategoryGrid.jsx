@@ -123,7 +123,7 @@ export default function CategoryGrid() {
             >
               <div className="absolute inset-0 bg-[#F4F7FB] group-hover:bg-[#EDF1F7] transition-colors duration-[500ms] ease-[cubic-bezier(0.22,1,0.36,1)]">
                 {cat.image ? (
-                  <img src={cat.image} alt={catName(cat)} className="w-full h-[75%] object-contain rounded-xl p-3 [will-change:transform] group-hover:scale-[1.08] transition-transform duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)]" />
+                  <img src={cat.image} alt={catName(cat)} className="w-full h-[75%] object-contain rounded-2xl p-3 [will-change:transform] group-hover:scale-[1.08] transition-transform duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)]" style={{ borderRadius: "16px" }} />
                 ) : (
                   <div className="w-full h-[75%] flex items-center justify-center">
                     <span className="text-5xl sm:text-6xl md:text-7xl [will-change:transform] group-hover:scale-110 group-hover:rotate-2 transition-transform duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)]">{cat.icon}</span>

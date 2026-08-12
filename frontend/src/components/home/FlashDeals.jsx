@@ -13,7 +13,7 @@ function ProductImage({ src, alt, className }) {
   if (!src) return <span className="text-5xl sm:text-6xl md:text-7xl">📦</span>;
   if (src.startsWith("http") || src.startsWith("/")) {
     const url = src.startsWith("/") ? `${IMG_BASE}${src}` : src;
-    return <img src={url} alt={alt} className={`${imgClass} object-contain rounded-xl group-hover:scale-110 transition-transform duration-200`} loading="lazy" />;
+    return <img src={url} alt={alt} className={`${imgClass} object-contain rounded-2xl group-hover:scale-110 transition-transform duration-200`} style={{ borderRadius: "16px" }} loading="lazy" />;
   }
   return <span className="text-5xl sm:text-6xl md:text-7xl group-hover:scale-110 transition-transform duration-200">{src}</span>;
 }

@@ -198,7 +198,8 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
                       <img
                         src={item.image.startsWith("/") ? `${IMG_BASE}${item.image}` : item.image}
                         alt={item.name}
-                        className="w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 object-contain rounded-xl group-hover:scale-110 transition-transform duration-200"
+                        className="w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 object-contain rounded-2xl group-hover:scale-110 transition-transform duration-200"
+                        style={{ borderRadius: "16px" }}
                         loading="lazy"
                       />
                     ) : (

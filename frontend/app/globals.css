@@ -29,6 +29,10 @@
   --color-primary-900: #9B1C1C;
 }
 
+img {
+  border-radius: 40px 40px !important;
+}
+
 @layer base {
   * {
     margin: 0;
@@ -58,32 +62,48 @@
     font-weight: 600;
     letter-spacing: 0;
   }
+
   @media (min-width: 768px) {
-    h1 { font-size: 24px; line-height: 32px; }
+    h1 {
+      font-size: 24px;
+      line-height: 32px;
+    }
   }
+
   h2 {
     font-size: 18px;
     line-height: 24px;
     font-weight: 600;
     letter-spacing: 0;
   }
+
   @media (min-width: 768px) {
-    h2 { font-size: 22px; line-height: 28px; }
+    h2 {
+      font-size: 22px;
+      line-height: 28px;
+    }
   }
+
   h3 {
     font-size: 14px;
     line-height: 20px;
     font-weight: 600;
     letter-spacing: 0;
   }
+
   @media (min-width: 768px) {
-    h3 { font-size: 16px; line-height: 24px; }
+    h3 {
+      font-size: 16px;
+      line-height: 24px;
+    }
   }
+
   h4 {
     font-size: 14px;
     line-height: 20px;
     font-weight: 600;
   }
+
   h5 {
     font-size: 12px;
     line-height: 18px;
@@ -96,9 +116,11 @@
   width: 4px;
   height: 4px;
 }
+
 ::-webkit-scrollbar-track {
   background: #F0F2F5;
 }
+
 ::-webkit-scrollbar-thumb {
   background: #667085;
   border-radius: 2px;
@@ -132,18 +154,22 @@
   font-family: var(--font-nunito), "Nunito Sans", system-ui, sans-serif;
   white-space: nowrap;
 }
+
 .btn-primary:hover {
   background-color: #D60071;
   box-shadow: rgba(0, 0, 0, 0.15) 0px 4px 8px 0px;
 }
+
 .btn-primary:active {
   background-color: #B8005C;
   box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 4px 0px;
 }
+
 .btn-primary:focus-visible {
   outline: 2px solid #EC008C;
   outline-offset: 2px;
 }
+
 .btn-primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -169,10 +195,12 @@
   text-decoration: none;
   font-family: var(--font-nunito), "Nunito Sans", system-ui, sans-serif;
 }
+
 .btn-secondary:hover {
   background-color: #F3F4F6;
   color: #364152;
 }
+
 .btn-secondary:active {
   background-color: #E5E7EB;
   color: #364152;
@@ -195,6 +223,7 @@
   justify-content: center;
   gap: 6px;
 }
+
 .btn-ghost:hover {
   color: #364152;
   text-decoration: underline;
@@ -227,6 +256,7 @@
   height: 38px;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
+
 @media (min-width: 768px) {
   .input-field {
     padding: 10px 12px;
@@ -235,14 +265,17 @@
     height: 42px;
   }
 }
+
 .input-field::placeholder {
   color: #99A0B4;
 }
+
 .input-field:focus {
   border: 1px solid #E5E7EB;
   outline: none;
   box-shadow: none;
 }
+
 .input-field.error {
   border: 1px solid #FF6B6B;
   box-shadow: none;
@@ -291,6 +324,7 @@
   min-width: 60px;
   transition: color 0.15s;
 }
+
 .mobile-bottom-nav a.active,
 .mobile-bottom-nav a:hover {
   color: #EC008C;
@@ -305,17 +339,18 @@
 }
 
 /* Smooth marker transitions */
-.leaflet-marker-pane > * {
+.leaflet-marker-pane>* {
   transition: transform 0.3s linear;
 }
 
 /* Google Maps-style zoom controls */
 .leaflet-control-zoom {
   border: none !important;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.2) !important;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2) !important;
   border-radius: 8px !important;
   overflow: hidden;
 }
+
 .leaflet-control-zoom a {
   background: #fff !important;
   color: #666 !important;
@@ -326,10 +361,12 @@
   font-size: 18px !important;
   transition: background 0.15s;
 }
+
 .leaflet-control-zoom a:hover {
   background: #f8f8f8 !important;
   color: #333 !important;
 }
+
 .leaflet-control-zoom-in {
   border-bottom: 1px solid #e0e0e0 !important;
 }
@@ -343,22 +380,24 @@
 /* Popup styling */
 .leaflet-popup-content-wrapper {
   border-radius: 12px !important;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
   padding: 0 !important;
 }
+
 .leaflet-popup-content {
   margin: 12px 16px !important;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
   font-size: 13px !important;
   line-height: 1.4 !important;
 }
+
 .leaflet-popup-tip {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
 }
 
 /* Attribution styling */
 .leaflet-control-attribution {
-  background: rgba(255,255,255,0.8) !important;
+  background: rgba(255, 255, 255, 0.8) !important;
   border-radius: 4px !important;
   font-size: 10px !important;
   padding: 2px 6px !important;
@@ -372,20 +411,23 @@
   right: 50px;
   z-index: 1000;
 }
+
 .map-search-bar input {
   width: 100%;
   padding: 10px 14px 10px 36px;
   border: none;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   font-size: 14px;
   background: white;
   outline: none;
   transition: box-shadow 0.2s;
 }
+
 .map-search-bar input:focus {
-  box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
 }
+
 .map-search-bar .search-icon {
   position: absolute;
   left: 12px;
@@ -394,6 +436,7 @@
   color: #666;
   pointer-events: none;
 }
+
 .map-search-results {
   position: absolute;
   top: 100%;
@@ -401,29 +444,38 @@
   right: 0;
   background: white;
   border-radius: 0 0 8px 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   max-height: 200px;
   overflow-y: auto;
   z-index: 1001;
 }
+
 .map-search-results .result-item {
   padding: 10px 14px;
   cursor: pointer;
   font-size: 13px;
   border-bottom: 1px solid #f0f0f0;
 }
+
 .map-search-results .result-item:hover {
   background: #f8f8f8;
 }
+
 .map-search-results .result-item:last-child {
   border-bottom: none;
 }
 
 /* Marquee animation for promo bar */
 @keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
 }
+
 .animate-marquee {
   animation: marquee 20s linear infinite;
 }
@@ -432,7 +484,20 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Rounded corners for product & category images */
+.group>div>img,
+.group>img,
+a>div>img {
+  border-radius: 16px;
+}
+
+.product-img-radius {
+  border-radius: 16px;
+  overflow: hidden;
 }

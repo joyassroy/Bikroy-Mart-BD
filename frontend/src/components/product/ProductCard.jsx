@@ -96,8 +96,8 @@ const ProductCard = memo(function ProductCard({ product, showActions, onDelete, 
 
   return (
     <>
-      <Link href={`/product/${product.slug}`} className="block bg-white rounded-xl overflow-hidden border border-[#E5E7EB] hover:border-[#EC008C]/30 hover:shadow-[0_8px_30px_rgba(236,0,140,0.12)] transition-all duration-300 hover:-translate-y-1 group cursor-pointer">
-        <div className="relative bg-gradient-to-b from-[#F9FAFB] to-[#F4F7FB] flex items-center justify-center overflow-hidden rounded-xl" style={{ aspectRatio: "1/1" }}>
+      <Link href={`/product/${product.slug}`} className="block bg-white rounded-2xl overflow-hidden border border-[#E5E7EB] hover:border-[#EC008C]/30 hover:shadow-[0_8px_30px_rgba(236,0,140,0.12)] transition-all duration-300 hover:-translate-y-1 group cursor-pointer" style={{ borderRadius: "16px" }}>
+        <div className="relative bg-gradient-to-b from-[#F9FAFB] to-[#F4F7FB] flex items-center justify-center overflow-hidden rounded-t-xl" style={{ aspectRatio: "1/1" }}>
           {hasDiscount && discountPercent > 0 && (
             <span className="absolute top-2 left-2 bg-gradient-to-r from-[#FF6B6B] to-[#FF4757] text-white text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-lg z-10 shadow-sm">
               {discountPercent}% OFF
@@ -118,7 +118,8 @@ const ProductCard = memo(function ProductCard({ product, showActions, onDelete, 
               <img
                 src={product.images[0]}
                 alt={product.name}
-                className="w-[75%] h-[75%] object-contain rounded-xl group-hover:scale-110 transition-transform duration-300 drop-shadow-sm"
+                className="w-[75%] h-[75%] object-contain rounded-2xl group-hover:scale-110 transition-transform duration-300 drop-shadow-sm"
+                style={{ borderRadius: "16px" }}
                 onError={() => setImgError(true)}
               />
             ) : (
