@@ -97,7 +97,7 @@ const ProductCard = memo(function ProductCard({ product, showActions, onDelete, 
   return (
     <>
       <Link href={`/product/${product.slug}`} className="block bg-white rounded-xl overflow-hidden border border-[#E5E7EB] hover:border-[#EC008C]/30 hover:shadow-[0_8px_30px_rgba(236,0,140,0.12)] transition-all duration-300 hover:-translate-y-1 group cursor-pointer">
-        <div className="relative bg-gradient-to-b from-[#F9FAFB] to-[#F4F7FB] flex items-center justify-center overflow-hidden" style={{ aspectRatio: "1/1" }}>
+        <div className="relative bg-gradient-to-b from-[#F9FAFB] to-[#F4F7FB] flex items-center justify-center overflow-hidden rounded-xl" style={{ aspectRatio: "1/1" }}>
           {hasDiscount && discountPercent > 0 && (
             <span className="absolute top-2 left-2 bg-gradient-to-r from-[#FF6B6B] to-[#FF4757] text-white text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-lg z-10 shadow-sm">
               {discountPercent}% OFF
@@ -132,7 +132,7 @@ const ProductCard = memo(function ProductCard({ product, showActions, onDelete, 
         </div>
 
         <div className="p-2.5 sm:p-3 space-y-1.5">
-          <h3 className="text-sm sm:text-base font-bold text-[#364152] line-clamp-2 min-h-[32px] sm:min-h-[36px] leading-tight group-hover:text-[#EC008C] transition-colors">
+          <h3 className="text-base sm:text-lg font-bold text-[#364152] line-clamp-2 min-h-[32px] sm:min-h-[36px] leading-tight group-hover:text-[#EC008C] transition-colors">
             {language === "bn" ? (product.nameBn || product.name) : product.name}
           </h3>
 
@@ -194,7 +194,7 @@ const ProductCard = memo(function ProductCard({ product, showActions, onDelete, 
               <button
                 onClick={handleAddToCart}
                 disabled={isOutOfStock}
-                className="flex-1 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold text-white rounded-lg transition-shadow duration-200 flex items-center justify-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-[#EC008C] to-[#D60071] hover:from-[#D60071] hover:to-[#B80060] shadow-[0_2px_8px_rgba(236,0,140,0.3)]"
+                className="flex-1 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-white rounded-lg transition-shadow duration-200 flex items-center justify-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-[#EC008C] to-[#D60071] hover:from-[#D60071] hover:to-[#B80060] shadow-[0_2px_8px_rgba(236,0,140,0.3)]"
               >
                 <ShoppingCart size={12} />
                 {isOutOfStock ? t.outOfStock : t.addToCart}

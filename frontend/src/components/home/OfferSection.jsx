@@ -171,7 +171,7 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
                   isBogo ? "border-2 border-[#F59E0B]" : "border border-[#E5E7EB]"
                 }`}
               >
-                <div className={`relative flex items-center justify-center h-36 sm:h-44 md:h-52 ${
+                <div className={`relative flex items-center justify-center h-36 sm:h-44 md:h-52 overflow-hidden rounded-t-2xl ${
                   isBogo ? "bg-gradient-to-br from-[#FFFBEB] to-[#FEF3C7]" : "bg-[#F9FAFB]"
                 }`}>
                   {isBogo ? (
@@ -209,7 +209,7 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
                   )}
                 </div>
                 <div className="p-3 sm:p-3.5">
-                  <h3 className="text-sm sm:text-base font-bold text-[#181717] line-clamp-2 mb-1.5 min-h-[36px] sm:min-h-[40px] leading-tight">{item.name}</h3>
+                  <h3 className="text-base sm:text-lg font-bold text-[#181717] line-clamp-2 mb-1.5 min-h-[36px] sm:min-h-[40px] leading-tight">{item.name}</h3>
                   {item.items && item.items.length > 1 && (
                     <div className="text-[9px] text-gray-400 mb-1">
                       {item.items.map((i) => i.product?.name).filter(Boolean).join(" + ")}

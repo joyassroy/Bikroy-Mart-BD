@@ -57,7 +57,7 @@ export default function ProductTabs() {
           <button
             key={tab.value}
             onClick={() => setActiveTab(tab.value)}
-            className={`pb-2 sm:pb-2.5 px-1 text-xs sm:text-sm font-bold border-b-2 transition whitespace-nowrap flex-shrink-0 ${
+            className={`pb-2 sm:pb-2.5 px-1 text-base sm:text-lg font-bold border-b-2 transition whitespace-nowrap flex-shrink-0 ${
               activeTab === tab.value
                 ? "border-[#EC008C] text-[#EC008C]"
                 : "border-transparent text-[#667085] hover:text-[#364152]"

@@ -34,11 +34,11 @@ const FilterSidebar = memo(function FilterSidebar({ categories, selectedCategory
   return (
     <div>
       <div className="bg-white border border-[#E5E7EB] rounded-lg p-3 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px]">
-        <h3 className="font-bold text-[#000000] mb-2 text-xs">{t.categories}</h3>
+        <h3 className="font-bold text-[#000000] mb-2 text-base sm:text-lg">{t.categories}</h3>
         <div className="space-y-1">
           <button
             onClick={() => onCategorySelect("")}
-            className={`w-full text-left px-2.5 py-1.5 rounded-md text-xs transition font-semibold ${
+            className={`w-full text-left px-2.5 py-1.5 rounded-md text-base sm:text-lg transition font-semibold ${
               selectedCategory === "" ? "bg-[#FCE8F3] text-[#EC008C]" : "text-[#667085] hover:bg-[#F4F7FB]"
             }`}
           >
@@ -48,13 +48,13 @@ const FilterSidebar = memo(function FilterSidebar({ categories, selectedCategory
             <button
               key={cat.id || cat.slug}
               onClick={() => onCategorySelect(cat.slug)}
-              className={`w-full text-left px-2.5 py-1.5 rounded-md text-xs transition font-semibold flex items-center justify-between ${
+              className={`w-full text-left px-2.5 py-1.5 rounded-md text-base sm:text-lg transition font-semibold flex items-center justify-between ${
                 selectedCategory === cat.slug ? "bg-[#FCE8F3] text-[#EC008C]" : "text-[#667085] hover:bg-[#F4F7FB]"
               }`}
             >
               <span className="truncate">{catName(cat)}</span>
               {cat._count?.products > 0 && (
-                <span className="text-[9px] bg-[#F4F7FB] px-1.5 py-0.5 rounded-full flex-shrink-0 ml-1">
+                <span className="text-[10px] sm:text-[11px] bg-[#F4F7FB] px-1.5 py-0.5 rounded-full flex-shrink-0 ml-1">
                   {cat._count.products}
                 </span>
               )}
@@ -65,11 +65,11 @@ const FilterSidebar = memo(function FilterSidebar({ categories, selectedCategory
 
       {subcats.length > 0 && (
         <div className="bg-white border border-[#E5E7EB] rounded-lg p-3 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] mt-3">
-          <h3 className="font-bold text-[#000000] mb-2 text-xs">Subcategories</h3>
+          <h3 className="font-bold text-[#000000] mb-2 text-base sm:text-lg">Subcategories</h3>
           <div className="space-y-1">
             <button
               onClick={() => onSubcategorySelect("")}
-              className={`w-full text-left px-2.5 py-1.5 rounded-md text-xs transition font-semibold ${
+              className={`w-full text-left px-2.5 py-1.5 rounded-md text-base sm:text-lg transition font-semibold ${
                 selectedSubcategory === "" ? "bg-[#FCE8F3] text-[#EC008C]" : "text-[#667085] hover:bg-[#F4F7FB]"
               }`}
             >
@@ -79,7 +79,7 @@ const FilterSidebar = memo(function FilterSidebar({ categories, selectedCategory
               <button
                 key={sub.slug}
                 onClick={() => onSubcategorySelect(sub.slug)}
-                className={`w-full text-left px-2.5 py-1.5 rounded-md text-xs transition font-semibold ${
+                className={`w-full text-left px-2.5 py-1.5 rounded-md text-base sm:text-lg transition font-semibold ${
                   selectedSubcategory === sub.slug ? "bg-[#FCE8F3] text-[#EC008C]" : "text-[#667085] hover:bg-[#F4F7FB]"
                 }`}
               >
@@ -91,27 +91,27 @@ const FilterSidebar = memo(function FilterSidebar({ categories, selectedCategory
       )}
 
       <div className="bg-white border border-[#E5E7EB] rounded-lg p-3 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] mt-3">
-        <h3 className="font-semibold text-[#000000] mb-2 text-xs">{t.priceRange}</h3>
+        <h3 className="font-semibold text-[#000000] mb-2 text-base sm:text-lg">{t.priceRange}</h3>
         <div className="flex items-center gap-2">
           <input
             type="number"
             placeholder={t.minPrice}
             value={minPrice}
             onChange={(e) => onMinPriceChange(e.target.value)}
-            className="w-full border border-[#E5E7EB] rounded-md px-2 py-1.5 text-[11px] focus:outline-none focus:border-[#EC008C]"
+            className="w-full border border-[#E5E7EB] rounded-md px-2 py-1.5 text-xs sm:text-sm focus:outline-none focus:border-[#EC008C]"
           />
-          <span className="text-[#667085] text-[11px]">-</span>
+          <span className="text-[#667085] text-xs sm:text-sm">-</span>
           <input
             type="number"
             placeholder={t.maxPrice}
             value={maxPrice}
             onChange={(e) => onMaxPriceChange(e.target.value)}
-            className="w-full border border-[#E5E7EB] rounded-md px-2 py-1.5 text-[11px] focus:outline-none focus:border-[#EC008C]"
+            className="w-full border border-[#E5E7EB] rounded-md px-2 py-1.5 text-xs sm:text-sm focus:outline-none focus:border-[#EC008C]"
           />
         </div>
         <button
           onClick={onPriceFilter}
-          className="w-full mt-2 bg-[#EC008C] text-white text-[11px] font-semibold py-1.5 rounded-md hover:bg-[#D60071] transition"
+          className="w-full mt-2 bg-[#EC008C] text-white text-xs sm:text-sm font-semibold py-1.5 rounded-md hover:bg-[#D60071] transition"
         >
           {t.applyFilter}
         </button>
@@ -365,7 +365,7 @@ function ShopContent() {
             <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-[#00215B]">
               {offerType ? (OFFER_TITLES[offerType] || "Shop") : t.shopTitle}
             </h1>
-            <p className="text-[11px] sm:text-xs text-[#667085] mt-0.5">
+            <p className="text-xs sm:text-sm text-[#667085] mt-0.5">
               {totalProducts} {t.resultsFound}
             </p>
           </div>
@@ -378,7 +378,7 @@ function ShopContent() {
               placeholder={t.productSearchPlaceholder}
               value={localSearch}
               onChange={(e) => { setLocalSearch(e.target.value); dispatch(setSearchQueryRedux(e.target.value)); }}
-              className="flex-1 rounded-l-md px-3 py-2 text-xs bg-white text-[#000000] placeholder:text-[#99A0B4] border border-[#E5E7EB] border-r-0 focus:outline-none focus:border-transparent"
+              className="flex-1 rounded-l-md px-3 py-2 text-xs sm:text-sm bg-white text-[#000000] placeholder:text-[#99A0B4] border border-[#E5E7EB] border-r-0 focus:outline-none focus:border-transparent"
             />
             <button type="submit" className="bg-[#EC008C] text-white px-3 rounded-r-md hover:bg-[#D60071] transition flex items-center">
               <Search size={14} />
@@ -386,7 +386,7 @@ function ShopContent() {
           </form>
           <button
             onClick={() => setFilterDrawerOpen(true)}
-            className="flex items-center gap-1.5 bg-white border border-[#E5E7EB] rounded-md px-3 py-2 text-[11px] font-medium text-[#364152] hover:bg-[#F4F7FB] transition"
+            className="flex items-center gap-1.5 bg-white border border-[#E5E7EB] rounded-md px-3 py-2 text-xs sm:text-sm font-medium text-[#364152] hover:bg-[#F4F7FB] transition"
           >
             <SlidersHorizontal size={14} />
             {t.filters}
@@ -400,7 +400,7 @@ function ShopContent() {
               placeholder={t.productSearchPlaceholder}
               value={localSearch}
               onChange={(e) => { setLocalSearch(e.target.value); dispatch(setSearchQueryRedux(e.target.value)); }}
-              className="flex-1 rounded-l-md px-4 py-2 text-sm bg-white text-[#000000] placeholder:text-[#99A0B4] border border-[#E5E7EB] border-r-0 focus:outline-none focus:border-transparent"
+              className="flex-1 rounded-l-md px-4 py-2 text-sm sm:text-base bg-white text-[#000000] placeholder:text-[#99A0B4] border border-[#E5E7EB] border-r-0 focus:outline-none focus:border-transparent"
             />
             <button type="submit" className="bg-[#EC008C] text-white px-4 rounded-r-md hover:bg-[#D60071] transition flex items-center">
               <Search size={16} />
@@ -410,7 +410,7 @@ function ShopContent() {
             <select
               value={sortBy}
               onChange={(e) => { setSortBy(e.target.value); setCurrentPage(1); }}
-              className="border border-[#E5E7EB] rounded-md px-3 py-2 text-xs bg-white text-[#364152] focus:outline-none focus:border-[#EC008C]"
+              className="border border-[#E5E7EB] rounded-md px-3 py-2 text-xs sm:text-sm bg-white text-[#364152] focus:outline-none focus:border-[#EC008C]"
             >
               <option value="newest">{t.newest}</option>
               <option value="price-low">{t.priceLowHigh}</option>
@@ -438,7 +438,7 @@ function ShopContent() {
               <select
                 value={sortBy}
                 onChange={(e) => { setSortBy(e.target.value); setCurrentPage(1); }}
-                className="flex-1 border border-[#E5E7EB] rounded-md px-3 py-2 text-xs bg-white text-[#364152] focus:outline-none focus:border-[#EC008C]"
+                className="flex-1 border border-[#E5E7EB] rounded-md px-3 py-2 text-xs sm:text-sm bg-white text-[#364152] focus:outline-none focus:border-[#EC008C]"
               >
                 <option value="newest">{t.newest}</option>
                 <option value="price-low">{t.priceLowHigh}</option>
@@ -457,49 +457,49 @@ function ShopContent() {
 
             {(selectedCategory || selectedSubcategory || minPrice || maxPrice || activeSearch || offerType) && (
               <div className="flex flex-wrap items-center gap-2 mb-3">
-                <span className="text-[10px] text-[#667085] font-medium">{t.filters}:</span>
+                <span className="text-xs text-[#667085] font-medium">{t.filters}:</span>
                 {offerType && (
-                  <span className="inline-flex items-center gap-1 bg-[#E8EDF5] text-[#00215B] text-[10px] font-medium px-2 py-1 rounded-full">
+                  <span className="inline-flex items-center gap-1 bg-[#E8EDF5] text-[#00215B] text-xs font-medium px-2 py-1 rounded-full">
                     {OFFER_TITLES[offerType] || offerType}
                     <button onClick={() => { setOfferType(""); setCurrentPage(1); }} className="hover:text-[#001A4A]"><X size={10} /></button>
                   </span>
                 )}
                 {selectedCategory && (
-                  <span className="inline-flex items-center gap-1 bg-[#FCE8F3] text-[#EC008C] text-[10px] font-medium px-2 py-1 rounded-full">
+                  <span className="inline-flex items-center gap-1 bg-[#FCE8F3] text-[#EC008C] text-xs font-medium px-2 py-1 rounded-full">
                     {catName(categories.find(c => c.slug === selectedCategory)) || selectedCategory}
                     <button onClick={() => { setSelectedCategory(""); setSelectedSubcategory(""); setCurrentPage(1); }} className="hover:text-[#D60071]"><X size={10} /></button>
                   </span>
                 )}
                 {selectedSubcategory && (
-                  <span className="inline-flex items-center gap-1 bg-[#E8F4F8] text-[#00AFCC] text-[10px] font-medium px-2 py-1 rounded-full">
+                  <span className="inline-flex items-center gap-1 bg-[#E8F4F8] text-[#00AFCC] text-xs font-medium px-2 py-1 rounded-full">
                     {selectedSubcategory}
                     <button onClick={() => { setSelectedSubcategory(""); setCurrentPage(1); }} className="hover:text-[#009AB5]"><X size={10} /></button>
                   </span>
                 )}
                 {minPrice && (
-                  <span className="inline-flex items-center gap-1 bg-[#E8F4F8] text-[#00AFCC] text-[10px] font-medium px-2 py-1 rounded-full">
+                  <span className="inline-flex items-center gap-1 bg-[#E8F4F8] text-[#00AFCC] text-xs font-medium px-2 py-1 rounded-full">
                     Min: ৳{minPrice}
                     <button onClick={() => setMinPrice("")} className="hover:text-[#009AB5]"><X size={10} /></button>
                   </span>
                 )}
                 {maxPrice && (
-                  <span className="inline-flex items-center gap-1 bg-[#E8F4F8] text-[#00AFCC] text-[10px] font-medium px-2 py-1 rounded-full">
+                  <span className="inline-flex items-center gap-1 bg-[#E8F4F8] text-[#00AFCC] text-xs font-medium px-2 py-1 rounded-full">
                     Max: ৳{maxPrice}
                     <button onClick={() => setMaxPrice("")} className="hover:text-[#009AB5]"><X size={10} /></button>
                   </span>
                 )}
                 {activeSearch && (
-                  <span className="inline-flex items-center gap-1 bg-[#E8EDF5] text-[#00215B] text-[10px] font-medium px-2 py-1 rounded-full">
+                  <span className="inline-flex items-center gap-1 bg-[#E8EDF5] text-[#00215B] text-xs font-medium px-2 py-1 rounded-full">
                     &quot;{activeSearch}&quot;
                     <button onClick={() => { setLocalSearch(""); dispatch(setSearchQueryRedux("")); }} className="hover:text-[#001A4A]"><X size={10} /></button>
                   </span>
                 )}
-                <button onClick={clearFilters} className="text-[10px] text-[#EC008C] font-semibold hover:underline">{t.clearAll}</button>
+                <button onClick={clearFilters} className="text-xs text-[#EC008C] font-semibold hover:underline">{t.clearAll}</button>
               </div>
             )}
 
             {shopBanners.length > 0 && (
-              <div className="mb-4 rounded-lg overflow-hidden relative" style={{ aspectRatio: "3/1" }}>
+              <div className="mb-4 rounded-xl overflow-hidden relative" style={{ aspectRatio: "3/1" }}>
                 {shopBanners.map((banner, index) => (
                   <div
                     key={banner.id}
@@ -566,9 +566,9 @@ function ShopContent() {
               </div>
             ) : products.length === 0 ? (
               <div className="text-center py-12 sm:py-16 bg-white rounded-lg border border-[#E5E7EB]">
-                <p className="text-sm text-[#667085] mb-1">{t.noProductsFound}</p>
-                <p className="text-[11px] text-[#99A0B4]">{t.noProductsDesc}</p>
-                <button onClick={clearFilters} className="mt-3 text-[11px] text-[#EC008C] font-semibold hover:underline">{t.clearFilters}</button>
+                <p className="text-base sm:text-lg text-[#667085] mb-1">{t.noProductsFound}</p>
+                <p className="text-xs sm:text-sm text-[#99A0B4]">{t.noProductsDesc}</p>
+                <button onClick={clearFilters} className="mt-3 text-xs sm:text-sm text-[#EC008C] font-semibold hover:underline">{t.clearFilters}</button>
               </div>
             ) : (
               <>
@@ -631,7 +631,7 @@ function ShopContent() {
           <div className="absolute inset-0 bg-black/40 transition-opacity" onClick={() => setFilterDrawerOpen(false)} />
           <div className="absolute right-0 top-0 h-full w-72 bg-white shadow-xl overflow-y-auto">
             <div className="flex items-center justify-between p-4 border-b border-[#E5E7EB]">
-              <h2 className="text-sm font-semibold text-[#000000]">{t.filterDrawerTitle}</h2>
+              <h2 className="text-base sm:text-lg font-semibold text-[#000000]">{t.filterDrawerTitle}</h2>
               <button onClick={() => setFilterDrawerOpen(false)} className="p-1.5 rounded-md hover:bg-[#F3F4F6] transition text-[#364152]">
                 <X size={18} />
               </button>
@@ -642,7 +642,7 @@ function ShopContent() {
             <div className="sticky bottom-0 p-4 bg-white border-t border-[#E5E7EB]">
               <button
                 onClick={() => setFilterDrawerOpen(false)}
-                className="w-full bg-[#EC008C] text-white text-xs font-semibold py-2.5 rounded-md hover:bg-[#D60071] transition"
+                className="w-full bg-[#EC008C] text-white text-xs sm:text-sm font-semibold py-2.5 rounded-md hover:bg-[#D60071] transition"
               >
                 {t.applyFilter} ({totalProducts} {t.products})
               </button>

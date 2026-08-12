@@ -416,7 +416,7 @@ function HeaderContent() {
                 onMouseEnter={() => setMegaMenuOpen(true)}
                 onMouseLeave={() => { setMegaMenuOpen(false); setHoveredCatSlug(null); }}
               >
-                <button className="flex items-center gap-2 bg-[#00215B] text-white px-4 py-2.5 text-[12px] font-semibold hover:bg-[#001A4A] transition rounded-b-md">
+                <button className="flex items-center gap-2 bg-[#00215B] text-white px-4 py-2.5 text-base sm:text-lg font-semibold hover:bg-[#001A4A] transition rounded-b-md">
                   <Menu size={15} />
                   {t.allCategories}
                   <ChevronDown size={11} className={`transition-transform ${megaMenuOpen ? "rotate-180" : ""}`} />
@@ -434,7 +434,7 @@ function HeaderContent() {
                             <div
                               key={cat.slug}
                               onMouseEnter={() => setHoveredCatSlug(cat.slug)}
-                              className={`flex items-center gap-3 px-3 py-3 rounded-xl text-[14px] cursor-pointer transition-all duration-150 ${
+                              className={`flex items-center gap-3 px-3 py-3 rounded-xl text-base sm:text-lg cursor-pointer transition-all duration-150 ${
                                 isActive
                                   ? "bg-[#FCE8F3] text-[#EC008C] shadow-sm"
                                   : "text-[#364152] hover:bg-white hover:shadow-sm"
@@ -496,7 +496,7 @@ function HeaderContent() {
                                 <CategoryIcon icon={hovered.icon} size={26} />
                               </span>
                               <div>
-                                <p className="text-[14px] font-bold text-[#00215B]">{catName(hovered)}</p>
+                                <p className="text-base sm:text-lg font-bold text-[#00215B]">{catName(hovered)}</p>
                                 <p className="text-[11px] text-[#667085]">{hovered.subcategories.length} subcategories</p>
                               </div>
                             </div>
@@ -506,7 +506,7 @@ function HeaderContent() {
                                   key={sub.slug}
                                   href={`/shop?category=${hoveredCatSlug}&subcategory=${sub.slug}`}
                                   onClick={() => { setMegaMenuOpen(false); setHoveredCatSlug(null); }}
-                                  className="flex items-center gap-3 px-3 py-3 rounded-xl text-[13px] text-[#364152] hover:bg-[#FCE8F3] hover:text-[#EC008C] transition-all duration-150 group"
+                                  className="flex items-center gap-3 px-3 py-3 rounded-xl text-base sm:text-lg text-[#364152] hover:bg-[#FCE8F3] hover:text-[#EC008C] transition-all duration-150 group"
                                 >
                                   {sub.image ? (
                                     <img src={sub.image} alt={subName(sub)} className="w-9 h-9 rounded-lg object-contain flex-shrink-0 bg-[#F4F7FB] p-0.5" />
@@ -541,15 +541,15 @@ function HeaderContent() {
                 const offerType = link.href.split("offer=")[1];
                 const isActive = activeOffer && activeOffer === offerType;
                 return (
-                  <Link key={link.href} href={link.href} className={`px-3 py-2.5 text-[12px] font-semibold transition ${isActive ? "text-[#EC008C] bg-[#FCE8F3]" : "text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3]"}`}>
+                  <Link key={link.href} href={link.href} className={`px-3 py-2.5 text-base sm:text-lg font-semibold transition ${isActive ? "text-[#EC008C] bg-[#FCE8F3]" : "text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3]"}`}>
                     {language === "bn" ? link.labelBn : link.label}
                   </Link>
                 );
               })}
-              <Link href="/shop" className={`px-3 py-2.5 text-[12px] font-semibold transition ${pathname === "/shop" && !activeOffer ? "text-[#EC008C] bg-[#FCE8F3]" : "text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3]"}`}>Shop</Link>
-              <Link href="/about" className="px-3 py-2.5 text-[12px] text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3] transition font-semibold">About</Link>
-              <Link href="/product-request" className="px-3 py-2.5 text-[12px] text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3] transition font-semibold flex items-center gap-1">
-                <ClipboardList size={12} />{t.customRequest}
+              <Link href="/shop" className={`px-3 py-2.5 text-base sm:text-lg font-semibold transition ${pathname === "/shop" && !activeOffer ? "text-[#EC008C] bg-[#FCE8F3]" : "text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3]"}`}>Shop</Link>
+              <Link href="/about" className="px-3 py-2.5 text-base sm:text-lg text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3] transition font-semibold">About</Link>
+              <Link href="/product-request" className="px-3 py-2.5 text-base sm:text-lg text-[#364152] hover:text-[#EC008C] hover:bg-[#FCE8F3] transition font-semibold flex items-center gap-1.5">
+                <ClipboardList size={18} />{t.customRequest}
               </Link>
             </div>
           </div>
@@ -638,7 +638,7 @@ function HeaderContent() {
                       <span className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isActive ? "bg-[#EC008C] text-white" : "bg-[#FCE8F3] text-[#EC008C]"}`}>
                         <Icon size={18} />
                       </span>
-                      <span className={`text-[13px] font-semibold ${isActive ? "text-[#EC008C]" : "text-[#364152]"}`}>{language === "bn" ? link.labelBn : link.label}</span>
+                      <span className={`text-base sm:text-lg font-semibold ${isActive ? "text-[#EC008C]" : "text-[#364152]"}`}>{language === "bn" ? link.labelBn : link.label}</span>
                     </Link>
                   );
                 })}
@@ -662,7 +662,7 @@ function HeaderContent() {
                           <span className="w-10 h-10 rounded-xl bg-[#F4F7FB] flex items-center justify-center text-[#00215B] flex-shrink-0">
                             <CategoryIcon icon={cat.icon} size={20} />
                           </span>
-                          <span className="text-[13px] font-semibold text-[#364152] flex-1">{catName(cat)}</span>
+                          <span className="text-base sm:text-lg font-semibold text-[#364152] flex-1">{catName(cat)}</span>
                           {hasSubs && (
                             <span className="text-[9px] bg-[#F4F7FB] text-[#667085] px-1.5 py-0.5 rounded-full">{cat.subcategories.length}</span>
                           )}
@@ -683,7 +683,7 @@ function HeaderContent() {
                               key={sub.slug}
                               href={`/shop?category=${cat.slug}&subcategory=${sub.slug}`}
                               onClick={() => setDrawerOpen(false)}
-                              className="flex items-center gap-2 px-2 py-2 text-[11px] text-[#667085] hover:text-[#EC008C] hover:bg-[#FCE8F3] rounded-lg transition"
+                              className="flex items-center gap-2 px-2 py-2 text-xs sm:text-sm text-[#667085] hover:text-[#EC008C] hover:bg-[#FCE8F3] rounded-lg transition"
                             >
                               <span className="w-1.5 h-1.5 rounded-full bg-[#E5E7EB] flex-shrink-0"></span>
                               {subName(sub)}

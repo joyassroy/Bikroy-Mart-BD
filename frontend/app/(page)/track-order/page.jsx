@@ -111,7 +111,7 @@ function TrackOrderContent() {
         {/* Page Title */}
         <div className="text-center mb-4 sm:mb-6">
           <h1 className="text-xl sm:text-2xl font-bold text-[#00215B]">{t.trackOrder}</h1>
-          <p className="text-xs sm:text-sm text-[#667085] mt-1">{t.trackOrderSubtitle}</p>
+          <p className="text-sm sm:text-base text-[#667085] mt-1">{t.trackOrderSubtitle}</p>
         </div>
 
         {/* Search Bar */}
@@ -262,7 +262,7 @@ function TrackOrderContent() {
                 <div className="px-4 sm:px-6 py-3 border-t border-[#F0F2F5]">
                   <button
                     onClick={() => setShowCancelModal(true)}
-                    className="flex items-center gap-1.5 text-xs sm:text-sm text-red-500 hover:text-red-700 font-semibold transition"
+                    className="flex items-center gap-1.5 text-sm sm:text-base text-red-500 hover:text-red-700 font-semibold transition"
                   >
                     <Ban size={14} /> Cancel Order
                   </button>
@@ -299,7 +299,7 @@ function TrackOrderContent() {
                   <div className="w-8 h-8 rounded-full bg-[#E8F4F8] flex items-center justify-center">
                     <Navigation size={14} className="text-[#00AFCC]" />
                   </div>
-                  <h3 className="font-semibold text-[#181717] text-xs sm:text-sm">{t.riderDashboard}</h3>
+                  <h3 className="font-semibold text-[#181717] text-sm sm:text-base">{t.riderDashboard}</h3>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="flex items-center gap-3 p-3 bg-[#F9FAFB] rounded-xl">
@@ -342,7 +342,7 @@ function TrackOrderContent() {
                   <div className="w-8 h-8 rounded-full bg-[#FCE8F3] flex items-center justify-center">
                     <User size={14} className="text-[#EC008C]" />
                   </div>
-                  <h3 className="font-semibold text-[#181717] text-xs sm:text-sm">Zila Manager</h3>
+                  <h3 className="font-semibold text-[#181717] text-sm sm:text-base">Zila Manager</h3>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="flex items-center gap-3 p-3 bg-[#F9FAFB] rounded-xl">
@@ -415,7 +415,7 @@ function TrackOrderContent() {
             {order.items && order.items.length > 0 ? (
               <div className="bg-white rounded-2xl overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-[#E5E7EB]">
                 <div className="px-4 sm:px-5 py-3 border-b border-[#F0F2F5]">
-                  <h3 className="font-semibold text-[#181717] text-xs sm:text-sm">{t.items}</h3>
+                  <h3 className="font-semibold text-[#181717] text-sm sm:text-base">{t.items}</h3>
                 </div>
                 <div className="divide-y divide-[#F0F2F5]">
                   {order.items.map((item) => (

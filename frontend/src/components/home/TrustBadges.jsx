@@ -17,12 +17,12 @@ export default function TrustBadges() {
       <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-[#F1F1F1] bg-white border border-[#E5E7EB] rounded-lg overflow-hidden">
         {badges.map((badge, i) => (
           <div key={i} className="flex items-center gap-2.5 p-3 lg:p-4">
-            <div className={`${badge.color} p-1.5 md:p-2 rounded-full flex-shrink-0`}>
-              <badge.icon size={18} className="md:w-5 md:h-5" />
+            <div className={`${badge.color} p-2 md:p-2.5 rounded-full flex-shrink-0`}>
+              <badge.icon size={20} className="md:w-6 md:h-6" />
             </div>
             <div className="min-w-0">
-              <h3 className="font-semibold text-[#181717] text-[11px] md:text-xs leading-tight">{badge.title}</h3>
-              <p className="text-[10px] md:text-[11px] text-[#667085] leading-tight mt-0.5">{badge.desc}</p>
+              <h3 className="font-semibold text-[#181717] text-sm md:text-base leading-tight">{badge.title}</h3>
+              <p className="text-xs md:text-sm text-[#667085] leading-tight mt-0.5">{badge.desc}</p>
             </div>
           </div>
         ))}

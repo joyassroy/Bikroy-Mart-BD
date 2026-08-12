@@ -176,7 +176,7 @@ export default function CheckoutPage() {
           <div className="lg:col-span-2 space-y-2.5 sm:space-y-3">
             {savedAddresses.length > 0 && (
               <div className="bg-white rounded-lg p-3 sm:p-4 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">
-                <label className="block text-[10px] sm:text-[11px] font-semibold text-[#364152] mb-1">{t.selectAddress}</label>
+                <label className="block text-xs sm:text-sm font-semibold text-[#364152] mb-1">{t.selectAddress}</label>
                 <select value={selectedAddressId} onChange={(e) => setSelectedAddressId(e.target.value)} className="input-field">
                   <option value="">{t.fillManually}</option>
                   {savedAddresses.map((addr) => (
@@ -189,18 +189,18 @@ export default function CheckoutPage() {
             )}
 
             <div className="bg-white rounded-lg p-3 sm:p-4 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">
-              <h2 className="font-semibold text-[#000000] text-xs sm:text-sm mb-2 sm:mb-3">{t.deliveryInformation}</h2>
+              <h2 className="font-semibold text-[#000000] text-base sm:text-lg mb-2 sm:mb-3">{t.deliveryInformation}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
                 <div>
-                  <label className="block text-[10px] sm:text-[11px] font-semibold text-[#364152] mb-1">{t.fullName}</label>
+                  <label className="block text-xs sm:text-sm font-semibold text-[#364152] mb-1">{t.fullName}</label>
                   <input type="text" placeholder={t.fullName} required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input-field" />
                 </div>
                 <div>
-                  <label className="block text-[10px] sm:text-[11px] font-semibold text-[#364152] mb-1">{t.phoneNumber}</label>
+                  <label className="block text-xs sm:text-sm font-semibold text-[#364152] mb-1">{t.phoneNumber}</label>
                   <input type="tel" placeholder={t.phoneNumber} required value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="input-field" />
                 </div>
                 <div>
-                  <label className="block text-[10px] sm:text-[11px] font-semibold text-[#364152] mb-1">Division</label>
+                  <label className="block text-xs sm:text-sm font-semibold text-[#364152] mb-1">Division</label>
                   <select
                     value={form.division}
                     onChange={(e) => setForm({ ...form, division: e.target.value, district: "", upazila: "" })}
@@ -214,7 +214,7 @@ export default function CheckoutPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[10px] sm:text-[11px] font-semibold text-[#364152] mb-1">District</label>
+                  <label className="block text-xs sm:text-sm font-semibold text-[#364152] mb-1">District</label>
                   <select
                     value={form.district}
                     onChange={(e) => setForm({ ...form, district: e.target.value, upazila: "" })}
@@ -228,7 +228,7 @@ export default function CheckoutPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[10px] sm:text-[11px] font-semibold text-[#364152] mb-1">Upazila</label>
+                  <label className="block text-xs sm:text-sm font-semibold text-[#364152] mb-1">Upazila</label>
                   <select
                     value={form.upazila}
                     onChange={(e) => setForm({ ...form, upazila: e.target.value })}
@@ -243,14 +243,14 @@ export default function CheckoutPage() {
                 </div>
               </div>
               <div className="mt-2 sm:mt-2.5">
-                <label className="block text-[10px] sm:text-[11px] font-semibold text-[#364152] mb-1">{t.apartment}</label>
+                <label className="block text-xs sm:text-sm font-semibold text-[#364152] mb-1">{t.apartment}</label>
                 <textarea placeholder={t.apartment} required rows={3} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="input-field !h-auto min-h-[70px]" />
               </div>
               <DeliveryMapPicker coords={deliveryCoords} onCoordsChange={setDeliveryCoords} onLocationDetected={handleLocationDetected} />
             </div>
 
             <div className="bg-white rounded-lg p-3 sm:p-4 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">
-              <button type="button" onClick={() => setShowCustomReq(!showCustomReq)} className="flex items-center gap-1.5 text-[#EC008C] hover:text-[#D60071] font-semibold text-[11px] sm:text-xs transition">
+              <button type="button" onClick={() => setShowCustomReq(!showCustomReq)} className="flex items-center gap-1.5 text-[#EC008C] hover:text-[#D60071] font-semibold text-xs sm:text-sm transition">
                 <MessageSquare size={14} />
                 {showCustomReq ? "Hide" : "Add"} {t.orderNote}
               </button>
@@ -262,7 +262,7 @@ export default function CheckoutPage() {
             </div>
 
             <div className="bg-white rounded-lg p-3 sm:p-4 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB]">
-              <h2 className="font-semibold text-[#000000] text-xs sm:text-sm mb-2 sm:mb-3">{t.paymentMethod}</h2>
+              <h2 className="font-semibold text-[#000000] text-base sm:text-lg mb-2 sm:mb-3">{t.paymentMethod}</h2>
               <div className="space-y-1.5 sm:space-y-2">
                 {[
                   { value: "COD", label: t.codNote, icon: "💵" },
@@ -279,7 +279,7 @@ export default function CheckoutPage() {
           </div>
 
           <div className="bg-white rounded-lg p-3 sm:p-4 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB] h-fit lg:sticky lg:top-20">
-            <h2 className="font-semibold text-[#000000] text-xs sm:text-sm mb-2 sm:mb-3">{t.orderSummary}</h2>
+            <h2 className="font-semibold text-[#000000] text-base sm:text-lg mb-2 sm:mb-3">{t.orderSummary}</h2>
             <div className="space-y-1 sm:space-y-1.5 mb-2 sm:mb-3 max-h-32 sm:max-h-40 overflow-auto">
               {cartItems.map((item) => (
                 <div key={item.productId} className="flex justify-between text-[11px] sm:text-xs">
@@ -289,7 +289,7 @@ export default function CheckoutPage() {
               ))}
             </div>
 
-            <div className="space-y-1 sm:space-y-1.5 text-[11px] sm:text-xs border-t border-[#E5E7EB] pt-2">
+            <div className="space-y-1 sm:space-y-1.5 text-xs sm:text-sm border-t border-[#E5E7EB] pt-2">
               <div className="flex justify-between"><span className="text-[#667085]">{t.subtotal}</span><span>৳{subtotal}</span></div>
               <div className="flex justify-between"><span className="text-[#667085]">{t.deliveryFee}</span><span>{deliveryCharge === 0 ? t.free : `৳${deliveryCharge}`}</span></div>
               <hr className="border-[#E5E7EB]" />
@@ -309,35 +309,35 @@ export default function CheckoutPage() {
               <CheckCircle size={36} className="text-green-600" />
             </div>
             <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-1">{t.orderPlacedSuccessfully}</h2>
-            <p className="text-sm text-gray-500 mb-4">{t.orderConfirmedMsg}</p>
+            <p className="text-sm sm:text-base text-gray-500 mb-4">{t.orderConfirmedMsg}</p>
 
             <div className="bg-gray-50 rounded-xl p-4 mb-5">
-              <p className="text-xs text-gray-500 mb-1">{t.yourTrackingId}</p>
+              <p className="text-xs sm:text-sm text-gray-500 mb-1">{t.yourTrackingId}</p>
               <p className="text-lg sm:text-xl font-mono font-bold text-[#00215B] tracking-wider">{placedOrderNumber}</p>
             </div>
 
-            <button onClick={copyTrackingId} className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium text-gray-700 transition mb-3">
+            <button onClick={copyTrackingId} className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-gray-100 hover:bg-gray-200 rounded-xl text-base sm:text-lg font-medium text-gray-700 transition mb-3">
               <Copy size={16} />
               {t.copyTrackingId}
             </button>
 
             <div className="flex gap-2 mb-3">
-              <button onClick={() => handlePrintInvoice("en")} className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-white border border-[#E5E7EB] hover:bg-[#F4F7FB] rounded-xl text-sm font-medium text-[#364152] transition">
+              <button onClick={() => handlePrintInvoice("en")} className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-white border border-[#E5E7EB] hover:bg-[#F4F7FB] rounded-xl text-base sm:text-lg font-medium text-[#364152] transition">
                 <Printer size={16} />
                 {t.printInvoice} (EN)
               </button>
-              <button onClick={() => handlePrintInvoice("bn")} className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-white border border-[#E5E7EB] hover:bg-[#F4F7FB] rounded-xl text-sm font-medium text-[#364152] transition">
+              <button onClick={() => handlePrintInvoice("bn")} className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-white border border-[#E5E7EB] hover:bg-[#F4F7FB] rounded-xl text-base sm:text-lg font-medium text-[#364152] transition">
                 <Printer size={16} />
                 {t.printInvoice} (BN)
               </button>
             </div>
 
-            <button onClick={() => router.push(`/track-order?order=${placedOrderNumber}`)} className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-[#EC008C] hover:bg-[#D60071] rounded-xl text-sm font-semibold text-white transition mb-3">
+            <button onClick={() => router.push(`/track-order?order=${placedOrderNumber}`)} className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-[#EC008C] hover:bg-[#D60071] rounded-xl text-base sm:text-lg font-semibold text-white transition mb-3">
               <ExternalLink size={16} />
               {t.trackYourOrder}
             </button>
 
-            <button onClick={() => router.push("/")} className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-[#00215B] hover:bg-[#001845] rounded-xl text-sm font-semibold text-white transition">
+            <button onClick={() => router.push("/")} className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-[#00215B] hover:bg-[#001845] rounded-xl text-base sm:text-lg font-semibold text-white transition">
               <Home size={16} />
               {t.continueShopping}
             </button>

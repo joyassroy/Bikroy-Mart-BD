@@ -138,7 +138,7 @@ export default function SigninPage() {
 
         <form onSubmit={handleSubmit} className="space-y-2.5 sm:space-y-3">
           <div>
-            <label className="block text-[11px] sm:text-xs font-semibold text-[#364152] mb-1">Email or Phone Number</label>
+            <label className="block text-xs sm:text-sm font-semibold text-[#364152] mb-1">Email or Phone Number</label>
             <input
               type="text" placeholder="Enter email or phone number" required
               value={form.identifier} onChange={(e) => setForm({ ...form, identifier: e.target.value })}
@@ -146,7 +146,7 @@ export default function SigninPage() {
             />
           </div>
           <div>
-            <label className="block text-[11px] sm:text-xs font-semibold text-[#364152] mb-1">{t.password}</label>
+            <label className="block text-xs sm:text-sm font-semibold text-[#364152] mb-1">{t.password}</label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"} placeholder="Enter your password" required

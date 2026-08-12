@@ -1005,7 +1005,7 @@ export default function ProductRequestPage() {
         <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4" onClick={() => setShowCreateModal(false)}>
           <div className="bg-white rounded-t-2xl sm:rounded-2xl max-w-lg w-full max-h-[92vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="sticky top-0 bg-white border-b border-[#E5E7EB] px-5 py-3.5 flex items-center justify-between rounded-t-2xl z-10">
-              <h2 className="font-bold text-[#00215B] text-sm">{language === "bn" ? "নতুন পণ্য অনুরোধ" : "New Product Request"}</h2>
+              <h2 className="font-bold text-[#00215B] text-base sm:text-lg">{language === "bn" ? "নতুন পণ্য অনুরোধ" : "New Product Request"}</h2>
               <button onClick={() => setShowCreateModal(false)} className="p-1 hover:bg-[#F4F7FB] rounded-lg transition">
                 <X size={18} className="text-[#667085]" />
               </button>

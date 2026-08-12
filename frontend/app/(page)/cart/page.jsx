@@ -43,8 +43,8 @@ export default function CartPage() {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-[#000000] text-[11px] sm:text-xs truncate">{item.name}</h3>
-                    <p className="text-[#000000] font-bold text-xs sm:text-sm mt-0.5">৳{item.price}</p>
+                    <h3 className="font-medium text-[#000000] text-sm sm:text-base truncate">{item.name}</h3>
+                    <p className="text-[#000000] font-bold text-sm sm:text-base mt-0.5">৳{item.price}</p>
                     {item.endsAt && (
                       <div className="mt-1">
                         <CountdownTimer endsAt={item.endsAt} compact />
@@ -58,7 +58,7 @@ export default function CartPage() {
                     >
                       <Minus size={12} />
                     </button>
-                    <span className="w-5 sm:w-6 text-center font-semibold text-[11px] sm:text-xs">{item.quantity}</span>
+                    <span className="w-5 sm:w-6 text-center font-semibold text-xs sm:text-sm">{item.quantity}</span>
                     <button
                       onClick={() => dispatch(updateQuantity({ productId: item.productId, quantity: item.quantity + 1 }))}
                       className="w-7 h-7 sm:w-8 sm:h-8 border border-[#E5E7EB] rounded-md flex items-center justify-center hover:bg-[#F4F7FB] transition"
@@ -74,21 +74,21 @@ export default function CartPage() {
                   </button>
                 </div>
               ))}
-              <button onClick={() => dispatch(clearCart())} className="text-[10px] sm:text-[11px] text-[#FF6B6B] hover:text-[#FF6B6B] font-semibold">
+              <button onClick={() => dispatch(clearCart())} className="text-xs sm:text-sm text-[#FF6B6B] hover:text-[#FF6B6B] font-semibold">
                 {t.emptyCart}
               </button>
             </div>
 
             <div className="bg-white rounded-lg p-3 sm:p-4 shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] border border-[#E5E7EB] h-fit lg:sticky lg:top-20">
-              <h2 className="font-semibold text-[#000000] text-xs sm:text-sm mb-2 sm:mb-3">{t.orderSummary}</h2>
-              <div className="space-y-1.5 text-[11px] sm:text-xs">
+              <h2 className="font-semibold text-[#000000] text-base sm:text-lg mb-2 sm:mb-3">{t.orderSummary}</h2>
+              <div className="space-y-1.5 text-xs sm:text-sm">
                 <div className="flex justify-between"><span className="text-[#667085]">{t.subtotal}</span><span>৳{subtotal}</span></div>
                 <div className="flex justify-between"><span className="text-[#667085]">{t.shipping}</span><span>{deliveryCharge === 0 ? t.free : `৳${deliveryCharge}`}</span></div>
                 <hr className="border-[#E5E7EB]" />
                 <div className="flex justify-between font-bold text-sm sm:text-base"><span>{t.total}</span><span className="text-[#000000]">৳{total}</span></div>
               </div>
               {subtotal < 1500 && (
-                <p className="text-[10px] sm:text-[11px] text-[#00AFCC] mt-2 font-semibold">Add ৳{1500 - subtotal} more for free delivery</p>
+                <p className="text-xs sm:text-sm text-[#00AFCC] mt-2 font-semibold">Add ৳{1500 - subtotal} more for free delivery</p>
               )}
               <Link href="/checkout" className="btn-primary w-full text-center mt-3 block">
                 {t.proceedToCheckout}

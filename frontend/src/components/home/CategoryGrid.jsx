@@ -71,7 +71,7 @@ export default function CategoryGrid() {
         <div className="h-5 w-32 bg-[#E5E7EB] rounded animate-pulse mb-2 md:mb-3"></div>
         <div className="flex gap-3 overflow-hidden px-1 sm:px-0">
           {[...Array(7)].map((_, i) => (
-            <div key={i} className="bg-[#E5E7EB] rounded-full w-28 h-28 sm:w-32 sm:h-32 animate-pulse flex-shrink-0"></div>
+            <div key={i} className="bg-[#E5E7EB] rounded-2xl w-[140px] h-[140px] sm:w-[160px] sm:h-[160px] md:w-[180px] md:h-[180px] animate-pulse flex-shrink-0"></div>
           ))}
         </div>
       </section>
@@ -119,20 +119,26 @@ export default function CategoryGrid() {
             <Link
               key={cat.slug}
               href={`/shop?category=${cat.slug}`}
-              className="flex flex-col items-center justify-center bg-white border border-[#E5E7EB] rounded-2xl p-5 sm:p-6 hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] hover:border-[#EC008C]/30 hover:scale-[1.03] transition-all duration-200 flex-shrink-0 w-[140px] sm:w-[160px] md:w-[180px] snap-start group"
+              className="relative flex-shrink-0 w-[140px] h-[170px] sm:w-[160px] sm:h-[190px] md:w-[180px] md:h-[210px] snap-start group overflow-hidden rounded-2xl bg-white border border-[#E5E7EB] hover:shadow-[0_16px_40px_-4px_rgba(0,33,91,0.2)] hover:border-[#00215B]/40 hover:-translate-y-2 [will-change:transform] transition-all duration-[500ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
             >
-              <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-xl bg-[#F4F7FB] group-hover:bg-[#FCE8F3] flex items-center justify-center transition-colors duration-200 mb-2 sm:mb-2.5">
+              <div className="absolute inset-0 bg-[#F4F7FB] group-hover:bg-[#EDF1F7] transition-colors duration-[500ms] ease-[cubic-bezier(0.22,1,0.36,1)]">
                 {cat.image ? (
-                  <img src={cat.image} alt={catName(cat)} className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-contain group-hover:scale-110 transition-transform duration-200" />
+                  <img src={cat.image} alt={catName(cat)} className="w-full h-[75%] object-contain p-3 [will-change:transform] group-hover:scale-[1.08] transition-transform duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)]" />
                 ) : (
-                  <span className="text-5xl sm:text-6xl md:text-7xl group-hover:scale-110 transition-transform duration-200">{cat.icon}</span>
+                  <div className="w-full h-[75%] flex items-center justify-center">
+                    <span className="text-5xl sm:text-6xl md:text-7xl [will-change:transform] group-hover:scale-110 group-hover:rotate-2 transition-transform duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)]">{cat.icon}</span>
+                  </div>
                 )}
               </div>
-              <span className="text-sm sm:text-base font-bold text-[#364152] text-center leading-tight line-clamp-2">
-                {catName(cat)}
-              </span>
+              <div className="absolute bottom-0 left-0 right-0 h-[25%] bg-gradient-to-t from-[#00215B] via-[#00215B]/90 to-[#00215B]/60 flex items-center justify-center px-2">
+                <span className="text-white font-bold text-base sm:text-lg text-center leading-tight line-clamp-2 drop-shadow-sm [will-change:transform] group-hover:tracking-wide transition-[transform,letter-spacing] duration-[500ms] ease-[cubic-bezier(0.22,1,0.36,1)]">
+                  {catName(cat)}
+                </span>
+              </div>
               {cat.count > 0 && (
-                <span className="text-[10px] sm:text-xs text-[#667085] mt-0.5">{cat.count} {t.itemsCount}</span>
+                <span className="absolute top-2.5 right-2.5 bg-gradient-to-br from-[#EC008C] to-[#C40074] text-white text-[10px] sm:text-xs font-bold rounded-full px-2 py-[3px] leading-none shadow-[0_2px_8px_rgba(236,0,140,0.4)] group-hover:shadow-[0_4px_16px_rgba(236,0,140,0.5)] group-hover:scale-110 [will-change:transform] transition-all duration-[500ms] ease-[cubic-bezier(0.22,1,0.36,1)]">
+                  {cat.count}
+                </span>
               )}
             </Link>
           ))}

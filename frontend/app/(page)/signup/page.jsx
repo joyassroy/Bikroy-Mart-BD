@@ -87,7 +87,7 @@ export default function SignupPage() {
 
         <form onSubmit={handleSubmit} className="space-y-2.5 sm:space-y-3">
           <div>
-            <label className="block text-[11px] sm:text-xs font-semibold text-[#364152] mb-1">{t.fullName}</label>
+            <label className="block text-xs sm:text-sm font-semibold text-[#364152] mb-1">{t.fullName}</label>
             <input
               type="text" placeholder={t.fullName} required
               value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -95,7 +95,7 @@ export default function SignupPage() {
             />
           </div>
           <div>
-            <label className="block text-[11px] sm:text-xs font-semibold text-[#364152] mb-1">{t.emailAddress}</label>
+            <label className="block text-xs sm:text-sm font-semibold text-[#364152] mb-1">{t.emailAddress}</label>
             <input
               type="email" placeholder={t.emailAddress} required
               value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -103,7 +103,7 @@ export default function SignupPage() {
             />
           </div>
           <div>
-            <label className="block text-[11px] sm:text-xs font-semibold text-[#364152] mb-1">{t.phoneNumber}</label>
+            <label className="block text-xs sm:text-sm font-semibold text-[#364152] mb-1">{t.phoneNumber}</label>
             <input
               type="tel" placeholder={t.phoneNumber}
               value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })}
@@ -123,7 +123,7 @@ export default function SignupPage() {
             </select>
           </div>
           <div>
-            <label className="block text-[11px] sm:text-xs font-semibold text-[#364152] mb-1">{t.password}</label>
+            <label className="block text-xs sm:text-sm font-semibold text-[#364152] mb-1">{t.password}</label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"} placeholder="Min 6 characters" required minLength={6}

@@ -180,7 +180,7 @@ export default function ProductDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
             {/* Images */}
             <div className="p-4 sm:p-6 border-b md:border-b-0 md:border-r border-[#E5E7EB]">
-              <div className="relative aspect-square bg-[#F9FAFB] rounded-lg flex items-center justify-center mb-3 overflow-hidden">
+              <div className="relative aspect-square bg-[#F9FAFB] rounded-xl flex items-center justify-center mb-3 overflow-hidden">
                 {product.badges?.length > 0 && (
                   <span className="absolute top-2 left-2 bg-[#FF6B6B] text-white text-[10px] font-bold px-2 py-0.5 rounded z-10">
                     {product.badges[0]}
@@ -297,7 +297,7 @@ export default function ProductDetailPage() {
                 <button
                   onClick={handleAddToCart}
                   disabled={product.stock <= 0}
-                  className="flex-1 bg-[#EC008C] text-white py-2.5 rounded-md text-xs font-semibold hover:bg-[#D60071] transition flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex-1 bg-[#EC008C] text-white py-2.5 rounded-md text-sm font-semibold hover:bg-[#D60071] transition flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <ShoppingCart size={14} />
                   {t.addToCart}
@@ -335,7 +335,7 @@ export default function ProductDetailPage() {
           {/* Description */}
           {product.description && (
             <div className="p-4 sm:p-6 border-t border-[#E5E7EB]">
-              <h3 className="text-sm font-semibold text-[#000000] mb-2">{t.description}</h3>
+              <h3 className="text-base sm:text-lg font-semibold text-[#000000] mb-2">{t.description}</h3>
               <p className="text-[11px] sm:text-xs text-[#667085] leading-relaxed whitespace-pre-line">{product.description}</p>
             </div>
           )}
@@ -343,7 +343,7 @@ export default function ProductDetailPage() {
 
         {/* Reviews Section */}
         <div className="bg-white rounded-lg border border-[#E5E7EB] shadow-[rgba(0,0,0,0.05)_0px_1px_2px_0px] mt-4 p-4 sm:p-6">
-          <h3 className="text-sm font-semibold text-[#000000] mb-4">{t.reviews} ({product._count?.reviews || 0})</h3>
+          <h3 className="text-base sm:text-lg font-semibold text-[#000000] mb-4">{t.reviews} ({product._count?.reviews || 0})</h3>
 
           {/* Rating Summary */}
           {product.reviews?.length > 0 && (
@@ -401,7 +401,7 @@ export default function ProductDetailPage() {
 
           {/* Write Review Form */}
           <div className="bg-[#F0F2F5] rounded-lg p-4">
-            <h4 className="text-xs font-semibold text-[#000000] mb-3">{t.writeReview}</h4>
+            <h4 className="text-sm sm:text-base font-semibold text-[#000000] mb-3">{t.writeReview}</h4>
             <form onSubmit={handleSubmitReview}>
               <div className="mb-3">
                 <label className="block text-[11px] text-[#667085] mb-1">{t.yourRating}</label>
@@ -442,7 +442,7 @@ export default function ProductDetailPage() {
         {/* Related Products */}
         {relatedProducts.length > 0 && (
           <div className="mt-6 mb-8">
-            <h3 className="text-sm font-semibold text-[#000000] mb-3">{t.relatedProducts}</h3>
+            <h3 className="text-base sm:text-lg font-semibold text-[#000000] mb-3">{t.relatedProducts}</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
               {relatedProducts.map((p) => (
                 <ProductCard key={p.id} product={p} />

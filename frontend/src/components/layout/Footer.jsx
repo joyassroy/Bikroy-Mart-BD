@@ -15,7 +15,7 @@ export default function Footer() {
             <h3 className="text-base sm:text-lg font-bold text-white mb-2 sm:mb-3">
               Bikroy<span className="text-[#EC008C]">-Mart</span>-BD
             </h3>
-            <p className="text-[11px] sm:text-xs text-white/70 mb-3 leading-4 sm:leading-5">
+            <p className="text-xs sm:text-sm text-white/70 mb-3 leading-4 sm:leading-5">
               {t.aboutUsDesc}
             </p>
             <div className="flex gap-2">
@@ -30,7 +30,7 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div className="lg:max-w-[150px]">
-            <h4 className="text-white font-semibold mb-2 sm:mb-3 text-xs">{t.quickLinks}</h4>
+            <h4 className="text-white font-semibold mb-2 sm:mb-3 text-xs sm:text-sm">{t.quickLinks}</h4>
             <ul className="space-y-1.5 sm:space-y-2 text-[11px] sm:text-xs">
               <li><Link href="/shop" className="hover:text-[#EC008C] transition">{t.shop}</Link></li>
               <li><Link href="/about" className="hover:text-[#EC008C] transition">{t.aboutUs}</Link></li>
@@ -41,7 +41,7 @@ export default function Footer() {
 
           {/* Customer Support */}
           <div className="lg:max-w-[150px]">
-            <h4 className="text-white font-semibold mb-2 sm:mb-3 text-xs">{t.customerSupport}</h4>
+            <h4 className="text-white font-semibold mb-2 sm:mb-3 text-xs sm:text-sm">{t.customerSupport}</h4>
             <ul className="space-y-1.5 sm:space-y-2 text-[11px] sm:text-xs">
               <li><Link href="/track-order" className="hover:text-[#EC008C] transition">{t.trackOrder}</Link></li>
               <li><Link href="/privacy-policy" className="hover:text-[#EC008C] transition">{t.privacyPolicy}</Link></li>
@@ -52,7 +52,7 @@ export default function Footer() {
 
           {/* Contact */}
           <div className="lg:max-w-[260px]">
-            <h4 className="text-white font-semibold mb-2 sm:mb-3 text-xs">{t.contactInfo}</h4>
+            <h4 className="text-white font-semibold mb-2 sm:mb-3 text-xs sm:text-sm">{t.contactInfo}</h4>
             <ul className="space-y-1.5 sm:space-y-2 text-[11px] sm:text-xs">
               <li className="flex items-center gap-1.5">📞 01713678644 (10am-9pm)</li>
               <li className="flex items-center gap-1.5">📧 bikroymartbd24@gmail.com</li>
@@ -83,7 +83,7 @@ export default function Footer() {
       </div>
 
       <div className="border-t border-white/10">
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-2.5 sm:py-3 flex flex-col sm:items-center lg:flex-row gap-1 text-center sm:text-center text-[11px] sm:text-xs text-white/60">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-2.5 sm:py-3 flex flex-col sm:items-center lg:flex-row gap-1 text-center sm:text-center text-xs sm:text-sm text-white/60">
           <span>© 2026 Bikroy-Mart-BD.</span>
           <span>{t.allRightsReserved}</span>
         </div>
