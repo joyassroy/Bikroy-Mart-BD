@@ -180,7 +180,7 @@ export default function ProductDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
             {/* Images */}
             <div className="p-4 sm:p-6 border-b md:border-b-0 md:border-r border-[#E5E7EB]">
-              <div className="relative aspect-square bg-[#F9FAFB] rounded-xl flex items-center justify-center mb-3 overflow-hidden" style={{ borderRadius: "12px" }}>
+              <div className="relative aspect-square bg-[#F9FAFB] rounded-xl flex items-center justify-center mb-3 overflow-hidden">
                 {product.badges?.length > 0 && (
                   <span className="absolute top-2 left-2 bg-[#FF6B6B] text-white text-[10px] font-bold px-2 py-0.5 rounded z-10">
                     {product.badges[0]}
@@ -188,7 +188,7 @@ export default function ProductDetailPage() {
                 )}
                 {product.images?.[activeImage] ? (
                   product.images[activeImage].startsWith("http") || product.images[activeImage].startsWith("/") ? (
-                    <img src={product.images[activeImage]} alt={product.name} className="w-full h-full object-contain rounded-xl p-4" style={{ borderRadius: "16px" }} />
+                    <img src={product.images[activeImage]} alt={product.name} className="w-full h-full rounded-xl p-4" />
                   ) : (
                     <span className="text-7xl sm:text-8xl">{product.images[activeImage]}</span>
                   )
@@ -207,7 +207,7 @@ export default function ProductDetailPage() {
                       }`}
                     >
                       {img.startsWith("http") || img.startsWith("/") ? (
-                        <img src={img} alt="" className="w-full h-full object-contain rounded-lg p-1" style={{ borderRadius: "8px" }} />
+                        <img src={img} alt="" className="w-full h-full rounded-md p-1" />
                       ) : (
                         <span className="text-xl">{img}</span>
                       )}

@@ -57,7 +57,7 @@ export default function HeroBanner() {
   return (
     <section className="overflow-hidden">
       <div className="max-w-[1200px] mx-auto md:mt-4 md:gap-5">
-        <div className="relative w-full overflow-hidden rounded-xl" style={{ aspectRatio: "3/1" }}>
+        <div className="relative w-full overflow-hidden" style={{ aspectRatio: "3/1" }}>
           {banners.map((banner, index) => {
             const bgClass = banner.bgColor || "from-[#00215B] to-[#001A4A]";
             return (

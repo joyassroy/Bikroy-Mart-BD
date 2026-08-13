@@ -55,7 +55,7 @@ export default function MiddleBanner() {
 
   return (
     <div className="max-w-[1200px] mx-auto mt-2 md:mt-4">
-      <div className="relative h-16 sm:h-20 md:h-28 lg:h-32 rounded-none md:rounded-lg overflow-hidden bg-[#F0F2F5]">
+      <div className="relative h-16 sm:h-20 md:h-28 lg:h-32 overflow-hidden bg-[#F0F2F5]">
         {banners.map((banner, index) => {
           const bgClass = banner.bgColor || "from-[#EC008C] to-[#E85AA0]";
           return (

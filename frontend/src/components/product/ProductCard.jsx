@@ -118,8 +118,7 @@ const ProductCard = memo(function ProductCard({ product, showActions, onDelete, 
               <img
                 src={product.images[0]}
                 alt={product.name}
-                className="w-[75%] h-[75%] object-contain rounded-2xl group-hover:scale-110 transition-transform duration-300 drop-shadow-sm"
-                style={{ borderRadius: "16px" }}
+                className="w-[75%] h-[75%] rounded-2xl group-hover:scale-110 transition-transform duration-300 drop-shadow-sm"
                 onError={() => setImgError(true)}
               />
             ) : (

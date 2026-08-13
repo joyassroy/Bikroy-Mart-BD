@@ -119,11 +119,11 @@ export default function CategoryGrid() {
             <Link
               key={cat.slug}
               href={`/shop?category=${cat.slug}`}
-              className="relative flex-shrink-0 w-[140px] h-[170px] sm:w-[160px] sm:h-[190px] md:w-[180px] md:h-[210px] snap-start group overflow-hidden rounded-2xl bg-white border border-[#E5E7EB] hover:shadow-[0_16px_40px_-4px_rgba(0,33,91,0.2)] hover:border-[#00215B]/40 hover:-translate-y-2 [will-change:transform] transition-all duration-[500ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+              className="relative flex-shrink-0 w-[140px] h-[170px] sm:w-[160px] sm:h-[190px] md:w-[180px] md:h-[210px] snap-start group overflow-hidden rounded-3xl bg-white border border-[#E5E7EB] hover:shadow-[0_16px_40px_-4px_rgba(0,33,91,0.2)] hover:border-[#00215B]/40 hover:-translate-y-2 [will-change:transform] transition-all duration-[500ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
             >
               <div className="absolute inset-0 bg-[#F4F7FB] group-hover:bg-[#EDF1F7] transition-colors duration-[500ms] ease-[cubic-bezier(0.22,1,0.36,1)]">
                 {cat.image ? (
-                  <img src={cat.image} alt={catName(cat)} className="w-full h-[75%] object-contain rounded-2xl p-3 [will-change:transform] group-hover:scale-[1.08] transition-transform duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)]" style={{ borderRadius: "16px" }} />
+                  <img src={cat.image} alt={catName(cat)} className="w-full h-[75%] rounded-3xl p-3 [will-change:transform] group-hover:scale-[1.08] transition-transform duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)]" />
                 ) : (
                   <div className="w-full h-[75%] flex items-center justify-center">
                     <span className="text-5xl sm:text-6xl md:text-7xl [will-change:transform] group-hover:scale-110 group-hover:rotate-2 transition-transform duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)]">{cat.icon}</span>

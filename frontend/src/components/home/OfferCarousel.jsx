@@ -50,7 +50,7 @@ export default function OfferCarousel() {
 
   return (
     <div className="max-w-[1200px] mx-auto mt-2 md:mt-4 px-3 sm:px-4 md:px-6 lg:px-10">
-      <div className="relative h-16 sm:h-20 md:h-28 lg:h-32 rounded-xl overflow-hidden bg-[#F0F2F5]">
+      <div className="relative h-16 sm:h-20 md:h-28 lg:h-32 overflow-hidden bg-[#F0F2F5]">
         {banners.map((banner, index) => {
           const bgClass = banner.bgColor || "from-[#00215B] to-[#001A4A]";
           return (

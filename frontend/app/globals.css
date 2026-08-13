@@ -29,10 +29,6 @@
   --color-primary-900: #9B1C1C;
 }
 
-img {
-  border-radius: 40px 40px !important;
-}
-
 @layer base {
   * {
     margin: 0;
@@ -490,14 +486,3 @@ img {
   scrollbar-width: none;
 }
 
-/* Rounded corners for product & category images */
-.group>div>img,
-.group>img,
-a>div>img {
-  border-radius: 16px;
-}
-
-.product-img-radius {
-  border-radius: 16px;
-  overflow: hidden;
-}
