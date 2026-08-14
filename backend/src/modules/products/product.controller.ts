@@ -346,22 +346,25 @@ export const getAllProducts = async (req: Request, res: Response) => {
     const activeDeals = productIds.length > 0
       ? await prisma.flashDeal.findMany({
         where: { productId: { in: productIds }, isActive: true, startsAt: { lte: now }, endsAt: { gte: now } },
-        select: { productId: true, endsAt: true, dealPrice: true },
+        select: { productId: true, endsAt: true, dealPrice: true, quantity: true, sold: true },
       })
       : [];
     const dealEndsAtMap = new Map(activeDeals.map((d) => [d.productId, d.endsAt]));
     const dealPriceMap = new Map(activeDeals.map((d) => [d.productId, d.dealPrice]));
+    const dealStockMap = new Map(activeDeals.map((d) => [d.productId, d.quantity - d.sold]));
 
     const resolved = products.map((p) => {
       const { effectivePrice, effectiveDiscountPrice } = resolveDistrictPrice(p, district as string);
       const { districtPrices, ...rest } = p;
       const dealPrice = dealPriceMap.get(p.id);
+      const flashDealStock = dealStockMap.get(p.id);
       return {
         ...rest,
         effectivePrice,
         effectiveDiscountPrice: dealPrice ?? effectiveDiscountPrice,
         totalSales: salesMap.get(p.id) || 0,
         flashDealEndsAt: dealEndsAtMap.get(p.id) || null,
+        flashDealStock: flashDealStock ?? null,
       };
     });
 

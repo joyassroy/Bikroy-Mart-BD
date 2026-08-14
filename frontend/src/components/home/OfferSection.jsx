@@ -65,7 +65,7 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
     ? deals.map((deal) => {
         const product = deal.product || {};
         const discount = product.price ? Math.round(((product.price - deal.dealPrice) / product.price) * 100) : 0;
-        const stock = product.stock !== undefined ? product.stock : (deal.quantity - deal.sold);
+        const stock = deal.quantity - deal.sold;
         return {
           id: deal.id,
           slug: product.slug,
@@ -85,6 +85,10 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
         const totalOriginal = offer.items?.reduce((sum, i) => sum + (i.product?.price || 0) * i.quantity, 0) || 0;
         const discount = totalOriginal > 0 ? Math.round(((totalOriginal - offer.offerPrice) / totalOriginal) * 100) : 0;
         const name = offer.title || (offer.items?.map((i) => i.product?.name).join(" + "));
+        const minStock = offer.items?.reduce((min, i) => {
+          const s = i.product?.stock ?? 0;
+          return min === null ? s : Math.min(min, s);
+        }, null);
         return {
           id: offer.id,
           slug: firstItem?.slug,
@@ -93,7 +97,7 @@ export default function OfferSection({ type, title, subtitle, bgColor = "from-[#
           dealPrice: offer.offerPrice,
           image: firstItem?.images?.[0] || null,
           discount,
-          stock: firstItem?.stock,
+          stock: minStock,
           endsAt: offer.endsAt,
           badge: type === "BOGO" ? `${t.buyXGetY.replace("{buy}", offer.buyQuantity).replace("{get}", offer.getQuantity)}` : type === "COMBO" ? t.bundleDeal : null,
           items: offer.items,

@@ -29,6 +29,7 @@ yarn-error.log*
 
 # opencode
 .opencode/
+.testmuai/
 
 # OS
 .DS_Store

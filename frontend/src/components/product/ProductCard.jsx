@@ -52,7 +52,9 @@ const ProductCard = memo(function ProductCard({ product, showActions, onDelete, 
     const avg = product._count?.reviews > 0
       ? (product.reviews?.reduce?.((sum, r) => sum + r.rating, 0) / product.reviews.length) || 0
       : 0;
-    const outOfStock = product.stock !== undefined && product.stock <= 0;
+    const outOfStock = product.flashDealStock !== null && product.flashDealStock !== undefined
+      ? product.flashDealStock <= 0
+      : product.stock !== undefined && product.stock <= 0;
     const orig = product.effectivePrice || product.price;
     const sale = product.effectiveDiscountPrice || product.discountPrice;
     const disc = sale && orig && sale < orig;
