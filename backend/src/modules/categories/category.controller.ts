@@ -16,7 +16,7 @@ export const getAllCategories = async (req: Request, res: Response) => {
           where: all === "true" ? {} : { isActive: true },
           select: { id: true, name: true, nameBn: true, slug: true, image: true },
         },
-        _count: { select: { products: true } },
+        _count: { select: { products: { where: { isActive: true } } } },
       },
       orderBy: { sortOrder: "asc" },
     });

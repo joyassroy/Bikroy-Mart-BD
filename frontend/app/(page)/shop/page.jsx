@@ -131,18 +131,18 @@ function ShopContent() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedSubcategory, setSelectedSubcategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") || "");
+  const [selectedSubcategory, setSelectedSubcategory] = useState(searchParams.get("subcategory") || "");
   const [sortBy, setSortBy] = useState("newest");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
-  const [localSearch, setLocalSearch] = useState("");
+  const [localSearch, setLocalSearch] = useState(searchParams.get("search") || "");
   const [totalProducts, setTotalProducts] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [viewMode, setViewMode] = useState("grid");
-  const [offerType, setOfferType] = useState("");
+  const [offerType, setOfferType] = useState(searchParams.get("offer") || "");
   const [groupedProducts, setGroupedProducts] = useState([]);
   const [loadingGrouped, setLoadingGrouped] = useState(false);
   const [shopBanners, setShopBanners] = useState([]);
@@ -171,6 +171,9 @@ function ShopContent() {
     if (urlSearch) {
       setLocalSearch(urlSearch);
       dispatch(setSearchQueryRedux(urlSearch));
+    } else {
+      setLocalSearch("");
+      dispatch(setSearchQueryRedux(""));
     }
   }, [urlCategory, urlSubcategory, urlOffer, urlSearch, dispatch]);
 

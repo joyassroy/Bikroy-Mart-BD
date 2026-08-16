@@ -120,7 +120,7 @@ const ProductCard = memo(function ProductCard({ product, showActions, onDelete, 
               <img
                 src={product.images[0]}
                 alt={product.name}
-                className="w-[75%] h-[75%] rounded-2xl group-hover:scale-110 transition-transform duration-300 drop-shadow-sm"
+                className="w-full h-full object-contain rounded-t-xl group-hover:scale-105 transition-transform duration-300 drop-shadow-sm p-4"
                 onError={() => setImgError(true)}
               />
             ) : (
@@ -169,9 +169,6 @@ const ProductCard = memo(function ProductCard({ product, showActions, onDelete, 
               <>
                 <span className="text-[#EC008C] font-extrabold text-base sm:text-lg leading-none">৳{salePrice}</span>
                 <span className="text-[#99A0B4] text-[11px] line-through">৳{originalPrice}</span>
-                <span className="text-[8px] font-bold text-white bg-gradient-to-r from-[#FF6B6B] to-[#FF4757] px-1.5 py-0.5 rounded-md leading-none">
-                  -{discountPercent}%
-                </span>
               </>
             ) : (
               <span className="text-[#000000] font-extrabold text-base sm:text-lg leading-none">৳{originalPrice}</span>

@@ -119,7 +119,7 @@ export const getAllProducts = async (req: Request, res: Response) => {
         params.push(String(managerId));
         idx++;
       }
-      if (includeInactive !== "true") {
+      if (includeInactive !== "true" && !offer) {
         conditions.push(`p."isActive" = true`);
       }
 
@@ -246,7 +246,7 @@ export const getAllProducts = async (req: Request, res: Response) => {
 
     // ── Standard listing (no search) ──────────────────────────────────
     const where: any = {};
-    if (includeInactive !== "true") {
+    if (includeInactive !== "true" && !offer) {
       where.isActive = true;
     }
     if (category) where.category = { slug: category };
