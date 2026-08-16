@@ -22,7 +22,7 @@ export default function ProductsPage() {
 
   const fetchProducts = async () => {
     try {
-      const res = await api.get(`/products?includeInactive=true${search ? `&search=${search}` : ""}`);
+      const res = await api.get(`/products?includeInactive=true&limit=10000${search ? `&search=${search}` : ""}`);
       setProducts(res.data.data || []);
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
