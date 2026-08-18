@@ -44,6 +44,8 @@ const allowedOrigins = [
   config.clientUrl,
   "https://bikroy-mart-bd-delta.vercel.app",
   "https://bikroy-mart-bd.vercel.app",
+  "https://www.bmaart.com",
+  "https://bmaart.com",
 ].filter(Boolean);
 
 app.use(cors({

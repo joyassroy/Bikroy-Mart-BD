@@ -10,6 +10,10 @@ export const initSocket = (server: any) => {
     config.clientUrl,
     "http://localhost:3000",
     "http://localhost:3001",
+    "https://bikroy-mart-bd-delta.vercel.app",
+    "https://bikroy-mart-bd.vercel.app",
+    "https://www.bmaart.com",
+    "https://bmaart.com",
   ].filter(Boolean);
 
   io = new Server(server, {
