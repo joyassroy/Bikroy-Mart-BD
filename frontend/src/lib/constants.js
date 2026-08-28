@@ -11,6 +11,7 @@ export const BANGLADESH_LOCATIONS = [
       { name: "Munshiganj", upazilas: ["Gazaria", "Lohajang", "Munshiganj Sadar", "Sirajdikhan", "Sreenagar", "Tongibari"] },
       { name: "Narsingdi", upazilas: ["Belabo", "Monohardi", "Narsingdi Sadar", "Palash", "Raipura", "Shibpur"] },
       { name: "Tangail", upazilas: ["Basail", "Bhuapur", "Delduar", "Ghatail", "Gopalpur", "Jamalpur", "Kalihati", "Madhupur", "Mirzapur", "Nagarpur", "Sakhipur", "Tangail Sadar"] },
+      { name: "Shariatpur", upazilas: ["Bhedarganj", "Damudya", "Gosairhat", "Naria", "Shakhipur", "Shariatpur Sadar"] },
     ],
   },
   {

@@ -95,7 +95,9 @@ export default function CheckoutPage() {
   }, [selectedAddressId, savedAddresses]);
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const deliveryCharge = subtotal >= 1500 ? 0 : 60;
+  const isShariatpur = form.district === "Shariatpur";
+  const districtCharge = isShariatpur ? 20 : 60;
+  const deliveryCharge = subtotal >= 1500 ? 0 : districtCharge;
   const total = subtotal + deliveryCharge;
 
   const handleSubmit = async (e) => {

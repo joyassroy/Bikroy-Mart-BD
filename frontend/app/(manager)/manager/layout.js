@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, Package, ShoppingCart, Users, MapPin, Menu, X, ClipboardList, Loader2, Clock, ChevronDown } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Users, MapPin, Menu, X, ClipboardList, Loader2, Clock, ChevronDown, Gift } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useAuthChecked } from "@/helper/AuthInit";
@@ -33,6 +33,7 @@ export default function ManagerLayout({ children }) {
     { label: t.inventory, href: "/manager/inventory", icon: Package },
     { label: t.riders, href: "/manager/riders", icon: Users },
     { label: t.history || "History", href: "/manager/history", icon: Clock },
+    { label: t.offers || "Offers", href: "/manager/offers", icon: Gift },
   ];
 
   useEffect(() => {

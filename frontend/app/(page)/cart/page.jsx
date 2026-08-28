@@ -14,8 +14,11 @@ export default function CartPage() {
   const cartItems = useSelector((state) => state.cart.items);
   const { t } = useLanguage();
 
+  const reduxLocation = useSelector((state) => state.location);
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const deliveryCharge = subtotal >= 1500 ? 0 : 60;
+  const isShariatpur = reduxLocation?.district === "Shariatpur";
+  const districtCharge = isShariatpur ? 20 : 60;
+  const deliveryCharge = subtotal >= 1500 ? 0 : districtCharge;
   const total = subtotal + deliveryCharge;
 
   return (
