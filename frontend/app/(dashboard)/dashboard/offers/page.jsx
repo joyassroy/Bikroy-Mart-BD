@@ -111,7 +111,8 @@ export default function OffersPage() {
     formData.append("subcategoryId", formFields.subcategoryId || "");
     formData.append("deliveryTime", formFields.deliveryTime);
     formData.append("isFeatured", formFields.isFeatured);
-    imageFiles.forEach((file) => formData.append("images", file));
+    const files = formFields._imageFiles || imageFiles;
+    files.forEach((file) => formData.append("images", file));
     const res = await api.post("/products", formData);
     return res.data.data;
   };
@@ -577,33 +578,158 @@ export default function OffersPage() {
                       </button>
                     </div>
                     {!item.productId && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pl-2 border-l-2 border-primary-200">
-                        <input type="text" placeholder="Product name *" value={item.newProduct?.name || ""}
-                          onChange={(e) => {
-                            const np = { ...(item.newProduct || EMPTY_PRODUCT_FIELDS), name: e.target.value };
-                            updatePromoItem(idx, "newProduct", np);
-                          }}
-                          className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
-                        <input type="number" step="0.01" placeholder="Price *" value={item.newProduct?.price || ""}
-                          onChange={(e) => {
-                            const np = { ...(item.newProduct || EMPTY_PRODUCT_FIELDS), price: e.target.value };
-                            updatePromoItem(idx, "newProduct", np);
-                          }}
-                          className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
-                        <select value={item.newProduct?.categoryId || ""} onChange={(e) => {
-                            const np = { ...(item.newProduct || EMPTY_PRODUCT_FIELDS), categoryId: e.target.value };
-                            updatePromoItem(idx, "newProduct", np);
-                          }}
-                          className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none">
-                          <option value="">Category *</option>
-                          {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                        </select>
-                        <input type="number" placeholder="Stock *" value={item.newProduct?.stock || ""}
-                          onChange={(e) => {
-                            const np = { ...(item.newProduct || EMPTY_PRODUCT_FIELDS), stock: e.target.value };
-                            updatePromoItem(idx, "newProduct", np);
-                          }}
-                          className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-2 border-l-2 border-primary-200">
+                        <div className="md:col-span-2">
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Product Name *</label>
+                          <input type="text" value={item.newProduct?.name || ""}
+                            onChange={(e) => {
+                              const np = { ...(item.newProduct || EMPTY_PRODUCT_FIELDS), name: e.target.value };
+                              updatePromoItem(idx, "newProduct", np);
+                            }}
+                            className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Bengali Name</label>
+                          <input type="text" value={item.newProduct?.nameBn || ""}
+                            onChange={(e) => {
+                              const np = { ...(item.newProduct || EMPTY_PRODUCT_FIELDS), nameBn: e.target.value };
+                              updatePromoItem(idx, "newProduct", np);
+                            }}
+                            className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">SKU</label>
+                          <input type="text" value={item.newProduct?.sku || ""}
+                            onChange={(e) => {
+                              const np = { ...(item.newProduct || EMPTY_PRODUCT_FIELDS), sku: e.target.value };
+                              updatePromoItem(idx, "newProduct", np);
+                            }}
+                            className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Category *</label>
+                          <select value={item.newProduct?.categoryId || ""} onChange={(e) => {
+                              const np = { ...(item.newProduct || EMPTY_PRODUCT_FIELDS), categoryId: e.target.value, subcategoryId: "" };
+                              updatePromoItem(idx, "newProduct", np);
+                            }}
+                            className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none">
+                            <option value="">Select category</option>
+                            {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Subcategory</label>
+                          <select value={item.newProduct?.subcategoryId || ""} onChange={(e) => {
+                              const np = { ...(item.newProduct || EMPTY_PRODUCT_FIELDS), subcategoryId: e.target.value };
+                              updatePromoItem(idx, "newProduct", np);
+                            }}
+                            className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none">
+                            <option value="">Select subcategory</option>
+                            {subcategories.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Price *</label>
+                          <input type="number" step="0.01" value={item.newProduct?.price || ""}
+                            onChange={(e) => {
+                              const np = { ...(item.newProduct || EMPTY_PRODUCT_FIELDS), price: e.target.value };
+                              updatePromoItem(idx, "newProduct", np);
+                            }}
+                            className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Discount Price</label>
+                          <input type="number" step="0.01" value={item.newProduct?.discountPrice || ""}
+                            onChange={(e) => {
+                              const np = { ...(item.newProduct || EMPTY_PRODUCT_FIELDS), discountPrice: e.target.value };
+                              updatePromoItem(idx, "newProduct", np);
+                            }}
+                            className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Unit</label>
+                          <select value={item.newProduct?.unit || "piece"} onChange={(e) => {
+                              const np = { ...(item.newProduct || EMPTY_PRODUCT_FIELDS), unit: e.target.value };
+                              updatePromoItem(idx, "newProduct", np);
+                            }}
+                            className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none">
+                            <option value="piece">Piece</option>
+                            <option value="ekok">Ekok</option>
+                            <option value="kg">Kilogram</option>
+                            <option value="gram">Gram</option>
+                            <option value="litre">Litre</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Min Quantity</label>
+                          <input type="number" step="0.01" value={item.newProduct?.minQuantity || "1"}
+                            onChange={(e) => {
+                              const np = { ...(item.newProduct || EMPTY_PRODUCT_FIELDS), minQuantity: e.target.value };
+                              updatePromoItem(idx, "newProduct", np);
+                            }}
+                            className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Stock *</label>
+                          <input type="number" value={item.newProduct?.stock || ""}
+                            onChange={(e) => {
+                              const np = { ...(item.newProduct || EMPTY_PRODUCT_FIELDS), stock: e.target.value };
+                              updatePromoItem(idx, "newProduct", np);
+                            }}
+                            className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Delivery Time</label>
+                          <input type="text" value={item.newProduct?.deliveryTime || "1-2 hours"}
+                            onChange={(e) => {
+                              const np = { ...(item.newProduct || EMPTY_PRODUCT_FIELDS), deliveryTime: e.target.value };
+                              updatePromoItem(idx, "newProduct", np);
+                            }}
+                            className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
+                        </div>
+                        <div className="md:col-span-2">
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Description</label>
+                          <textarea rows={3} value={item.newProduct?.description || ""}
+                            onChange={(e) => {
+                              const np = { ...(item.newProduct || EMPTY_PRODUCT_FIELDS), description: e.target.value };
+                              updatePromoItem(idx, "newProduct", np);
+                            }}
+                            className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
+                        </div>
+                        <div className="md:col-span-2">
+                          <label className="block text-xs font-medium text-gray-600 mb-2">Product Images (max 5)</label>
+                          <div className="flex items-center justify-center w-full">
+                            <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                              <div className="flex flex-col items-center justify-center pt-3 pb-4">
+                                <ImageIcon className="w-6 h-6 mb-2 text-gray-400" />
+                                <p className="text-xs text-gray-500"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                                <p className="text-xs text-gray-400">PNG, JPG, WEBP (max 5)</p>
+                              </div>
+                              <input type="file" multiple accept="image/*" onChange={(e) => {
+                                  if (e.target.files) {
+                                    const np = { ...(item.newProduct || EMPTY_PRODUCT_FIELDS) };
+                                    np._imageFiles = Array.from(e.target.files).slice(0, 5);
+                                    updatePromoItem(idx, "newProduct", np);
+                                  }
+                                }} className="hidden" />
+                            </label>
+                          </div>
+                          {item.newProduct?._imageFiles?.length > 0 && (
+                            <div className="flex gap-2 mt-2 overflow-x-auto pb-1">
+                              {item.newProduct._imageFiles.map((f, i) => (
+                                <img key={i} src={URL.createObjectURL(f)} alt="preview" className="w-12 h-12 object-cover rounded border" />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 md:col-span-2">
+                          <input type="checkbox" checked={item.newProduct?.isFeatured || false} onChange={(e) => {
+                              const np = { ...(item.newProduct || EMPTY_PRODUCT_FIELDS), isFeatured: e.target.checked };
+                              updatePromoItem(idx, "newProduct", np);
+                            }}
+                            className="text-primary-600 rounded" />
+                          <label className="text-xs text-gray-600">Featured Product</label>
+                        </div>
                       </div>
                     )}
                   </div>
