@@ -96,7 +96,8 @@ export default function CheckoutPage() {
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const isShariatpur = form.district === "Shariatpur";
-  const districtCharge = isShariatpur ? 20 : 60;
+  const isRangpur = form.division === "Rangpur";
+  const districtCharge = isShariatpur ? 20 : isRangpur ? 60 : 150;
   const deliveryCharge = subtotal >= 1500 ? 0 : districtCharge;
   const total = subtotal + deliveryCharge;
 
