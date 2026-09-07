@@ -809,11 +809,18 @@ export default function OffersPage() {
                   {paginatedPromo.map((offer) => (
                     <tr key={offer.id} className="border-b hover:bg-gray-50 bg-blue-50/30">
                       <td className="px-4 py-3">
-                        <div>
-                          <p className="text-sm font-medium">{offer.title}</p>
-                          <p className="text-xs text-gray-400">
-                            {offer.items?.map((i) => `${i.product?.name} x${i.quantity}`).join(" + ")}
-                          </p>
+                        <div className="flex items-center gap-3">
+                          {offer.items?.[0]?.product?.images?.[0] ? (
+                            <img src={offer.items[0].product.images[0].startsWith("/") ? `${IMG_BASE}${offer.items[0].product.images[0]}` : offer.items[0].product.images[0]} alt="" className="w-10 h-10 rounded object-cover border border-gray-200" />
+                          ) : (
+                            <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center text-lg border border-gray-200">📦</div>
+                          )}
+                          <div>
+                            <p className="text-sm font-medium">{offer.title}</p>
+                            <p className="text-xs text-gray-400 max-w-[200px] truncate" title={offer.items?.map((i) => `${i.product?.name} x${i.quantity}`).join(" + ")}>
+                              {offer.items?.map((i) => `${i.product?.name} x${i.quantity}`).join(" + ")}
+                            </p>
+                          </div>
                         </div>
                       </td>
                       <td className="px-4 py-3">

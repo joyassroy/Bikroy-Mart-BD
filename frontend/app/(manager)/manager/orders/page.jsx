@@ -262,9 +262,9 @@ export default function ManagerOrdersPage() {
                   <td className="px-3 py-2.5 text-[10px] sm:text-[11px] text-[#667085]">{(currentPage - 1) * ITEMS_PER_PAGE + idx + 1}</td>
                   <td className="px-3 py-2.5 font-medium text-[#EC008C] text-[11px] sm:text-xs">{order.orderNumber}</td>
                   <td className="px-3 py-2.5">
-                    <p className="text-[11px] sm:text-xs text-[#000000] font-medium">{order.user?.name}</p>
+                    <p className="text-[11px] sm:text-xs text-[#000000] font-medium">{order.customerName || order.user?.name}</p>
                     <p className="text-[10px] text-[#667085] flex items-center gap-1 mt-0.5">
-                      <Phone size={9} />{order.user?.phone || t.notAvailable}
+                      <Phone size={9} />{order.customerPhone || order.user?.phone || t.notAvailable}
                     </p>
                   </td>
                   <td className="px-3 py-2.5 text-[10px] sm:text-[11px] text-[#667085]">

@@ -7,10 +7,13 @@ import { generateOrderNumber } from "../../utils/orderNumber";
 export const createOrder = async (req: AuthRequest, res: Response) => {
   try {
     const {
+      name, phone,
       items, subtotal, deliveryCharge, discount, total, paymentMethod,
       deliveryAddress, deliveryDivision, deliveryDistrict, deliveryUpazila,
       deliveryLatitude, deliveryLongitude, customRequirement, notes,
     } = req.body;
+
+    console.log("createOrder payload:", { name, phone, reqBody: req.body });
 
     const orderNumber = generateOrderNumber();
 
@@ -30,6 +33,8 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
         deliveryLatitude,
         deliveryLongitude,
         customRequirement,
+        customerName: name,
+        customerPhone: phone,
         notes,
         items: {
           create: items.map((item: any) => ({

@@ -138,8 +138,8 @@ export default function OrdersPage() {
                     <td className="px-4 py-3 text-xs text-gray-400">{(currentPage - 1) * ITEMS_PER_PAGE + idx + 1}</td>
                     <td className="px-4 py-3 font-medium text-primary-600">{order.orderNumber}</td>
                     <td className="px-4 py-3 text-sm">
-                      <p>{order.user?.name}</p>
-                      <p className="text-xs text-gray-400">{order.user?.phone}</p>
+                      <p>{order.customerName || order.user?.name}</p>
+                      <p className="text-xs text-gray-400">{order.customerPhone || order.user?.phone}</p>
                     </td>
                     <td className="px-4 py-3 text-sm" title={order.items?.map(i => i.product?.name).join(", ")}>
                       {getItemSummary(order.items)}

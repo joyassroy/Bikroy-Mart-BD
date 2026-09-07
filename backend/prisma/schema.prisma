@@ -151,6 +151,8 @@ model Order {
   deliveryDivision   String
   deliveryDistrict   String
   deliveryUpazila    String
+  customerName       String?
+  customerPhone      String?
   deliveryLatitude   Float?
   deliveryLongitude  Float?
   customRequirement  String?

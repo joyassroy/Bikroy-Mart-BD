@@ -95,9 +95,9 @@ export default function CheckoutPage() {
   }, [selectedAddressId, savedAddresses]);
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const isShariatpur = form.district === "Shariatpur";
-  const isRangpur = form.division === "Rangpur";
-  const districtCharge = isShariatpur ? 20 : isRangpur ? 60 : 150;
+  const isSyedpur = form.upazila === "Syedpur";
+  const isNilphamari = form.district === "Nilphamari";
+  const districtCharge = isSyedpur ? 20 : isNilphamari ? 60 : 150;
   const deliveryCharge = subtotal >= 1500 ? 0 : districtCharge;
   const total = subtotal + deliveryCharge;
 
@@ -128,6 +128,8 @@ export default function CheckoutPage() {
         deliveryLatitude: deliveryCoords.latitude || undefined,
         deliveryLongitude: deliveryCoords.longitude || undefined,
         customRequirement: customRequirement || undefined,
+        name: form.name,
+        phone: form.phone,
       };
       const res = await api.post("/orders", orderData);
       dispatch(clearCart());
