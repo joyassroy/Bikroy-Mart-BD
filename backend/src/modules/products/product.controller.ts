@@ -84,6 +84,34 @@ export const getAllProducts = async (req: Request, res: Response) => {
     const limitNum = parseInt(limit as string, 10);
     const skip = (pageNum - 1) * limitNum;
 
+    // ── Offer pricing: distribute promo bundle prices across their items ─
+    const offerFilter = offer ? String(offer) : "";
+    const isPromoOffer = ["COMBO", "BOGO", "CUSTOM"].includes(offerFilter);
+    let promoOfferShareMap = new Map<string, number>();
+    let promoOfferEndMap = new Map<string, Date>();
+    let promoProductIds: string[] = [];
+    if (offerFilter && isPromoOffer) {
+      const now0 = new Date();
+      const promoOffers = await prisma.promoOffer.findMany({
+        where: { type: offerFilter, isActive: true, startsAt: { lte: now0 }, endsAt: { gte: now0 } },
+        include: { items: { include: { product: { select: { id: true, price: true, discountPrice: true } } } } },
+      });
+      promoProductIds = [...new Set(promoOffers.flatMap((o) => o.items.map((i) => i.productId)))];
+      for (const o of promoOffers) {
+        const itemPrice = (i: any) => i.product?.price ?? 0;
+        const total = o.items.reduce((sum, i) => sum + (Number(i.quantity) || 1) * itemPrice(i), 0);
+        if (total <= 0 || o.offerPrice == null) continue;
+        for (const i of o.items) {
+          const share = Math.round((Number(o.offerPrice) / total) * (Number(i.quantity) || 1) * itemPrice(i));
+          const current = promoOfferShareMap.get(i.productId);
+          if (current === undefined || share < current) {
+            promoOfferShareMap.set(i.productId, share);
+            promoOfferEndMap.set(i.productId, new Date(o.endsAt));
+          }
+        }
+      }
+    }
+
     // ── Fuzzy search with pg_trgm similarity ──────────────────────────
     if (search) {
       const searchTerm = String(search).trim();
@@ -231,7 +259,8 @@ export const getAllProducts = async (req: Request, res: Response) => {
             ? { id: p.subcategoryId_value, name: p.subcategoryName, slug: p.subcategorySlug }
             : null,
           effectivePrice: dp ? dp.price : p.price,
-          effectiveDiscountPrice: dp ? dp.discountPrice : p.discountPrice,
+          effectiveDiscountPrice: promoOfferShareMap.get(p.id) ?? (dp ? dp.discountPrice : p.discountPrice),
+          offerEndsAt: promoOfferEndMap.get(p.id)?.toISOString() || null,
           relevance: Number(p.relevance),
         };
       });
@@ -271,15 +300,9 @@ export const getAllProducts = async (req: Request, res: Response) => {
     if (offer) {
       const now = new Date();
       const offerStr = String(offer);
-      const isPromoOffer = ["COMBO", "BOGO", "CUSTOM"].includes(offerStr);
 
       if (isPromoOffer) {
-        const promoOffers = await prisma.promoOffer.findMany({
-          where: { type: offerStr, isActive: true, startsAt: { lte: now }, endsAt: { gte: now } },
-          include: { items: { select: { productId: true } } },
-        });
-        const productIds = [...new Set(promoOffers.flatMap((o) => o.items.map((i) => i.productId)))];
-        where.id = productIds.length > 0 ? { in: productIds } : { in: [] };
+        where.id = promoProductIds.length > 0 ? { in: promoProductIds } : { in: [] };
       } else {
         const flashDeals = await prisma.flashDeal.findMany({
           where: { type: offerStr, isActive: true, startsAt: { lte: now }, endsAt: { gte: now } },
@@ -358,12 +381,15 @@ export const getAllProducts = async (req: Request, res: Response) => {
       const { districtPrices, ...rest } = p;
       const dealPrice = dealPriceMap.get(p.id);
       const flashDealStock = dealStockMap.get(p.id);
+      const promoShare = promoOfferShareMap.get(p.id);
+      const promoEnd = promoOfferEndMap.get(p.id);
       return {
         ...rest,
         effectivePrice,
-        effectiveDiscountPrice: dealPrice ?? effectiveDiscountPrice,
+        effectiveDiscountPrice: promoShare ?? dealPrice ?? effectiveDiscountPrice,
         totalSales: salesMap.get(p.id) || 0,
         flashDealEndsAt: dealEndsAtMap.get(p.id) || null,
+        offerEndsAt: promoEnd?.toISOString() || null,
         flashDealStock: flashDealStock ?? null,
       };
     });
