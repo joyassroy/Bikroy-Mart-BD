@@ -61,15 +61,15 @@ export default function OffersPage() {
   const ITEMS_PER_PAGE = 10;
 
   const [flashForm, setFlashForm] = useState({
-    productId: "", dealPrice: "", quantity: "", startsAt: "", endsAt: "",
-    ...EMPTY_PRODUCT_FIELDS,
+    items: [], startsAt: "", endsAt: "",
   });
 
   const [promoForm, setPromoForm] = useState({
     title: "", offerDescription: "", offerPrice: "", buyQuantity: 1, getQuantity: 1, getDiscount: 100,
-    productId: "", startsAt: "", endsAt: "", sortOrder: 0,
-    ...EMPTY_PRODUCT_FIELDS,
+    items: [], startsAt: "", endsAt: "", sortOrder: 0,
   });
+  const [addProductId, setAddProductId] = useState("");
+  const [newProductFields, setNewProductFields] = useState({ ...EMPTY_PRODUCT_FIELDS });
 
   useEffect(() => {
     fetchAll();
@@ -78,11 +78,11 @@ export default function OffersPage() {
   }, []);
 
   useEffect(() => {
-    const catId = flashForm.categoryId || promoForm.categoryId;
+    const catId = newProductFields.categoryId;
     if (catId) {
       api.get(`/subcategories?categoryId=${catId}`).then((res) => setSubcategories(res.data.data || [])).catch(console.error);
     }
-  }, [flashForm.categoryId, promoForm.categoryId]);
+  }, [newProductFields.categoryId]);
 
   const fetchAll = async () => {
     setLoading(true);
@@ -102,8 +102,10 @@ export default function OffersPage() {
   );
 
   const resetForms = () => {
-    setFlashForm({ productId: "", dealPrice: "", quantity: "", startsAt: "", endsAt: "", ...EMPTY_PRODUCT_FIELDS });
-    setPromoForm({ title: "", offerDescription: "", offerPrice: "", buyQuantity: 1, getQuantity: 1, getDiscount: 100, productId: "", startsAt: "", endsAt: "", sortOrder: 0, ...EMPTY_PRODUCT_FIELDS });
+    setFlashForm({ items: [], startsAt: "", endsAt: "" });
+    setPromoForm({ title: "", offerDescription: "", offerPrice: "", buyQuantity: 1, getQuantity: 1, getDiscount: 100, items: [], startsAt: "", endsAt: "", sortOrder: 0 });
+    setNewProductFields({ ...EMPTY_PRODUCT_FIELDS });
+    setAddProductId("");
     setEditingId(null);
     setEditingSource(null);
     setProductSearch("");
@@ -138,37 +140,122 @@ export default function OffersPage() {
     return res.data.data;
   };
 
+  const addProductToItems = (product, quantity = 1) => {
+    if (!product?.id) return;
+    if (promoForm.items.some((it) => it.productId === product.id)) {
+      toast.error("Product already added to offer");
+      return;
+    }
+    setPromoForm({
+      ...promoForm,
+      items: [...promoForm.items, { productId: product.id, quantity, name: product.name, price: product.price, image: product.images?.[0] || "" }],
+    });
+  };
+
+  const updateItemQty = (index, quantity) => {
+    setPromoForm({
+      ...promoForm,
+      items: promoForm.items.map((it, i) => (i === index ? { ...it, quantity: Number(quantity) || 0 } : it)),
+    });
+  };
+
+  const removeItem = (index) => {
+    setPromoForm({ ...promoForm, items: promoForm.items.filter((_, i) => i !== index) });
+  };
+
+  const handleCreateProductAndAdd = async () => {
+    if (!newProductFields.name || !newProductFields.price || !newProductFields.stock || !newProductFields.categoryId) {
+      toast.error("Fill product name, price, stock & category");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const newProduct = await createProductFromForm(newProductFields);
+      addProductToItems(newProduct, 1);
+      setNewProductFields({ ...EMPTY_PRODUCT_FIELDS });
+      setImageFiles([]);
+      setSubcategories([]);
+      const res = await api.get("/products?limit=200");
+      setProducts(res.data.data || []);
+      toast.success("Product created & added to offer");
+    } catch (err) { toast.error(err.response?.data?.message || "Failed to create product"); }
+    finally { setSubmitting(false); }
+  };
+
+  const addProductToFlashItems = (product) => {
+    if (!product?.id) return;
+    if (flashForm.items.some((it) => it.productId === product.id)) {
+      toast.error("Product already added to offer");
+      return;
+    }
+    setFlashForm({
+      ...flashForm,
+      items: [...flashForm.items, {
+        productId: product.id,
+        dealPrice: product.discountPrice || product.price,
+        quantity: 1,
+        name: product.name,
+        price: product.price,
+        image: product.images?.[0] || "",
+      }],
+    });
+  };
+
+  const updateFlashItem = (index, field, value) => {
+    setFlashForm({
+      ...flashForm,
+      items: flashForm.items.map((it, i) =>
+        i === index ? { ...it, [field]: Number(value) || 0 } : it
+      ),
+    });
+  };
+
+  const removeFlashItem = (index) => {
+    setFlashForm({ ...flashForm, items: flashForm.items.filter((_, i) => i !== index) });
+  };
+
+  const handleCreateProductAndAddFlash = async () => {
+    if (!newProductFields.name || !newProductFields.price || !newProductFields.stock || !newProductFields.categoryId) {
+      toast.error("Fill product name, price, stock & category");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const newProduct = await createProductFromForm(newProductFields);
+      addProductToFlashItems(newProduct);
+      setNewProductFields({ ...EMPTY_PRODUCT_FIELDS });
+      setImageFiles([]);
+      setSubcategories([]);
+      const res = await api.get("/products?limit=200");
+      setProducts(res.data.data || []);
+      toast.success("Product created & added to offer");
+    } catch (err) { toast.error(err.response?.data?.message || "Failed to create product"); }
+    finally { setSubmitting(false); }
+  };
+
   const handleFlashSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
     try {
-      let productId = flashForm.productId;
-
-      if (!productId) {
-        if (!flashForm.name || !flashForm.price || !flashForm.stock || !flashForm.categoryId) {
-          toast.error("Select a product or fill product name, price, stock & category");
-          setSubmitting(false);
-          return;
-        }
-        const newProduct = await createProductFromForm(flashForm);
-        productId = newProduct.id;
-        const res = await api.get("/products?limit=200");
-        setProducts(res.data.data || []);
+      if (flashForm.items.length === 0) {
+        toast.error("Add at least one product to the offer");
+        setSubmitting(false);
+        return;
       }
-
-      const data = {
-        productId, type: activeType,
-        dealPrice: Number(flashForm.dealPrice),
-        quantity: Number(flashForm.quantity),
+      const data = flashForm.items.map((it) => ({
+        productId: it.productId,
+        type: activeType,
+        dealPrice: Number(it.dealPrice),
+        quantity: Number(it.quantity),
         startsAt: toIsoDateTime(flashForm.startsAt), endsAt: toIsoDateTime(flashForm.endsAt),
-      };
+      }));
 
       if (editingId && editingSource === "flash") {
-        await api.put(`/flash-deals/${editingId}`, data);
+        await api.put(`/flash-deals/${editingId}`, data[0]);
         toast.success("Offer updated");
       } else {
-        await api.post("/flash-deals", data);
-        toast.success("Offer created");
+        await Promise.all(data.map((d) => api.post("/flash-deals", d)));
+        toast.success(data.length > 1 ? `${data.length} offers created` : "Offer created");
       }
       resetForms();
       fetchAll();
@@ -180,18 +267,11 @@ export default function OffersPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      let productId = promoForm.productId;
-
-      if (!productId) {
-        if (!promoForm.name || !promoForm.price || !promoForm.stock || !promoForm.categoryId) {
-          toast.error("Select a product or fill product name, price, stock & category");
-          setSubmitting(false);
-          return;
-        }
-        const newProduct = await createProductFromForm(promoForm);
-        productId = newProduct.id;
-        const res = await api.get("/products?limit=200");
-        setProducts(res.data.data || []);
+      const items = promoForm.items.map(({ productId, quantity }) => ({ productId, quantity }));
+      if (items.length === 0) {
+        toast.error("Add at least one product to the offer");
+        setSubmitting(false);
+        return;
       }
 
       const data = {
@@ -199,7 +279,7 @@ export default function OffersPage() {
         offerPrice: Number(promoForm.offerPrice),
         buyQuantity: promoForm.buyQuantity, getQuantity: promoForm.getQuantity,
         getDiscount: promoForm.getDiscount,
-        items: [{ productId, quantity: 1 }], startsAt: toIsoDateTime(promoForm.startsAt), endsAt: toIsoDateTime(promoForm.endsAt),
+        items, startsAt: toIsoDateTime(promoForm.startsAt), endsAt: toIsoDateTime(promoForm.endsAt),
         sortOrder: promoForm.sortOrder,
       };
 
@@ -221,25 +301,18 @@ export default function OffersPage() {
     setEditingId(deal.id);
     setEditingSource("flash");
     setFlashForm({
-      productId: deal.productId,
-      dealPrice: deal.dealPrice,
-      quantity: deal.quantity,
+      items: [{
+        productId: deal.productId,
+        dealPrice: deal.dealPrice,
+        quantity: deal.quantity,
+        name: deal.product?.name || "",
+        price: deal.product?.price || "",
+        image: deal.product?.images?.[0] || "",
+      }],
       startsAt: toDateTimeLocal(deal.startsAt),
       endsAt: toDateTimeLocal(deal.endsAt),
-      name: deal.product?.name || "",
-      nameBn: deal.product?.nameBn || "",
-      description: deal.product?.description || "",
-      price: deal.product?.price || "",
-      discountPrice: deal.product?.discountPrice || "",
-      unit: deal.product?.unit || "piece",
-      minQuantity: deal.product?.minQuantity || "1",
-      stock: deal.product?.stock ?? "",
-      sku: deal.product?.sku || "",
-      categoryId: deal.product?.categoryId || "",
-      subcategoryId: deal.product?.subcategoryId || "",
-      deliveryTime: deal.product?.deliveryTime || "1-2 hours",
-      isFeatured: deal.product?.isFeatured || false,
     });
+    setNewProductFields({ ...EMPTY_PRODUCT_FIELDS });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -247,7 +320,6 @@ export default function OffersPage() {
     setActiveType(offer.type);
     setEditingId(offer.id);
     setEditingSource("promo");
-    const p = offer.items?.[0]?.product;
     setPromoForm({
       title: offer.title,
       offerDescription: offer.description || "",
@@ -255,24 +327,18 @@ export default function OffersPage() {
       buyQuantity: offer.buyQuantity,
       getQuantity: offer.getQuantity,
       getDiscount: offer.getDiscount,
-      productId: offer.items?.[0]?.productId || "",
+      items: (offer.items || []).map((i) => ({
+        productId: i.productId,
+        quantity: i.quantity,
+        name: i.product?.name || "",
+        price: i.product?.price || "",
+        image: i.product?.images?.[0] || "",
+      })),
       startsAt: toDateTimeLocal(offer.startsAt),
       endsAt: toDateTimeLocal(offer.endsAt),
       sortOrder: offer.sortOrder || 0,
-      name: p?.name || "",
-      nameBn: p?.nameBn || "",
-      description: p?.description || "",
-      price: p?.price || "",
-      discountPrice: p?.discountPrice || "",
-      unit: p?.unit || "piece",
-      minQuantity: p?.minQuantity || "1",
-      stock: p?.stock ?? "",
-      sku: p?.sku || "",
-      categoryId: p?.categoryId || "",
-      subcategoryId: p?.subcategoryId || "",
-      deliveryTime: p?.deliveryTime || "1-2 hours",
-      isFeatured: p?.isFeatured || false,
     });
+    setNewProductFields({ ...EMPTY_PRODUCT_FIELDS });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -295,7 +361,7 @@ export default function OffersPage() {
     } catch (err) { toast.error("Failed"); }
   };
 
-  const isMultiProduct = activeType === "COMBO" || activeType === "BOGO" || activeType === "CUSTOM";
+  const isFlashType = activeType === "FLASH_DEAL" || activeType === "STOCK_CLEARANCE" || activeType === "EXECUTIVE";
 
   const currentItems = flashDeals.filter((d) => d.type === activeType);
   const currentPromoItems = promoOffers.filter((o) => o.type === activeType);
@@ -336,151 +402,215 @@ export default function OffersPage() {
           )}
         </div>
 
-        {!isMultiProduct ? (
-          /* ============ Single Product Form (Flash Deal / Stock Clearance / Executive) ============ */
-          <form onSubmit={handleFlashSubmit} className="space-y-6">
-            {/* Product Selector */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Select Existing Product</label>
-              <div className="relative">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search existing product..."
-                  value={productSearch}
-                  onChange={(e) => setProductSearch(e.target.value)}
-                  className="w-full border rounded-lg pl-9 pr-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none mb-1"
-                />
-              </div>
-              <select value={flashForm.productId} onChange={(e) => setFlashForm({ ...flashForm, productId: e.target.value })}
-                className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none">
-                <option value="">-- Select product or leave empty to create new --</option>
+        <form onSubmit={isFlashType ? handleFlashSubmit : handlePromoSubmit} className="space-y-6">
+          {/* Offer Products */}
+          {isFlashType ? (
+            <div className="border-b pb-4">
+              <p className="text-sm font-semibold text-gray-700 mb-2">Offer Products *</p>
+              {flashForm.items.length === 0 ? (
+                <p className="text-xs text-gray-400 italic">No products added yet. Add existing products or create a new one below.</p>
+              ) : (
+                <div className="space-y-2">
+                  {flashForm.items.map((it, idx) => (
+                    <div key={it.productId} className="flex items-center gap-3 border rounded-lg p-2">
+                      {it.image ? (
+                        <img src={it.image.startsWith("/") ? `${IMG_BASE}${it.image}` : it.image} alt="" className="w-10 h-10 rounded object-cover" />
+                      ) : (
+                        <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center text-lg">📦</div>
+                      )}
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">{it.name}</p>
+                        <p className="text-xs text-gray-400">৳{it.price}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input type="number" step="0.01" min="1" value={it.dealPrice}
+                          onChange={(e) => updateFlashItem(idx, "dealPrice", e.target.value)}
+                          className="w-24 border rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" placeholder="Deal price" />
+                        <input type="number" min="1" value={it.quantity}
+                          onChange={(e) => updateFlashItem(idx, "quantity", e.target.value)}
+                          className="w-20 border rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" placeholder="Qty" />
+                        <button type="button" onClick={() => removeFlashItem(idx)} className="text-red-500 hover:text-red-700"><Trash2 size={16} /></button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="border-b pb-4">
+              <p className="text-sm font-semibold text-gray-700 mb-2">Offer Products *</p>
+              {promoForm.items.length === 0 ? (
+                <p className="text-xs text-gray-400 italic">No products added yet. Add existing products or create a new one below.</p>
+              ) : (
+                <div className="space-y-2">
+                  {promoForm.items.map((it, idx) => (
+                    <div key={it.productId} className="flex items-center gap-3 border rounded-lg p-2">
+                      {it.image ? (
+                        <img src={it.image.startsWith("/") ? `${IMG_BASE}${it.image}` : it.image} alt="" className="w-10 h-10 rounded object-cover" />
+                      ) : (
+                        <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center text-lg">📦</div>
+                      )}
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">{it.name}</p>
+                        <p className="text-xs text-gray-400">৳{it.price}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input type="number" min="1" value={it.quantity}
+                          onChange={(e) => updateItemQty(idx, e.target.value)}
+                          className="w-20 border rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
+                        <button type="button" onClick={() => removeItem(idx)} className="text-red-500 hover:text-red-700"><Trash2 size={16} /></button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Add Existing Product */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Add Existing Product</label>
+            <div className="relative mb-1">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search existing product..."
+                value={productSearch}
+                onChange={(e) => setProductSearch(e.target.value)}
+                className="w-full border rounded-lg pl-9 pr-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none"
+              />
+            </div>
+            <div className="flex gap-2">
+              <select value={addProductId} onChange={(e) => setAddProductId(e.target.value)}
+                className="flex-1 w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none">
+                <option value="">-- Select product --</option>
                 {filteredProducts.map((p) => (
                   <option key={p.id} value={p.id}>{p.name} (৳{p.price})</option>
                 ))}
               </select>
+              <button type="button" onClick={() => { const p = filteredProducts.find((x) => x.id === addProductId); if (p) { if (isFlashType) addProductToFlashItems(p); else addProductToItems(p); setAddProductId(""); } }}
+                disabled={!addProductId}
+                className="px-4 py-2.5 rounded-lg text-sm font-medium bg-primary-600 text-white hover:bg-primary-700 disabled:bg-gray-300 transition flex items-center gap-1">
+                <Plus size={14} /> Add
+              </button>
             </div>
+          </div>
 
-            {/* Product Details (for creating new product) */}
-            <div className="border-t pt-4">
-              <p className="text-xs text-gray-500 mb-3 italic">Fill below to create a new product (only if no product selected above)</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
-                  <input type="text" value={flashForm.name} onChange={(e) => setFlashForm({ ...flashForm, name: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Bengali Name</label>
-                  <input type="text" value={flashForm.nameBn} onChange={(e) => setFlashForm({ ...flashForm, nameBn: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">SKU</label>
-                  <input type="text" value={flashForm.sku} onChange={(e) => setFlashForm({ ...flashForm, sku: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
-                  <select value={flashForm.categoryId} onChange={(e) => setFlashForm({ ...flashForm, categoryId: e.target.value, subcategoryId: "" })}
-                    className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none">
-                    <option value="">Select category</option>
-                    {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Subcategory</label>
-                  <select value={flashForm.subcategoryId} onChange={(e) => setFlashForm({ ...flashForm, subcategoryId: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none">
-                    <option value="">Select subcategory</option>
-                    {subcategories.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Price *</label>
-                  <input type="number" step="0.01" value={flashForm.price} onChange={(e) => setFlashForm({ ...flashForm, price: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Discount Price</label>
-                  <input type="number" step="0.01" value={flashForm.discountPrice} onChange={(e) => setFlashForm({ ...flashForm, discountPrice: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Unit</label>
-                  <select value={flashForm.unit} onChange={(e) => setFlashForm({ ...flashForm, unit: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none">
-                    <option value="piece">Piece</option>
-                    <option value="ekok">Ekok</option>
-                    <option value="kg">Kilogram</option>
-                    <option value="gram">Gram</option>
-                    <option value="litre">Litre</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Min Quantity</label>
-                  <input type="number" step="0.01" value={flashForm.minQuantity} onChange={(e) => setFlashForm({ ...flashForm, minQuantity: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Stock *</label>
-                  <input type="number" value={flashForm.stock} onChange={(e) => setFlashForm({ ...flashForm, stock: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Time</label>
-                  <input type="text" value={flashForm.deliveryTime} onChange={(e) => setFlashForm({ ...flashForm, deliveryTime: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                  <textarea rows={3} value={flashForm.description} onChange={(e) => setFlashForm({ ...flashForm, description: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Product Images (max 5)</label>
-                  <div className="flex items-center justify-center w-full">
-                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                        <ImageIcon className="w-8 h-8 mb-3 text-gray-400" />
-                        <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                        <p className="text-xs text-gray-500">PNG, JPG, WEBP (max 5 files)</p>
-                      </div>
-                      <input type="file" multiple accept="image/*" onChange={handleImageChange} className="hidden" />
-                    </label>
-                  </div>
-                  {imageFiles.length > 0 && (
-                    <div className="flex gap-2 mt-3 overflow-x-auto pb-2">
-                      {imageFiles.map((f, i) => (
-                        <div key={i} className="relative flex-shrink-0">
-                          <img src={URL.createObjectURL(f)} alt="preview" className="w-16 h-16 object-cover rounded border" />
-                        </div>
-                      ))}
+          {/* Create New Product */}
+          <div className="border-t pt-4">
+            <p className="text-xs text-gray-500 mb-3 italic">Or fill below to create a new product and add it to this offer</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
+                <input type="text" value={newProductFields.name} onChange={(e) => setNewProductFields({ ...newProductFields, name: e.target.value })}
+                  className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Bengali Name</label>
+                <input type="text" value={newProductFields.nameBn} onChange={(e) => setNewProductFields({ ...newProductFields, nameBn: e.target.value })}
+                  className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">SKU</label>
+                <input type="text" value={newProductFields.sku} onChange={(e) => setNewProductFields({ ...newProductFields, sku: e.target.value })}
+                  className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+                <select value={newProductFields.categoryId} onChange={(e) => setNewProductFields({ ...newProductFields, categoryId: e.target.value, subcategoryId: "" })}
+                  className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none">
+                  <option value="">Select category</option>
+                  {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Subcategory</label>
+                <select value={newProductFields.subcategoryId} onChange={(e) => setNewProductFields({ ...newProductFields, subcategoryId: e.target.value })}
+                  className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none">
+                  <option value="">Select subcategory</option>
+                  {subcategories.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Price *</label>
+                <input type="number" step="0.01" value={newProductFields.price} onChange={(e) => setNewProductFields({ ...newProductFields, price: e.target.value })}
+                  className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Discount Price</label>
+                <input type="number" step="0.01" value={newProductFields.discountPrice} onChange={(e) => setNewProductFields({ ...newProductFields, discountPrice: e.target.value })}
+                  className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+                <select value={newProductFields.unit} onChange={(e) => setNewProductFields({ ...newProductFields, unit: e.target.value })}
+                  className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none">
+                  <option value="piece">Piece</option>
+                  <option value="ekok">Ekok</option>
+                  <option value="kg">Kilogram</option>
+                  <option value="gram">Gram</option>
+                  <option value="litre">Litre</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Min Quantity</label>
+                <input type="number" step="0.01" value={newProductFields.minQuantity} onChange={(e) => setNewProductFields({ ...newProductFields, minQuantity: e.target.value })}
+                  className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Stock *</label>
+                <input type="number" value={newProductFields.stock} onChange={(e) => setNewProductFields({ ...newProductFields, stock: e.target.value })}
+                  className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Time</label>
+                <input type="text" value={newProductFields.deliveryTime} onChange={(e) => setNewProductFields({ ...newProductFields, deliveryTime: e.target.value })}
+                  className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <textarea rows={3} value={newProductFields.description} onChange={(e) => setNewProductFields({ ...newProductFields, description: e.target.value })}
+                  className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Product Images (max 5)</label>
+                <div className="flex items-center justify-center w-full">
+                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <ImageIcon className="w-8 h-8 mb-3 text-gray-400" />
+                      <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                      <p className="text-xs text-gray-500">PNG, JPG, WEBP (max 5 files)</p>
                     </div>
-                  )}
+                    <input type="file" multiple accept="image/*" onChange={handleImageChange} className="hidden" />
+                  </label>
                 </div>
-                <div className="flex items-center gap-2 md:col-span-2">
-                  <input type="checkbox" checked={flashForm.isFeatured} onChange={(e) => setFlashForm({ ...flashForm, isFeatured: e.target.checked })}
-                    className="text-primary-600 rounded" />
-                  <label className="text-sm text-gray-700">Featured Product</label>
-                </div>
+                {imageFiles.length > 0 && (
+                  <div className="flex gap-2 mt-3 overflow-x-auto pb-2">
+                    {imageFiles.map((f, i) => (
+                      <div key={i} className="relative flex-shrink-0">
+                        <img src={URL.createObjectURL(f)} alt="preview" className="w-16 h-16 object-cover rounded border" />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-2 md:col-span-2">
+                <input type="checkbox" checked={newProductFields.isFeatured} onChange={(e) => setNewProductFields({ ...newProductFields, isFeatured: e.target.checked })}
+                  className="text-primary-600 rounded" />
+                <label className="text-sm text-gray-700">Featured Product</label>
               </div>
             </div>
+            <button type="button" onClick={isFlashType ? handleCreateProductAndAddFlash : handleCreateProductAndAdd} disabled={submitting}
+              className="mt-4 bg-primary-600 text-white rounded-lg px-6 py-2.5 text-sm font-medium hover:bg-primary-700 disabled:bg-gray-300 transition flex items-center gap-2">
+              {submitting ? "Creating..." : <><Plus size={14} /> Create & Add to Offer</>}
+            </button>
+          </div>
 
-            {/* Offer Details */}
-            <div className="border-t pt-4">
-              <p className="text-xs font-semibold text-gray-700 mb-3 uppercase tracking-wide">Offer Details</p>
+          {/* Offer Details */}
+          <div className="border-t pt-4">
+            <p className="text-xs font-semibold text-gray-700 mb-3 uppercase tracking-wide">Offer Details</p>
+            {isFlashType ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Deal Price *</label>
-                  <input type="number" required step="0.01" value={flashForm.dealPrice} onChange={(e) => setFlashForm({ ...flashForm, dealPrice: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" placeholder="Special price" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Quantity *</label>
-                  <input type="number" required value={flashForm.quantity} onChange={(e) => setFlashForm({ ...flashForm, quantity: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" placeholder="Available qty" />
-                </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Start Date *</label>
                   <input type="datetime-local" required value={flashForm.startsAt} onChange={(e) => setFlashForm({ ...flashForm, startsAt: e.target.value })}
@@ -492,147 +622,7 @@ export default function OffersPage() {
                     className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
                 </div>
               </div>
-            </div>
-
-            <button type="submit" disabled={submitting}
-              className="bg-primary-600 text-white rounded-lg px-6 py-2.5 text-sm font-medium hover:bg-primary-700 disabled:bg-gray-300 transition flex items-center gap-2">
-              {submitting ? "Creating..." : editingId ? <><Edit2 size={14} /> Update</> : <><Plus size={14} /> Create</>}
-            </button>
-          </form>
-        ) : (
-          /* ============ Multi Product Form (Combo / BOGO / Custom) ============ */
-          <form onSubmit={handlePromoSubmit} className="space-y-6">
-            {/* Product Selector */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Select Existing Product</label>
-              <div className="relative">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search existing product..."
-                  value={productSearch}
-                  onChange={(e) => setProductSearch(e.target.value)}
-                  className="w-full border rounded-lg pl-9 pr-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none mb-1"
-                />
-              </div>
-              <select value={promoForm.productId} onChange={(e) => setPromoForm({ ...promoForm, productId: e.target.value })}
-                className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none">
-                <option value="">-- Select product or leave empty to create new --</option>
-                {filteredProducts.map((p) => (
-                  <option key={p.id} value={p.id}>{p.name} (৳{p.price})</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Product Details (for creating new product) */}
-            <div className="border-t pt-4">
-              <p className="text-xs text-gray-500 mb-3 italic">Fill below to create a new product (only if no product selected above)</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
-                  <input type="text" value={promoForm.name} onChange={(e) => setPromoForm({ ...promoForm, name: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Bengali Name</label>
-                  <input type="text" value={promoForm.nameBn} onChange={(e) => setPromoForm({ ...promoForm, nameBn: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">SKU</label>
-                  <input type="text" value={promoForm.sku} onChange={(e) => setPromoForm({ ...promoForm, sku: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
-                  <select value={promoForm.categoryId} onChange={(e) => setPromoForm({ ...promoForm, categoryId: e.target.value, subcategoryId: "" })}
-                    className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none">
-                    <option value="">Select category</option>
-                    {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Subcategory</label>
-                  <select value={promoForm.subcategoryId} onChange={(e) => setPromoForm({ ...promoForm, subcategoryId: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none">
-                    <option value="">Select subcategory</option>
-                    {subcategories.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Price *</label>
-                  <input type="number" step="0.01" value={promoForm.price} onChange={(e) => setPromoForm({ ...promoForm, price: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Discount Price</label>
-                  <input type="number" step="0.01" value={promoForm.discountPrice} onChange={(e) => setPromoForm({ ...promoForm, discountPrice: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Unit</label>
-                  <select value={promoForm.unit} onChange={(e) => setPromoForm({ ...promoForm, unit: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none">
-                    <option value="piece">Piece</option>
-                    <option value="ekok">Ekok</option>
-                    <option value="kg">Kilogram</option>
-                    <option value="gram">Gram</option>
-                    <option value="litre">Litre</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Min Quantity</label>
-                  <input type="number" step="0.01" value={promoForm.minQuantity} onChange={(e) => setPromoForm({ ...promoForm, minQuantity: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Stock *</label>
-                  <input type="number" value={promoForm.stock} onChange={(e) => setPromoForm({ ...promoForm, stock: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Time</label>
-                  <input type="text" value={promoForm.deliveryTime} onChange={(e) => setPromoForm({ ...promoForm, deliveryTime: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                  <textarea rows={3} value={promoForm.description} onChange={(e) => setPromoForm({ ...promoForm, description: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Product Images (max 5)</label>
-                  <div className="flex items-center justify-center w-full">
-                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                        <ImageIcon className="w-8 h-8 mb-3 text-gray-400" />
-                        <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                        <p className="text-xs text-gray-500">PNG, JPG, WEBP (max 5 files)</p>
-                      </div>
-                      <input type="file" multiple accept="image/*" onChange={handleImageChange} className="hidden" />
-                    </label>
-                  </div>
-                  {imageFiles.length > 0 && (
-                    <div className="flex gap-2 mt-3 overflow-x-auto pb-2">
-                      {imageFiles.map((f, i) => (
-                        <div key={i} className="relative flex-shrink-0">
-                          <img src={URL.createObjectURL(f)} alt="preview" className="w-16 h-16 object-cover rounded border" />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <div className="flex items-center gap-2 md:col-span-2">
-                  <input type="checkbox" checked={promoForm.isFeatured} onChange={(e) => setPromoForm({ ...promoForm, isFeatured: e.target.checked })}
-                    className="text-primary-600 rounded" />
-                  <label className="text-sm text-gray-700">Featured Product</label>
-                </div>
-              </div>
-            </div>
-
-            {/* Offer Details */}
-            <div className="border-t pt-4">
-              <p className="text-xs font-semibold text-gray-700 mb-3 uppercase tracking-wide">Offer Details</p>
+            ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">Offer Title *</label>
@@ -684,14 +674,14 @@ export default function OffersPage() {
                     className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
                 </div>
               </div>
-            </div>
+            )}
+          </div>
 
-            <button type="submit" disabled={submitting}
-              className="bg-primary-600 text-white rounded-lg px-6 py-2.5 text-sm font-medium hover:bg-primary-700 disabled:bg-gray-300 transition flex items-center gap-2">
-              {submitting ? "Creating..." : editingId ? <><Edit2 size={14} /> Update</> : <><Plus size={14} /> Create</>}
-            </button>
-          </form>
-        )}
+          <button type="submit" disabled={submitting}
+            className="bg-primary-600 text-white rounded-lg px-6 py-2.5 text-sm font-medium hover:bg-primary-700 disabled:bg-gray-300 transition flex items-center gap-2">
+            {submitting ? "Creating..." : editingId ? <><Edit2 size={14} /> Update</> : <><Plus size={14} /> Create</>}
+          </button>
+        </form>
       </div>
 
       {/* List */}

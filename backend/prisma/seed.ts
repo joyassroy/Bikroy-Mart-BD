@@ -19,6 +19,7 @@ const groceryCategories = [
   { name: "Beauty & Health", nameBn: "সৌন্দর্য ও স্বাস্থ্য", slug: "beauty-health", icon: "Sparkles", sortOrder: 10, image: "https://images.pexels.com/photos/3735657/pexels-photo-3735657.jpeg?auto=compress&cs=tinysrgb&w=400" },
   { name: "Home Cleaning", nameBn: "বাড়ি পরিষ্কার", slug: "home-cleaning", icon: "SprayCan", sortOrder: 11, image: "https://images.pexels.com/photos/4099469/pexels-photo-4099469.jpeg?auto=compress&cs=tinysrgb&w=400" },
   { name: "Baby Care", nameBn: "শিশু যত্ন", slug: "baby-care", icon: "Baby", sortOrder: 12, image: "https://images.pexels.com/photos/35537/child-children-girl-happy.jpg?auto=compress&cs=tinysrgb&w=400" },
+  { name: "Others", nameBn: "অন্যান্য", slug: "others", icon: "Package", sortOrder: 99, image: "https://images.pexels.com/photos/4110251/pexels-photo-4110251.jpeg?auto=compress&cs=tinysrgb&w=400" },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -96,6 +97,9 @@ const subcategoryData: Record<string, { name: string; nameBn: string; slug: stri
   "baby-care": [
     { name: "Baby Food", nameBn: "শিশুর খাদ্য", slug: "baby-food" },
     { name: "Diapers", nameBn: "ডায়াপার", slug: "diapers" },
+  ],
+  "others": [
+    { name: "Others", nameBn: "অন্যান্য", slug: "others" },
   ],
 };
 
