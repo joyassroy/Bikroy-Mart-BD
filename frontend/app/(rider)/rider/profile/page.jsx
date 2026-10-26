@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { clearUser } from "@/redux/userSlice";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/i18n/LanguageContext";
+import ChangePasswordForm from "@/components/ui/ChangePasswordForm";
 
 export default function RiderProfilePage() {
   const user = useSelector((state) => state.user?.data);
@@ -147,6 +148,8 @@ export default function RiderProfilePage() {
           </div>
         </div>
       </div>
+
+      <ChangePasswordForm />
 
       {/* Logout */}
       <button

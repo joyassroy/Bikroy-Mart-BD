@@ -26,6 +26,13 @@ export const verifyOtpValidation = [
     .withMessage("Password must be at least 6 characters"),
 ];
 
+export const changePasswordValidation = [
+  body("currentPassword").notEmpty().withMessage("Current password is required"),
+  body("newPassword")
+    .isLength({ min: 6 })
+    .withMessage("New password must be at least 6 characters"),
+];
+
 export const updateMeValidation = [
   body("name").optional().trim().notEmpty().withMessage("Name cannot be empty"),
   body("phone").optional().matches(/^01[3-9]\d{8}$/).withMessage("Valid Bangladeshi phone number required (e.g. 01XXXXXXXXX)"),

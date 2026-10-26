@@ -90,6 +90,16 @@ export const updateMe = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const changePassword = async (req: AuthRequest, res: Response) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    await authService.changePassword(req.user!.userId, currentPassword, newPassword);
+    return sendSuccess(res, "Password changed successfully");
+  } catch (error: any) {
+    return sendError(res, error.message, 400);
+  }
+};
+
 export const uploadAvatar = async (req: AuthRequest, res: Response) => {
   try {
     if (!req.file) {

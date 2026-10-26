@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, Package, ShoppingCart, Users, BarChart3, Settings, Tag, Truck, MapPin, Menu, X, Loader2, Gift, Clock, TrendingUp, DollarSign, ClipboardList } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Users, BarChart3, Settings, Tag, Truck, MapPin, Menu, X, Loader2, Gift, Clock, TrendingUp, DollarSign, ClipboardList, User } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useAuthChecked } from "@/helper/AuthInit";
@@ -53,6 +53,7 @@ export default function DashboardLayout({ children }) {
       ]
     },
     { label: t.analytics, href: "/dashboard/analytics", icon: BarChart3 },
+    { label: t.profile || "Profile", href: "/dashboard/profile", icon: User },
     { 
       label: t.settings, icon: Settings, 
       subItems: [

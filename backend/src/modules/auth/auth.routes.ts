@@ -10,6 +10,7 @@ import {
   forgotPasswordValidation,
   verifyOtpValidation,
   updateMeValidation,
+  changePasswordValidation,
 } from "./auth.validation";
 
 const avatarStorage = multer.diskStorage({
@@ -41,6 +42,13 @@ router.post("/logout", authenticate, authController.logout);
 router.get("/me", authenticate, authController.getMe);
 router.put("/me", authenticate, updateMeValidation, validate, authController.updateMe);
 router.post("/me/avatar", authenticate, uploadAvatar.single("avatar"), authController.uploadAvatar);
+router.put(
+  "/change-password",
+  authenticate,
+  changePasswordValidation,
+  validate,
+  authController.changePassword
+);
 router.post(
   "/forgot-password",
   forgotPasswordValidation,

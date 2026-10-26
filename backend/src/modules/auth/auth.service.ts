@@ -265,6 +265,42 @@ export const updateMe = async (userId: string, input: UpdateMeInput) => {
   return user;
 };
 
+export const changePassword = async (
+  userId: string,
+  currentPassword: string,
+  newPassword: string
+) => {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  if (user.isBlocked) {
+    throw new Error("Your account has been blocked");
+  }
+
+  const isCurrentPasswordValid = await comparePassword(
+    currentPassword,
+    user.password
+  );
+
+  if (!isCurrentPasswordValid) {
+    throw new Error("Current password is incorrect");
+  }
+
+  const isSamePassword = await comparePassword(newPassword, user.password);
+  if (isSamePassword) {
+    throw new Error("New password must be different from the current password");
+  }
+
+  const hashedPassword = await hashPassword(newPassword);
+  await prisma.user.update({
+    where: { id: userId },
+    data: { password: hashedPassword },
+  });
+};
+
 export const updateAvatar = async (userId: string, avatarUrl: string) => {
   const user = await prisma.user.update({
     where: { id: userId },
