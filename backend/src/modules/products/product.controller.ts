@@ -288,8 +288,15 @@ export const getAllProducts = async (req: Request, res: Response) => {
       if (maxPrice) where.price.lte = parseFloat(maxPrice as string);
     }
     if (!offer) {
+      const promoNow = new Date();
       const activePromoItems = await prisma.promoOfferItem.findMany({
-        where: { promoOffer: { isActive: true } },
+        where: {
+          promoOffer: {
+            isActive: true,
+            startsAt: { lte: promoNow },
+            endsAt: { gte: promoNow },
+          },
+        },
         select: { productId: true },
       });
       const comboProductIds = [...new Set(activePromoItems.map((i) => i.productId))];
@@ -478,9 +485,16 @@ export const getFeaturedProducts = async (req: Request, res: Response) => {
   try {
     const { district } = req.query;
     const where: any = { isActive: true, isFeatured: true };
+    const now = new Date();
 
     const activePromoItems = await prisma.promoOfferItem.findMany({
-      where: { promoOffer: { isActive: true } },
+      where: {
+        promoOffer: {
+          isActive: true,
+          startsAt: { lte: now },
+          endsAt: { gte: now },
+        },
+      },
       select: { productId: true },
     });
     const comboProductIds = [...new Set(activePromoItems.map((i) => i.productId))];
