@@ -11,6 +11,7 @@ router.get("/tree", categoryController.getCategoryTree);
 router.get("/:slug", categoryController.getCategoryBySlug);
 router.get("/id/:id", categoryController.getCategoryById);
 router.post("/", authenticate, authorize("ADMIN"), upload.single("image"), categoryController.createCategory);
+router.put("/reorder", authenticate, authorize("ADMIN"), categoryController.reorderCategories);
 router.put("/:id", authenticate, authorize("ADMIN"), upload.single("image"), categoryController.updateCategory);
 router.delete("/:id", authenticate, authorize("ADMIN"), categoryController.deleteCategory);
 
