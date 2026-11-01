@@ -1,9 +1,30 @@
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://bmaart.com";
+
 export const metadata = {
   title: "Return & Refund Policy",
-  description: "Bikroymart BD Return & Refund Policy - Learn about our return, refund, and exchange procedures.",
+  description:
+    "Bikroymart BD Return & Refund Policy - Learn about our hassle-free return, refund, replacement, and exchange procedures for grocery items and goods.",
+  alternates: {
+    canonical: "/return-policy",
+  },
+  openGraph: {
+    title: "Return & Refund Policy | Bikroymart BD",
+    description:
+      "Understand Bikroymart BD's transparent return, refund, and replacement policy for online orders in Bangladesh.",
+    url: `${SITE_URL}/return-policy`,
+    siteName: "Bikroymart BD",
+    type: "website",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Bikroymart BD Return & Refund Policy" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Return & Refund Policy | Bikroymart BD",
+    description: "Learn about our customer-friendly return and refund process.",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function ReturnPolicyPage() {

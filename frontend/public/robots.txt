@@ -12,10 +12,11 @@ Disallow: /rider/
 # Disallow API routes
 Disallow: /api/
 
-# Disallow auth pages from indexing
-Disallow: /login
-Disallow: /register
-Disallow: /forgot-password
+# Disallow private user & checkout pages
+Disallow: /cart
+Disallow: /checkout
+Disallow: /account
+Disallow: /track-order
 
 # Sitemap location
 Sitemap: https://bmaart.com/sitemap.xml

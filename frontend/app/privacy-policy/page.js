@@ -1,9 +1,30 @@
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://bmaart.com";
+
 export const metadata = {
   title: "Privacy Policy",
-  description: "Bikroymart BD Privacy Policy - Learn how we collect, use, and protect your personal information.",
+  description:
+    "Bikroymart BD Privacy Policy - Learn how we collect, use, and protect your personal information and transaction details.",
+  alternates: {
+    canonical: "/privacy-policy",
+  },
+  openGraph: {
+    title: "Privacy Policy | Bikroymart BD",
+    description:
+      "Learn how Bikroymart BD collects, protects, and handles your personal information securely.",
+    url: `${SITE_URL}/privacy-policy`,
+    siteName: "Bikroymart BD",
+    type: "website",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Bikroymart BD Privacy Policy" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Privacy Policy | Bikroymart BD",
+    description: "Learn how Bikroymart BD safeguards your data.",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function PrivacyPolicyPage() {
