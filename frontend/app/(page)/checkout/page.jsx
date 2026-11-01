@@ -1,3 +1,4 @@
+// Demo: This checkout page handles secure order processing for Bikroymart BD
 import CheckoutClient from "./CheckoutClient";
 
 export const metadata = {
